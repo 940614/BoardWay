@@ -60,11 +60,10 @@ from fastapi import Request
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
     import traceback
-    error_details = traceback.format_exc()
-    print(error_details)
+    print(f"{exc}\n{traceback.format_exc()}")  # 서버 로그에만 출력
     return JSONResponse(
         status_code=500,
-        content={"message": "Internal Server Error", "detail": str(exc), "traceback": error_details},
+        content={"message": "Internal Server Error"},
     )
 
 def format_match(m):
