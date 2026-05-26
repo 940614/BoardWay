@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr, Field
 from typing import List, Optional
 
 class LocationBase(BaseModel):
@@ -19,7 +19,7 @@ class MatchBase(BaseModel):
     startTime: str
     ruleVideoUrls: List[str]
     location: LocationBase
-    maxPlayers: int
+    maxPlayers: int = Field(ge=2, le=10)
 
 class MatchCreate(MatchBase):
     pass
@@ -32,9 +32,9 @@ class MatchResponse(MatchBase):
         from_attributes = True
 
 class UserCreate(BaseModel):
-    email: str
-    password: str
-    nickname: str
+    email: EmailStr
+    password: str = Field(min_length=8)
+    nickname: str = Field(min_length=2, max_length=20)
 
 class UserResponse(BaseModel):
     email: str
