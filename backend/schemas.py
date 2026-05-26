@@ -35,7 +35,6 @@ class UserCreate(BaseModel):
     email: str
     password: str
     nickname: str
-    mannerScore: int = 5
 
 class UserResponse(BaseModel):
     email: str

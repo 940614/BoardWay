@@ -14,7 +14,7 @@ def create_user(db: Session, user: schemas.UserCreate):
         email=user.email,
         password=get_password_hash(user.password),
         nickname=user.nickname,
-        mannerScore=user.mannerScore
+        mannerScore=5  # 항상 5로 고정 (클라이언트 조작 방지)
     )
     db.add(db_user)
     db.commit()
