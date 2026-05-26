@@ -105,15 +105,13 @@ def get_match(match_id: str, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="매치를 찾을 수 없습니다.")
     return format_match(match)
 
-# Note: In a real scenario, this would be restricted to Admin/Venues
 @app.post("/matches")
-def create_match(match: schemas.MatchCreate, db: Session = Depends(get_db)):
+def create_match(match: schemas.MatchCreate, db: Session = Depends(get_db), _: models.User = Depends(get_current_user)):
     new_match = crud.create_match(db, match)
     return format_match(new_match)
 
-# Note: In a real scenario, this would be restricted to Admin/Venues
 @app.delete("/matches/{match_id}")
-def delete_match(match_id: str, db: Session = Depends(get_db)):
+def delete_match(match_id: str, db: Session = Depends(get_db), _: models.User = Depends(get_current_user)):
     db_match = crud.get_match_by_match_id(db, match_id)
     if not db_match:
         raise HTTPException(status_code=404, detail="매치를 찾을 수 없습니다.")
