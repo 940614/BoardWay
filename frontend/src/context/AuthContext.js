@@ -78,7 +78,10 @@ export const AuthProvider = ({ children }) => {
         await AsyncStorage.setItem('userToken', userToken);
         return true;
       } else {
-        Alert.alert('로그인 실패', data.detail || '이메일 또는 비밀번호를 확인해주세요.');
+        const errorMsg = Array.isArray(data.detail)
+          ? data.detail[0]?.msg || '입력값을 확인해주세요.'
+          : data.detail || '이메일 또는 비밀번호를 확인해주세요.';
+        Alert.alert('로그인 실패', errorMsg);
         return false;
       }
     } catch (error) {
@@ -107,7 +110,10 @@ export const AuthProvider = ({ children }) => {
         Alert.alert('가입 완료', '회원가입이 완료되었습니다! 로그인 해주세요.');
         return true;
       } else {
-        Alert.alert('가입 실패', data.detail || '이미 사용 중인 이메일이거나 오류가 발생했습니다.');
+        const errorMsg = Array.isArray(data.detail)
+          ? data.detail[0]?.msg || '입력값을 확인해주세요.'
+          : data.detail || '이미 사용 중인 이메일이거나 오류가 발생했습니다.';
+        Alert.alert('가입 실패', errorMsg);
         return false;
       }
     } catch (error) {
