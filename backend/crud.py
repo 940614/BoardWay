@@ -57,15 +57,15 @@ def join_match(db: Session, match_id: str, participant_nickname: str):
     db_match = get_match_by_match_id(db, match_id)
     if not db_match:
         return None
-    
+
     # 중복 참여 검사
     for p in db_match.participants:
         if p.nickname == participant_nickname:
             return "ALREADY_JOINED"
-            
+
     if len(db_match.participants) >= db_match.maxPlayers:
         return "FULL"
-        
+
     user = get_user_by_nickname(db, participant_nickname)
     db_participant = models.MatchParticipant(
         match_id=db_match.id,
@@ -73,6 +73,14 @@ def join_match(db: Session, match_id: str, participant_nickname: str):
         mannerScore=user.mannerScore if user else 5
     )
     db.add(db_participant)
+    db.flush()  # DB에 쓰되 커밋은 보류
+
+    # flush 후 실제 인원 재확인 (동시 요청으로 인한 초과 방지)
+    db.refresh(db_match)
+    if len(db_match.participants) > db_match.maxPlayers:
+        db.rollback()
+        return "FULL"
+
     db.commit()
     db.refresh(db_match)
     return db_match
