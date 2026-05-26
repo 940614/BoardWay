@@ -51,29 +51,31 @@ export default function MatchDetailScreen({ route, navigation }) {
     }
 
     setIsJoining(true);
-    
-    // 1. 포인트 사용 처리
-    // 방장은 50% 할인 혜택 (기본 12000P -> 6000P)
+
     const cost = selectedRole === 'host' ? 6000 : 12000;
-    const pointResult = await usePoints(cost, `[${match.games.join(', ')}] 매치 참여 결제 (${selectedRole === 'host' ? '방장' : '일반'})`);
-    
-    if (!pointResult.success) {
+
+    // 포인트 잔액 먼저 확인 (차감은 아직 안 함)
+    if (points < cost) {
       setIsJoining(false);
-      Alert.alert('포인트 부족', pointResult.message || '포인트가 부족하여 참여할 수 없습니다.');
+      Alert.alert('포인트 부족', '포인트가 부족하여 참여할 수 없습니다.');
       return;
     }
 
-    // 2. 매치 참여 처리
+    // 1. 매치 참여 먼저 시도 (API 성공 확인 후 포인트 차감)
     const result = await joinMatch(match.id, user.nickname, user.mannerScore, selectedRole);
-    setIsJoining(false);
-    
-    if (result.success) {
-      setModalVisible(false);
-      // alert 없이 확정 페이지로 이동하며 match 정보를 넘김
-      navigation.replace('MatchConfirmation', { match: match });
-    } else {
+
+    if (!result.success) {
+      setIsJoining(false);
       Alert.alert('참여 불가', result.message || '오류가 발생했습니다.');
+      return;
     }
+
+    // 2. 참여 성공 후 포인트 차감
+    await usePoints(cost, `[${match.games.join(', ')}] 매치 참여 결제 (${selectedRole === 'host' ? '방장' : '일반'})`);
+
+    setIsJoining(false);
+    setModalVisible(false);
+    navigation.replace('MatchConfirmation', { match: match });
   };
 
   const extractVideoId = (url) => {
