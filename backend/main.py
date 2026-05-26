@@ -84,7 +84,7 @@ def format_match(m):
             "participants": [{"nickname": p.nickname, "mannerScore": p.mannerScore, "isMe": False} for p in m.participants]
         }
     except Exception as e:
-        print(f"Error formatting match {m.id}: {e}")
+        print(f"Error formatting match {m.match_id}: {e}")
         return None
 
 @app.get("/")
