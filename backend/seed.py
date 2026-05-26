@@ -5,21 +5,21 @@ from database import engine, SessionLocal, Base
 Base.metadata.create_all(bind=engine)
 
 GAMES_DATA = [
-    {"id": "g1", "name": "스플랜더", "players": "2-4인", "difficulty": "보통", "description": "보석을 모아 카드를 사고 점수를 획득하는 최고의 입문용 전략 게임", "ruleUrl": "https://www.youtube.com/embed/3Y-VZ3pCSlw", "image": "http://192.168.0.55:8000/images/g1.png"},
-    {"id": "g2", "name": "카탄", "players": "3-4인", "difficulty": "어려움", "description": "무인도에서 자원을 채집하고 거래하며 마을을 건설하는 고전 명작", "ruleUrl": "https://www.youtube.com/embed/37V2ajpMEic", "image": "http://192.168.0.55:8000/images/g2.png"},
-    {"id": "g3", "name": "루미큐브", "players": "2-4인", "difficulty": "쉬움", "description": "숫자 조합을 통해 손에 든 타일을 가장 먼저 털어내는 지능형 게임", "ruleUrl": "https://www.youtube.com/embed/uHuYRzgzbL8", "image": "http://192.168.0.55:8000/images/g3.png"},
-    {"id": "g4", "name": "뱅!", "players": "4-7인", "difficulty": "보통", "description": "보안관과 무법자의 치열한 대결! 서부 시대를 배경으로 한 마피아 카드 게임", "ruleUrl": "https://www.youtube.com/embed/7-VvKjF_f00", "image": "http://192.168.0.55:8000/images/g4.png"},
-    {"id": "g5", "name": "할리갈리", "players": "2-6인", "difficulty": "쉬움", "description": "과일 5개가 모이면 종을 쳐라! 순발력 게임의 대명사", "ruleUrl": "https://www.youtube.com/embed/_9J8W1_m89Y", "image": "http://192.168.0.55:8000/images/g5.png"},
-    {"id": "g6", "name": "다빈치 코드", "players": "2-4인", "difficulty": "쉬움", "description": "상대방의 숫자를 추리해서 모두 맞혀라! 간단하지만 심오한 숫자 추리 게임", "ruleUrl": "https://www.youtube.com/embed/6_rW_iK-mAI", "image": "http://192.168.0.55:8000/images/g6.png"},
-    {"id": "g7", "name": "텔레스트레이션", "players": "4-8인", "difficulty": "쉬움", "description": "그림으로 말해요! 웃음이 끊이지 않는 최고의 파티 드로잉 게임", "ruleUrl": "https://www.youtube.com/embed/VhN-fT3wLTo", "image": "http://192.168.0.55:8000/images/g7.png"},
-    {"id": "g8", "name": "달무티", "players": "4-8인", "difficulty": "쉬움", "description": "인생은 불공평합니다! 계급 사회를 풍자한 중독성 강한 카드 게임", "ruleUrl": "https://www.youtube.com/embed/G68eS9-F5iM", "image": "http://192.168.0.55:8000/images/g8.png"},
-    {"id": "g9", "name": "아발론", "players": "5-10인", "difficulty": "보통", "description": "아서 왕의 충신과 모드레드의 하수인! 마피아 게임의 정점", "ruleUrl": "https://www.youtube.com/embed/3-M-Q8v8_1Y", "image": "http://192.168.0.55:8000/images/g9.png"},
-    {"id": "g10", "name": "딕싯", "players": "3-6인", "difficulty": "쉬움", "description": "한 편의 시 같은 그림 카드로 소통하는 감성적인 스토리텔링 게임", "ruleUrl": "https://www.youtube.com/embed/uHuYRzgzbL8", "image": "http://192.168.0.55:8000/images/g10.png"},
-    {"id": "g11", "name": "윙스팬", "players": "1-5인", "difficulty": "보통", "description": "아름다운 새들을 내 서식지로 불러모으는 힐링 전략 게임", "ruleUrl": "https://www.youtube.com/embed/vVEnrG8rI_s", "image": "http://192.168.0.55:8000/images/g11.png"},
-    {"id": "g12", "name": "코드네임", "players": "2-8인", "difficulty": "쉬움", "description": "단어 하나로 팀원에게 정답을 알려라! 팀 대항 단어 연상 게임", "ruleUrl": "https://www.youtube.com/embed/fGfG16T7Zic", "image": "http://192.168.0.55:8000/images/g12.png"},
-    {"id": "g13", "name": "테라포밍 마스", "players": "1-5인", "difficulty": "매우 어려움", "description": "화성을 인간이 살 수 있는 곳으로! 보드게이머들이 가장 사랑하는 전략 게임", "ruleUrl": "https://www.youtube.com/embed/8-z3yBPlr_E", "image": "http://192.168.0.55:8000/images/g13.png"},
-    {"id": "g14", "name": "젠가", "players": "1-10인", "difficulty": "쉬움", "description": "블록을 하나씩 빼서 위로 쌓아라! 아슬아슬한 긴장감의 파티 게임", "ruleUrl": "https://www.youtube.com/embed/f84E6hJ2-V0", "image": "http://192.168.0.55:8000/images/g14.png"},
-    {"id": "g15", "name": "부루마불", "players": "2-4인", "difficulty": "쉬움", "description": "전 세계를 누비며 땅을 사고 건물을 짓는 추억의 국민 보드게임", "ruleUrl": "https://www.youtube.com/embed/f84E6hJ2-V0", "image": "http://192.168.0.55:8000/images/g15.png"},
+    {"id": "g1", "name": "스플랜더", "players": "2-4인", "difficulty": "보통", "description": "보석을 모아 카드를 사고 점수를 획득하는 최고의 입문용 전략 게임", "ruleUrl": "https://www.youtube.com/embed/3Y-VZ3pCSlw", "image": "/images/g1.png"},
+    {"id": "g2", "name": "카탄", "players": "3-4인", "difficulty": "어려움", "description": "무인도에서 자원을 채집하고 거래하며 마을을 건설하는 고전 명작", "ruleUrl": "https://www.youtube.com/embed/37V2ajpMEic", "image": "/images/g2.png"},
+    {"id": "g3", "name": "루미큐브", "players": "2-4인", "difficulty": "쉬움", "description": "숫자 조합을 통해 손에 든 타일을 가장 먼저 털어내는 지능형 게임", "ruleUrl": "https://www.youtube.com/embed/uHuYRzgzbL8", "image": "/images/g3.png"},
+    {"id": "g4", "name": "뱅!", "players": "4-7인", "difficulty": "보통", "description": "보안관과 무법자의 치열한 대결! 서부 시대를 배경으로 한 마피아 카드 게임", "ruleUrl": "https://www.youtube.com/embed/7-VvKjF_f00", "image": "/images/g4.png"},
+    {"id": "g5", "name": "할리갈리", "players": "2-6인", "difficulty": "쉬움", "description": "과일 5개가 모이면 종을 쳐라! 순발력 게임의 대명사", "ruleUrl": "https://www.youtube.com/embed/_9J8W1_m89Y", "image": "/images/g5.png"},
+    {"id": "g6", "name": "다빈치 코드", "players": "2-4인", "difficulty": "쉬움", "description": "상대방의 숫자를 추리해서 모두 맞혀라! 간단하지만 심오한 숫자 추리 게임", "ruleUrl": "https://www.youtube.com/embed/6_rW_iK-mAI", "image": "/images/g6.png"},
+    {"id": "g7", "name": "텔레스트레이션", "players": "4-8인", "difficulty": "쉬움", "description": "그림으로 말해요! 웃음이 끊이지 않는 최고의 파티 드로잉 게임", "ruleUrl": "https://www.youtube.com/embed/VhN-fT3wLTo", "image": "/images/g7.png"},
+    {"id": "g8", "name": "달무티", "players": "4-8인", "difficulty": "쉬움", "description": "인생은 불공평합니다! 계급 사회를 풍자한 중독성 강한 카드 게임", "ruleUrl": "https://www.youtube.com/embed/G68eS9-F5iM", "image": "/images/g8.png"},
+    {"id": "g9", "name": "아발론", "players": "5-10인", "difficulty": "보통", "description": "아서 왕의 충신과 모드레드의 하수인! 마피아 게임의 정점", "ruleUrl": "https://www.youtube.com/embed/3-M-Q8v8_1Y", "image": "/images/g9.png"},
+    {"id": "g10", "name": "딕싯", "players": "3-6인", "difficulty": "쉬움", "description": "한 편의 시 같은 그림 카드로 소통하는 감성적인 스토리텔링 게임", "ruleUrl": "https://www.youtube.com/embed/uHuYRzgzbL8", "image": "/images/g10.png"},
+    {"id": "g11", "name": "윙스팬", "players": "1-5인", "difficulty": "보통", "description": "아름다운 새들을 내 서식지로 불러모으는 힐링 전략 게임", "ruleUrl": "https://www.youtube.com/embed/vVEnrG8rI_s", "image": "/images/g11.png"},
+    {"id": "g12", "name": "코드네임", "players": "2-8인", "difficulty": "쉬움", "description": "단어 하나로 팀원에게 정답을 알려라! 팀 대항 단어 연상 게임", "ruleUrl": "https://www.youtube.com/embed/fGfG16T7Zic", "image": "/images/g12.png"},
+    {"id": "g13", "name": "테라포밍 마스", "players": "1-5인", "difficulty": "매우 어려움", "description": "화성을 인간이 살 수 있는 곳으로! 보드게이머들이 가장 사랑하는 전략 게임", "ruleUrl": "https://www.youtube.com/embed/8-z3yBPlr_E", "image": "/images/g13.png"},
+    {"id": "g14", "name": "젠가", "players": "1-10인", "difficulty": "쉬움", "description": "블록을 하나씩 빼서 위로 쌓아라! 아슬아슬한 긴장감의 파티 게임", "ruleUrl": "https://www.youtube.com/embed/f84E6hJ2-V0", "image": "/images/g14.png"},
+    {"id": "g15", "name": "부루마불", "players": "2-4인", "difficulty": "쉬움", "description": "전 세계를 누비며 땅을 사고 건물을 짓는 추억의 국민 보드게임", "ruleUrl": "https://www.youtube.com/embed/f84E6hJ2-V0", "image": "/images/g15.png"},
 ]
 
 MATCHES_DATA = [

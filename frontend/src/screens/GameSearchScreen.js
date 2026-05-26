@@ -40,7 +40,7 @@ export default function GameSearchScreen({ navigation }) {
             style={styles.featuredCard}
             onPress={() => navigation.navigate('GameDetail', { game: featuredGame })}
           >
-            <Image source={{ uri: featuredGame.image }} style={styles.featuredImage} />
+            <Image source={{ uri: featuredGame.image?.startsWith('/') ? `${API_URL}${featuredGame.image}` : featuredGame.image }} style={styles.featuredImage} />
             <View style={styles.featuredOverlay}>
               <Text style={styles.featuredLabel}>이번 주의 추천 게임</Text>
               <Text style={styles.featuredName}>{featuredGame.name}</Text>
@@ -58,7 +58,7 @@ export default function GameSearchScreen({ navigation }) {
       onPress={() => navigation.navigate('GameDetail', { game: item })}
     >
       <View style={styles.gameImageContainer}>
-        <Image source={{ uri: item.image }} style={styles.gameImage} />
+        <Image source={{ uri: item.image?.startsWith('/') ? `${API_URL}${item.image}` : item.image }} style={styles.gameImage} />
         <View style={styles.gameDifficultyBadge}>
           <Text style={styles.difficultyBadgeText}>{item.difficulty}</Text>
         </View>
