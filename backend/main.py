@@ -92,8 +92,8 @@ def read_root():
     return {"message": "Welcome to BoardWay API Server! (DB Connected)"}
 
 @app.get("/matches")
-def get_matches(db: Session = Depends(get_db)):
-    matches = crud.get_matches(db)
+def get_matches(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    matches = crud.get_matches(db, skip=skip, limit=limit)
     formatted = [format_match(m) for m in matches]
     return {"matches": [f for f in formatted if f is not None]}
 

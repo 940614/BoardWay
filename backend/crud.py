@@ -24,8 +24,8 @@ def create_user(db: Session, user: schemas.UserCreate):
 def get_games(db: Session):
     return db.query(models.Game).all()
 
-def get_matches(db: Session):
-    return db.query(models.Match).all()
+def get_matches(db: Session, skip: int = 0, limit: int = 100):
+    return db.query(models.Match).offset(skip).limit(limit).all()
 
 def get_match_by_match_id(db: Session, match_id: str):
     return db.query(models.Match).filter(models.Match.match_id == match_id).first()
