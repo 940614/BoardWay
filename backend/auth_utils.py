@@ -6,7 +6,9 @@ import hashlib
 import bcrypt
 
 # JWT 설정
-SECRET_KEY = os.getenv("SECRET_KEY", "your-secret-key-for-development")
+SECRET_KEY = os.getenv("SECRET_KEY")
+if not SECRET_KEY:
+    raise RuntimeError("SECRET_KEY 환경변수가 설정되지 않았습니다. backend/.env 파일을 확인하세요.")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 7 # 1주일
 
