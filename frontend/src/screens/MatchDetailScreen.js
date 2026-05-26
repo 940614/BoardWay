@@ -168,11 +168,11 @@ export default function MatchDetailScreen({ route, navigation }) {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>룰 숙지 인증 📺</Text>
           <Text style={styles.ruleSubText}>가장 바른 즐거움을 위해 아래 {match.games.length}가지 게임의 룰을 모두 숙지해주세요.</Text>
-          
+
           <View style={styles.videoTabs}>
             {match.games.map((game, index) => (
-              <TouchableOpacity 
-                key={index} 
+              <TouchableOpacity
+                key={index}
                 style={[styles.tabButton, activeVideoIndex === index && styles.tabButtonActive]}
                 onPress={() => setActiveVideoIndex(index)}
               >
@@ -183,14 +183,22 @@ export default function MatchDetailScreen({ route, navigation }) {
             ))}
           </View>
 
-          <View style={styles.videoContainer}>
-            <YoutubePlayer
-              height={200}
-              play={false}
-              videoId={extractVideoId(match.ruleVideoUrls[activeVideoIndex])}
-            />
-          </View>
-          <Text style={styles.currentVideoLabel}>현재 영상: {match.games[activeVideoIndex]}</Text>
+          {match.ruleVideoUrls && match.ruleVideoUrls[activeVideoIndex] ? (
+            <>
+              <View style={styles.videoContainer}>
+                <YoutubePlayer
+                  height={200}
+                  play={false}
+                  videoId={extractVideoId(match.ruleVideoUrls[activeVideoIndex])}
+                />
+              </View>
+              <Text style={styles.currentVideoLabel}>현재 영상: {match.games[activeVideoIndex]}</Text>
+            </>
+          ) : (
+            <View style={[styles.videoContainer, { justifyContent: 'center', alignItems: 'center', backgroundColor: '#f0f0f0' }]}>
+              <Text style={{ color: '#999', fontSize: 14 }}>등록된 룰 영상이 없습니다.</Text>
+            </View>
+          )}
         </View>
 
       </ScrollView>
