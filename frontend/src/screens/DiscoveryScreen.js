@@ -54,16 +54,20 @@ export default function DiscoveryScreen({ navigation }) {
     return true;
   };
 
-  const filteredMatches = matches.filter(match => {
-    if (match.cancelled) return false;
-    const passDate = match.date === activeDate;
-    const passGenre = activeGenre === '전체' || match.tags.includes(activeGenre);
-    const passLocation = activeLocation === '전체' ||
-                         match.location.address.includes(activeLocation) ||
-                         match.location.branch.includes(activeLocation);
-    const passTime = matchTimeFilter(match.startTime, activeTime);
-    return passDate && passGenre && passLocation && passTime;
-  });
+  const filteredMatches = useMemo(() => {
+    return matches
+      .filter(match => {
+        if (match.cancelled) return false;
+        const passDate = match.date === activeDate;
+        const passGenre = activeGenre === '전체' || match.tags.includes(activeGenre);
+        const passLocation = activeLocation === '전체' ||
+                             match.location.address.includes(activeLocation) ||
+                             match.location.branch.includes(activeLocation);
+        const passTime = matchTimeFilter(match.startTime, activeTime);
+        return passDate && passGenre && passLocation && passTime;
+      })
+      .sort((a, b) => a.startTime.localeCompare(b.startTime));
+  }, [matches, activeDate, activeGenre, activeLocation, activeTime]);
 
   const handleFilterSelect = (item) => {
     if (activeModal === 'genre') setActiveGenre(item);
@@ -177,7 +181,7 @@ export default function DiscoveryScreen({ navigation }) {
           </View>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
             <Ionicons name="people-outline" size={16} color={isFull ? colors.textLight : colors.primary} />
-            <Text style={[styles.playersText, isFull && styles.textFull, { color: isFull ? colors.textLight : colors.primary }]}>모집: {item.participants.length}/{item.maxPlayers}명</Text>
+            <Text style={[styles.playersText, isFull && styles.textFull, { color: isFull ? colors.textLight : colors.primary }]}>모집: {item.participants.length}/{item.maxPlayers}명 (최소 {item.minPlayers || 3}명)</Text>
           </View>
         </View>
       </TouchableOpacity>

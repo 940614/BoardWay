@@ -1,8 +1,35 @@
 import uuid
+import re
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 import models, schemas
 from auth_utils import get_password_hash
+
+def parse_player_count(players_str: str):
+    """'2-4인', '2인 전용', '5-10인' 등 포맷에서 (min_players, max_players)를 추출"""
+    if not players_str:
+        return 2, 4
+    nums = [int(n) for n in re.findall(r'\d+', players_str)]
+    if len(nums) >= 2:
+        return nums[0], nums[1]
+    elif len(nums) == 1:
+        return nums[0], nums[0]
+    return 2, 4
+
+def calculate_min_players_for_match(db: Session, games_list: list) -> int:
+    """매칭에 포함된 게임들 중 모든 게임이 플레이 가능하기 위한 최소 필요 인원 계산
+    각 게임의 최소 인원 중 최댓값(MAX)을 반환. 자율 선택 매치는 기본 3명.
+    """
+    if not games_list or games_list == ["자율 선택"]:
+        return 3
+    max_min = 2
+    for game_name in games_list:
+        game = db.query(models.Game).filter(models.Game.name == game_name).first()
+        if game:
+            min_p, max_p = parse_player_count(game.players)
+            if min_p > max_min:
+                max_min = min_p
+    return max_min
 
 def get_user_by_email(db: Session, email: str):
     return db.query(models.User).filter(models.User.email == email).first()
@@ -94,7 +121,7 @@ def join_match(db: Session, match_id: str, participant_nickname: str, role: str 
         db_match.host_nickname = participant_nickname
 
     # 알림 생성
-    games_label = ", ".join(db_match.games or [])
+    games_label = ", ".join(db_match.games or ["자율 선택"])
     if user:
         create_notification(
             db, user.id, "match_joined",
@@ -113,6 +140,23 @@ def join_match(db: Session, match_id: str, participant_nickname: str, role: str 
                 f"{participant_nickname}님이 [{games_label}] 매칭에 참여하셨습니다.",
                 match_business_id=db_match.match_id
             )
+
+    # 최소 인원 도달 시 매칭 확정 알림
+    min_required = calculate_min_players_for_match(db, db_match.games)
+    current_participants = {p.nickname for p in db_match.participants}
+    current_participants.add(participant_nickname)
+    new_count = len(current_participants)
+
+    if new_count == min_required:
+        for nick in current_participants:
+            p_user = get_user_by_nickname(db, nick)
+            if p_user:
+                create_notification(
+                    db, p_user.id, "match_confirmed",
+                    "매칭 확정 알림",
+                    f"[{games_label}] 매칭의 최소 인원({min_required}명)이 충족되어 매칭이 확정되었습니다!",
+                    match_business_id=db_match.match_id
+                )
 
     db.commit()
     db.refresh(db_match)
@@ -148,22 +192,38 @@ def leave_match(db: Session, match_id: str, nickname: str):
     if match_start and datetime.now() >= match_start:
         return "ALREADY_STARTED"
 
+    refund_amount = MATCH_PARTICIPATION_COST
+    if match_start:
+        time_to_start = match_start - datetime.now()
+        if time_to_start.total_seconds() < 1800: # 30 minutes
+            refund_amount = 0
+        else:
+            joined_at = participant.joined_at
+            if joined_at:
+                if joined_at.tzinfo is not None:
+                    joined_at = joined_at.replace(tzinfo=None)
+                time_since_join = datetime.now() - joined_at
+                if time_since_join.total_seconds() > 3600: # 1 hour
+                    refund_amount = int(MATCH_PARTICIPATION_COST * 0.2)
+
     db.delete(participant)
     db.flush()
 
-    add_user_points(
-        db, nickname, MATCH_PARTICIPATION_COST,
-        f"[{', '.join(db_match.games or [])}] 참여 취소 환불",
-    )
+    if refund_amount > 0:
+        add_user_points(
+            db, nickname, refund_amount,
+            f"[{', '.join(db_match.games or [])}] 참여 취소 환불",
+        )
 
     # 알림 생성
     user = get_user_by_nickname(db, nickname)
     games_label = ", ".join(db_match.games or [])
     if user:
+        refund_msg = f"{refund_amount:,}P 가 환불되었습니다." if refund_amount > 0 else "환불 불가 기간(시작 30분 이내)으로 포인트 환불 없이 처리되었습니다."
         create_notification(
             db, user.id, "match_left",
             "매칭 참여 취소 완료",
-            f"[{games_label}] 매치 참여를 취소하여 {MATCH_PARTICIPATION_COST:,}P 가 환불되었습니다.",
+            f"[{games_label}] 매치 참여를 취소하여 {refund_msg}",
             match_business_id=db_match.match_id
         )
 
@@ -178,7 +238,7 @@ def leave_match(db: Session, match_id: str, nickname: str):
                 match_business_id=db_match.match_id
             )
 
-    return {"refunded": MATCH_PARTICIPATION_COST}
+    return {"refunded": refund_amount}
 
 def get_user_matches(db: Session, nickname: str):
     # Matches user is participating in
@@ -325,6 +385,16 @@ def cancel_match(db: Session, match_business_id: str):
         user = get_user_by_nickname(db, p.nickname)
         if user is None:
             continue
+
+        if p.nickname == match.host_nickname:
+            create_notification(
+                db, user.id, "match_cancelled",
+                "개설 매치 취소 안내",
+                f"[{games_label}] 개설하신 매치가 취소되었습니다. 방장 책임 규정으로 인해 개설 참여비는 환불되지 않습니다.",
+                match_business_id=match.match_id,
+            )
+            continue
+
         add_user_points(
             db, p.nickname, MATCH_PARTICIPATION_COST,
             f"[{games_label}] 매치 취소 환불",
@@ -332,7 +402,7 @@ def cancel_match(db: Session, match_business_id: str):
         create_notification(
             db, user.id, "match_cancelled",
             "매치가 취소되었습니다",
-            f"[{games_label}] 매치가 운영진에 의해 취소되어 {MATCH_PARTICIPATION_COST:,}P 가 환불되었습니다.",
+            f"[{games_label}] 매치가 취소되어 {MATCH_PARTICIPATION_COST:,}P 가 환불되었습니다.",
             match_business_id=match.match_id,
         )
         refunded += 1

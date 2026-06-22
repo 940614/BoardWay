@@ -24,13 +24,42 @@ export default function MyMatchesScreen({ navigation }) {
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
 
   const handleLeave = (match) => {
+    let refundAmount = 12000;
+    let refundDesc = "신청 후 1시간 이내 취소로 12,000P가 100% 환불됩니다.";
+    if (user && match.participants) {
+      const myPart = match.participants.find(p => p.nickname === user.nickname);
+      if (myPart && myPart.joined_at) {
+        const joinedAt = new Date(myPart.joined_at);
+        const matchStart = new Date(`${match.date}T${match.startTime}:00`);
+        const now = new Date();
+        const timeToStartMs = matchStart.getTime() - now.getTime();
+        const timeSinceJoinMs = now.getTime() - joinedAt.getTime();
+        
+        if (timeToStartMs < 30 * 60 * 1000) {
+          refundAmount = 0;
+          refundDesc = "매칭 시작까지 30분 미만으로 남아 포인트 환불이 불가능합니다.";
+        } else if (timeSinceJoinMs <= 60 * 60 * 1000) {
+          refundAmount = 12000;
+          refundDesc = "신청 후 1시간 이내 취소로 12,000P가 100% 환불됩니다.";
+        } else {
+          refundAmount = 2400;
+          refundDesc = "신청 후 1시간이 지나 취소 시 20%만 인정되어 2,400P가 환불됩니다.";
+        }
+      }
+    }
+
     confirmAction(
       '참여 취소',
-      `이 매치 참여를 취소하시겠습니까?\n결제하신 12,000P 가 즉시 환불됩니다.`,
+      `정말 매칭 참여를 취소하시겠습니까?\n(${refundDesc})`,
       async () => {
         const result = await leaveMatch(match.id);
         if (result.success) {
-          notify('환불 완료', `12,000P 가 환불되었습니다.`);
+          const finalRefunded = result.refunded !== undefined ? result.refunded : refundAmount;
+          if (finalRefunded > 0) {
+            notify('환불 완료', `${finalRefunded.toLocaleString()}P 가 환불되었습니다.`);
+          } else {
+            notify('취소 완료', '참여 취소가 완료되었습니다. (환불 금액 없음)');
+          }
         } else {
           notify('오류', result.message);
         }
@@ -84,7 +113,9 @@ export default function MyMatchesScreen({ navigation }) {
 
   // 선택된 날짜의 매치 목록
   const selectedDateMatches = useMemo(() => {
-    return myMatches.filter(match => match.date === selectedDate);
+    return myMatches
+      .filter(match => match.date === selectedDate)
+      .sort((a, b) => a.startTime.localeCompare(b.startTime));
   }, [myMatches, selectedDate]);
 
   const renderMatchItem = ({ item }) => {
@@ -125,13 +156,34 @@ export default function MyMatchesScreen({ navigation }) {
             <Text style={styles.cancelledBtnText}>취소된 매치 (환불 완료)</Text>
           </View>
         ) : isBeforeStart ? (
-          <TouchableOpacity
-            style={[styles.reviewBtn, styles.leaveBtn]}
-            onPress={() => handleLeave(item)}
-          >
-            <Ionicons name="close-outline" size={16} color={colors.error} />
-            <Text style={styles.leaveBtnText}>참여 취소 (12,000P 환불)</Text>
-          </TouchableOpacity>
+          (() => {
+            let refundText = "참여 취소 (12,000P 환불)";
+            if (user && item.participants) {
+              const myPart = item.participants.find(p => p.nickname === user.nickname);
+              if (myPart && myPart.joined_at) {
+                const joinedAt = new Date(myPart.joined_at);
+                const timeToStartMs = matchStart.getTime() - now.getTime();
+                const timeSinceJoinMs = now.getTime() - joinedAt.getTime();
+                
+                if (timeToStartMs < 30 * 60 * 1000) {
+                  refundText = "참여 취소 (환불 불가)";
+                } else if (timeSinceJoinMs <= 60 * 60 * 1000) {
+                  refundText = "참여 취소 (12,000P 환불)";
+                } else {
+                  refundText = "참여 취소 (2,400P 환불)";
+                }
+              }
+            }
+            return (
+              <TouchableOpacity
+                style={[styles.reviewBtn, styles.leaveBtn]}
+                onPress={() => handleLeave(item)}
+              >
+                <Ionicons name="close-outline" size={16} color={colors.error} />
+                <Text style={styles.leaveBtnText}>{refundText}</Text>
+              </TouchableOpacity>
+            );
+          })()
         ) : isPastMatch && (
           isReviewed ? (
             <View style={[styles.reviewBtn, styles.reviewedBtn]}>

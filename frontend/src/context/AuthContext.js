@@ -241,6 +241,9 @@ export const AuthProvider = ({ children }) => {
 
   const usePoints = async (amount, description) => {
     if (!user || !token) return { success: false, message: '로그인이 필요합니다.' };
+    if (user.is_admin) {
+      return { success: true };
+    }
     if (points < amount) return { success: false, message: '포인트가 부족합니다.' };
 
     try {

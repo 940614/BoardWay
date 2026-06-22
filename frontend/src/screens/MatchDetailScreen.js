@@ -67,7 +67,7 @@ export default function MatchDetailScreen({ route, navigation }) {
   const isAlreadyJoined = user && match.participants.some(p => p.nickname === user.nickname);
 
   const handleJoin = async () => {
-    if (points < 12000) {
+    if (!user?.is_admin && points < 12000) {
       notify('포인트 부족', '보유 포인트가 부족합니다. 충전 후 이용해주세요.');
       return;
     }
@@ -175,6 +175,12 @@ export default function MatchDetailScreen({ route, navigation }) {
           <View style={styles.locationBox}>
             <Text style={styles.locationVenue}>{match.location.venue} {match.location.branch}</Text>
             <Text style={styles.locationAddress}>{match.location.address}</Text>
+            <View style={styles.locationNoticeBox}>
+              <Ionicons name="information-circle" size={16} color="#E67E22" style={{ marginRight: 6, marginTop: 1 }} />
+              <Text style={styles.locationNoticeText}>
+                선택한 보드게임이 매장에 없을 경우, 참가자들끼리 협의 하에 다른 게임을 임의로 선택하여 플레이하실 수 있습니다.
+              </Text>
+            </View>
           </View>
           <View style={styles.mapContainer}>
             <MapEmbed query={mapQuery} height={200} />
@@ -297,16 +303,20 @@ export default function MatchDetailScreen({ route, navigation }) {
             <View style={styles.paymentInfoBox}>
               <View style={styles.paymentRow}>
                 <Text style={styles.paymentLabel}>내 보유 포인트</Text>
-                <Text style={styles.paymentValue}>{points.toLocaleString()} P</Text>
+                <Text style={styles.paymentValue}>{user?.is_admin ? '무한 P' : `${points.toLocaleString()} P`}</Text>
               </View>
 
               <View style={styles.paymentRow}>
                 <Text style={styles.paymentLabel}>차감 예정 포인트</Text>
-                <Text style={[styles.paymentValue, { color: colors.error }]}>- 12,000 P</Text>
+                <Text style={[styles.paymentValue, { color: user?.is_admin ? colors.text : colors.error }]}>
+                  {user?.is_admin ? '0 P' : '- 12,000 P'}
+                </Text>
               </View>
               <View style={[styles.paymentRow, styles.paymentTotalRow]}>
                 <Text style={styles.paymentTotalLabel}>결제 후 잔액</Text>
-                <Text style={styles.paymentTotalValue}>{(points - 12000).toLocaleString()} P</Text>
+                <Text style={styles.paymentTotalValue}>
+                  {user?.is_admin ? '무한 P' : `${(points - 12000).toLocaleString()} P`}
+                </Text>
               </View>
             </View>
 
@@ -612,5 +622,21 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: colors.text,
     lineHeight: 20,
+  },
+  locationNoticeBox: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    backgroundColor: '#FFF9E6',
+    borderWidth: 1,
+    borderColor: '#FFE0B2',
+    borderRadius: 8,
+    padding: 10,
+    marginTop: 10,
+  },
+  locationNoticeText: {
+    fontSize: 12,
+    color: '#D35400',
+    lineHeight: 18,
+    flex: 1,
   },
 });

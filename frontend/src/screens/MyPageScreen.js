@@ -10,6 +10,34 @@ export default function MyPageScreen({ navigation }) {
   const { user, logout, points } = useContext(AuthContext);
   const [rechargeModalVisible, setRechargeModalVisible] = useState(false);
   const [mannerModalVisible, setMannerModalVisible] = useState(false);
+  const [expandedFaq, setExpandedFaq] = useState(null);
+
+  const toggleFaq = (index) => {
+    setExpandedFaq(expandedFaq === index ? null : index);
+  };
+
+  const FAQ_DATA = [
+    {
+      q: "매칭 취소 및 포인트 환불 규정은 어떻게 되나요?",
+      a: "• 최소 인원 미달 취소: 매치 시작 30분 전까지 최소 필요 인원이 충족되지 않으면 매칭이 자동 취소(파토)되며, 참여비 12,000P가 전액 자동 환불됩니다.\n• 자발적 참여 취소 환불 규정:\n  - 매칭 신청 후 1시간 이내 취소: 100% 환불 (12,000P 환불)\n  - 매칭 신청 후 1시간 경과 후 취소: 20% 환불 (2,400P 환불)\n  - 매칭 시작 30분 미만 시점 취소: 환불 불가 (참여 취소는 가능하나 0P 환불)"
+    },
+    {
+      q: "매칭이 확정되는 기준은 무엇인가요?",
+      a: "각 보드게임의 원활한 플레이를 위해 시스템이 계산한 '최소 인원'이 모이는 순간 즉시 매칭이 확정되며 모든 참여자에게 알림이 전송됩니다. 자율성 매치는 기본 3인 이상 신청 시 확정됩니다."
+    },
+    {
+      q: "매너 주사위(Manner Dice) 점수가 무엇인가요?",
+      a: "보드웨이 회원 신뢰 지표로 기본 5.0에서 출발하여 1.0~6.0점까지 변동합니다. 매칭 완료 후 상호 매너 평가를 통해 점수가 계산되며, 5.0점 이상 우수 회원에게는 프로필 옆에 '굿 매너' 배지가 부여되어 매칭 성공률이 상승합니다."
+    },
+    {
+      q: "우수 방장 리워드(페이백) 제도란 무엇인가요?",
+      a: "방장으로서 매칭 개설 비용(12,000P)을 선결제하고 모임을 리드한 회원을 위한 혜택입니다. 모임이 끝나고 참여자들의 매너 평가 평균이 4.0점 이상인 경우, 3,000P를 감사 리워드로 즉시 돌려드립니다."
+    },
+    {
+      q: "자율성 매치와 일반 매치의 차이는 무엇인가요?",
+      a: "• 일반 매치: 개설 단계에서 함께 즐길 보드게임을 최대 3개까지 사전에 선택하여 개설하는 방식입니다.\n• 자율성 매치: 사전에 게임을 확정 짓지 않고 모여서 서로 상의 하에 원하는 게임을 자유롭게 결정해 즐기는 방식입니다."
+    }
+  ];
 
   const handleLogout = async () => {
     confirmAction(
@@ -75,13 +103,17 @@ export default function MyPageScreen({ navigation }) {
               </TouchableOpacity>
               <View style={[styles.statBox, styles.statBoxDivider]}>
                 <Text style={styles.statLabel}>보유 포인트</Text>
-                <Text style={[styles.statValue, { color: colors.secondary }]}>{points.toLocaleString()} P</Text>
-                <TouchableOpacity 
-                  style={styles.rechargeBtnSmall}
-                  onPress={() => setRechargeModalVisible(true)}
-                >
-                  <Text style={styles.rechargeBtnTextSmall}>충전</Text>
-                </TouchableOpacity>
+                <Text style={[styles.statValue, { color: colors.secondary }]}>
+                  {user?.is_admin ? '무한 P' : `${points.toLocaleString()} P`}
+                </Text>
+                {!user?.is_admin && (
+                  <TouchableOpacity 
+                    style={styles.rechargeBtnSmall}
+                    onPress={() => setRechargeModalVisible(true)}
+                  >
+                    <Text style={styles.rechargeBtnTextSmall}>충전</Text>
+                  </TouchableOpacity>
+                )}
               </View>
             </View>
           </View>
@@ -102,11 +134,13 @@ export default function MyPageScreen({ navigation }) {
             {/* 포인트 섹션 */}
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>포인트 관리</Text>
-              <TouchableOpacity style={styles.menuItem} onPress={() => setRechargeModalVisible(true)}>
-                <Ionicons name="card-outline" size={24} color={colors.text} style={styles.menuIcon} />
-                <Text style={styles.menuText}>포인트 충전하기</Text>
-                <Ionicons name="chevron-forward" size={20} color={colors.textLight} />
-              </TouchableOpacity>
+              {!user?.is_admin && (
+                <TouchableOpacity style={styles.menuItem} onPress={() => setRechargeModalVisible(true)}>
+                  <Ionicons name="card-outline" size={24} color={colors.text} style={styles.menuIcon} />
+                  <Text style={styles.menuText}>포인트 충전하기</Text>
+                  <Ionicons name="chevron-forward" size={20} color={colors.textLight} />
+                </TouchableOpacity>
+              )}
               <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate('PointHistory')}>
                 <Ionicons name="receipt-outline" size={24} color={colors.text} style={styles.menuIcon} />
                 <Text style={styles.menuText}>포인트 사용 내역</Text>
@@ -136,6 +170,35 @@ export default function MyPageScreen({ navigation }) {
             </View>
           </>
         )}
+
+        {/* 자주 묻는 질문 (FAQ) */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>이용 안내 & 자주 묻는 질문 (FAQ)</Text>
+          {FAQ_DATA.map((faq, index) => {
+            const isExpanded = expandedFaq === index;
+            return (
+              <View key={index} style={styles.faqItem}>
+                <TouchableOpacity 
+                  style={styles.faqQuestionRow} 
+                  onPress={() => toggleFaq(index)}
+                  activeOpacity={0.7}
+                >
+                  <Text style={styles.faqQuestionText}>Q. {faq.q}</Text>
+                  <Ionicons 
+                    name={isExpanded ? "chevron-up" : "chevron-down"} 
+                    size={18} 
+                    color={colors.textLight} 
+                  />
+                </TouchableOpacity>
+                {isExpanded && (
+                  <View style={styles.faqAnswerContainer}>
+                    <Text style={styles.faqAnswerText}>{faq.a}</Text>
+                  </View>
+                )}
+              </View>
+            );
+          })}
+        </View>
       </ScrollView>
 
       {/* 충전 모달 */}
@@ -526,5 +589,36 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  faqItem: {
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+    backgroundColor: colors.surface,
+  },
+  faqQuestionRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+  },
+  faqQuestionText: {
+    fontSize: 14,
+    color: colors.text,
+    fontWeight: 'bold',
+    flex: 1,
+    paddingRight: 10,
+  },
+  faqAnswerContainer: {
+    backgroundColor: '#F9FAFB',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderTopWidth: 1,
+    borderTopColor: '#F3F4F6',
+  },
+  faqAnswerText: {
+    fontSize: 13,
+    color: '#4B5563',
+    lineHeight: 18,
   }
 });

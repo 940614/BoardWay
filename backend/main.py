@@ -86,6 +86,10 @@ def format_match(m, db: Session = None):
             else:
                 rule_video_urls = []
 
+        min_players = 3
+        if db:
+            min_players = crud.calculate_min_players_for_match(db, m.games)
+
         return {
             "id": m.match_id,
             "games": m.games,
@@ -100,10 +104,11 @@ def format_match(m, db: Session = None):
                 "address": m.address
             },
             "maxPlayers": m.maxPlayers,
+            "minPlayers": min_players,
             "host": m.host_nickname,
             "cancelled": m.cancelled,
             "is_flexible": m.is_flexible,
-            "participants": [{"nickname": p.nickname, "mannerScore": p.mannerScore, "isMe": False} for p in m.participants]
+            "participants": [{"nickname": p.nickname, "mannerScore": p.mannerScore, "joined_at": p.joined_at.isoformat() if getattr(p, "joined_at", None) else None, "isMe": False} for p in m.participants]
         }
     except Exception as e:
         print(f"Error formatting match {getattr(m, 'match_id', m.id)}: {e}")
@@ -404,18 +409,28 @@ def cancel_match_endpoint(
     db: Session = Depends(get_db),
     current_user: models.User = Depends(get_current_user),
 ):
-    if not current_user.is_admin:
-        raise HTTPException(status_code=403, detail="매치 취소는 운영진만 가능합니다.")
-    result = crud.cancel_match(db, match_id)
-    if result == "NOT_FOUND":
+    match = crud.get_match_by_match_id(db, match_id)
+    if not match:
         raise HTTPException(status_code=404, detail="매치를 찾을 수 없습니다.")
-    if result == "ALREADY_CANCELLED":
+    if match.cancelled:
         raise HTTPException(status_code=400, detail="이미 취소된 매치입니다.")
+
+    is_host = (match.host_nickname == current_user.nickname)
+    if not current_user.is_admin and not is_host:
+        raise HTTPException(status_code=403, detail="매치 취소는 운영진 또는 개설자(방장)만 가능합니다.")
+
+    result = crud.cancel_match(db, match_id)
+    
+    if is_host:
+        msg = f"매치가 취소되었습니다. 동료 참여자 {result['refunded_count']}명에게 환불이 완료되었습니다. 방장 개설 참여비는 환불되지 않습니다."
+    else:
+        msg = f"매치가 취소되었습니다. 참여자 {result['refunded_count']}명에게 {result['refund_amount']:,}P씩 환불 완료."
+
     return schemas.CancelResponse(
         cancelled=True,
         refunded_count=result["refunded_count"],
         refund_amount=result["refund_amount"],
-        message=f"매치가 취소되었습니다. 참여자 {result['refunded_count']}명에게 {result['refund_amount']:,}P씩 환불 완료.",
+        message=msg,
     )
 
 
@@ -557,6 +572,66 @@ async def websocket_chat(websocket: WebSocket, match_id: str, db: Session = Depe
             await ws_manager.broadcast(match_id, msg_dict)
     except WebSocketDisconnect:
         ws_manager.disconnect(websocket, match_id)
+
+def check_and_cancel_matches(db: Session):
+    from datetime import datetime, timedelta
+    now = datetime.now()
+    active_matches = db.query(models.Match).filter(models.Match.cancelled == False).all()
+    for match in active_matches:
+        try:
+            match_datetime_str = f"{match.date}T{match.startTime}:00"
+            match_start = datetime.fromisoformat(match_datetime_str)
+        except (ValueError, TypeError, AttributeError):
+            continue
+
+        min_required = crud.calculate_min_players_for_match(db, match.games)
+        participants_count = len(match.participants)
+
+        time_until_start = match_start - now
+        if time_until_start <= timedelta(minutes=30) and participants_count < min_required:
+            match.cancelled = True
+            db.flush()
+
+            games_label = ", ".join(match.games or ["자율 선택"])
+            for p in list(match.participants):
+                p_user = crud.get_user_by_nickname(db, p.nickname)
+                if p_user:
+                    crud.add_user_points(
+                        db, p.nickname, crud.MATCH_PARTICIPATION_COST,
+                        f"[{games_label}] 최소 인원 미달로 인한 매치 자동 취소 환불",
+                    )
+                    crud.create_notification(
+                        db, p_user.id, "match_cancelled",
+                        "매칭 자동 취소",
+                        f"[{games_label}] 매칭이 시작 30분 전까지 최소 인원({min_required}명)을 충족하지 못해 자동 취소되었습니다. {crud.MATCH_PARTICIPATION_COST:,}P가 환불되었습니다.",
+                        match_business_id=match.match_id
+                    )
+            db.commit()
+
+def start_match_cancellation_scheduler():
+    import threading
+    import time
+    from database import SessionLocal
+
+    def run_scheduler():
+        time.sleep(5)
+        while True:
+            try:
+                db = SessionLocal()
+                try:
+                    check_and_cancel_matches(db)
+                finally:
+                    db.close()
+            except Exception as e:
+                print(f"Error in match cancellation scheduler: {e}")
+            time.sleep(60)
+
+    thread = threading.Thread(target=run_scheduler, daemon=True)
+    thread.start()
+
+@app.on_event("startup")
+def startup_event():
+    start_match_cancellation_scheduler()
 
 
 if __name__ == "__main__":

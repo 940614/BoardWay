@@ -2,6 +2,7 @@ from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, JSON, DateT
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
 from database import Base
+from datetime import datetime
 
 class User(Base):
     __tablename__ = "users"
@@ -136,5 +137,6 @@ class MatchParticipant(Base):
     match_id = Column(Integer, ForeignKey("matches.id"))
     nickname = Column(String)
     mannerScore = Column(Integer)
+    joined_at = Column(DateTime, default=datetime.now, nullable=False)
 
     match = relationship("Match", back_populates="participants")

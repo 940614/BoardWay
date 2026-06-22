@@ -10,7 +10,7 @@ import { commonStyles } from '../theme/styles';
 import { apiFetch } from '../utils/api';
 
 // 장르 탭 — 키워드가 game.genre에 포함되면 해당 탭에 속함
-const GENRE_TABS = ['전체', '전략', '파티', '마피아', '추리', '카드', '타일', '고전', '단어'];
+const GENRE_TABS = ['전체', '다인용 게임', '전략', '파티', '마피아', '추리', '카드', '타일', '고전', '단어'];
 
 export default function GameSearchScreen({ navigation }) {
   const [searchQuery, setSearchQuery] = useState('');

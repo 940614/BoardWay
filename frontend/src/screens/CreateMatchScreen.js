@@ -1,4 +1,4 @@
-import React, { useState, useContext, useEffect } from 'react';
+import React, { useState, useContext, useEffect, useMemo } from 'react';
 import { View, Text, StyleSheet, SafeAreaView, ScrollView, TextInput, TouchableOpacity, ActivityIndicator, Switch, Modal, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Calendar } from 'react-native-calendars';
@@ -9,7 +9,7 @@ import { apiFetch } from '../utils/api';
 import { MatchContext } from '../context/MatchContext';
 import { AuthContext } from '../context/AuthContext';
 
-const GENRE_TABS = ['전체', '전략', '파티', '마피아', '추리', '카드', '타일', '고전', '단어'];
+const GENRE_TABS = ['전체', '다인용 게임', '전략', '파티', '마피아', '추리', '카드', '타일', '고전', '단어'];
 
 const DIFFICULTIES = ['쉬움', '보통', '어려움', '매우 어려움'];
 const TAG_OPTIONS = ['입문', '전략', '파티', '마피아', '심리전', '추리', '두뇌', '힐링', '협력', '고전'];
@@ -46,6 +46,14 @@ const VENUE_OPTIONS = {
     { branch: '신촌점', address: '서울 서대문구 신촌로 109' }
   ]
 };
+
+function todayISO() {
+  const d = new Date();
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
 
 function tomorrowISO() {
   const d = new Date();
@@ -92,12 +100,12 @@ export default function CreateMatchScreen({ navigation }) {
     });
   };
   const [selectedTags, setSelectedTags] = useState([]);
-  const [date, setDate] = useState(tomorrowISO());
+  const [date, setDate] = useState(todayISO());
   const [startTime, setStartTime] = useState('18:00');
   const [venue, setVenue] = useState('');
   const [branch, setBranch] = useState('');
   const [address, setAddress] = useState('');
-  const [maxPlayers, setMaxPlayers] = useState('4');
+  const [maxPlayers, setMaxPlayers] = useState('');
   const [isFlexible, setIsFlexible] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [roleModalVisible, setRoleModalVisible] = useState(false);
@@ -105,6 +113,55 @@ export default function CreateMatchScreen({ navigation }) {
   const [showCalendar, setShowCalendar] = useState(false);
   const [showVenueModal, setShowVenueModal] = useState(false);
   const [showBranchModal, setShowBranchModal] = useState(false);
+
+  // 선택한 게임들 기반의 최소 및 최대 인원 실시간 계산
+  const recommendedPlayers = useMemo(() => {
+    if (isFlexible) {
+      return { min: 3, max: 3, label: '3명 (자율 선택 매칭)' };
+    }
+    if (selectedGames.length === 0) {
+      return { min: null, max: null, label: '게임을 선택해 주세요' };
+    }
+
+    let maxMin = 0;
+    let maxMinGame = '';
+    let minMax = 999;
+    let minMaxGame = '';
+
+    selectedGames.forEach(gameName => {
+      const gameObj = dbGames.find(g => g.name === gameName);
+      if (gameObj && gameObj.players) {
+        const nums = (gameObj.players.match(/\d+/g) || []).map(Number);
+        let gMin = 2;
+        let gMax = 4;
+        if (nums.length >= 2) {
+          [gMin, gMax] = nums;
+        } else if (nums.length === 1) {
+          gMin = nums[0];
+          gMax = nums[0];
+        }
+
+        if (gMin > maxMin) {
+          maxMin = gMin;
+          maxMinGame = gameName;
+        }
+        if (gMax < minMax) {
+          minMax = gMax;
+          minMaxGame = gameName;
+        }
+      }
+    });
+
+    if (maxMin > minMax) {
+      return { 
+        min: maxMin, 
+        max: minMax, 
+        label: `인원 불일치: ${maxMinGame}(최소 ${maxMin}명) ↔ ${minMaxGame}(최대 ${minMax}명)`, 
+        invalid: true 
+      };
+    }
+    return { min: maxMin, max: minMax, label: `${maxMin} ~ ${minMax}명` };
+  }, [selectedGames, dbGames, isFlexible]);
 
   const handleTagToggle = (tag) => {
     setSelectedTags((prev) => {
@@ -142,7 +199,18 @@ export default function CreateMatchScreen({ navigation }) {
     }
     const players = parseInt(maxPlayers, 10);
     if (!players || players < 2) {
-      notify('알림', '최대 인원은 2 이상이어야 합니다.');
+      notify('알림', '모집 인원은 2 이상이어야 합니다.');
+      return;
+    }
+
+    if (recommendedPlayers.invalid) {
+      notify('알림', '선택한 게임들의 인원 범위가 맞지 않아 매칭을 생성할 수 없습니다. 게임을 변경해주세요.');
+      return;
+    }
+
+    const minRequired = recommendedPlayers.min || 2;
+    if (players < minRequired) {
+      notify('알림', `모집 인원은 최소 필요 인원(${minRequired}명) 이상이어야 합니다.`);
       return;
     }
     if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
@@ -154,7 +222,22 @@ export default function CreateMatchScreen({ navigation }) {
       return;
     }
 
-    if (points < 12000) {
+    if (date === todayISO()) {
+      const now = new Date();
+      const currentHour = now.getHours();
+      const currentMinute = now.getMinutes();
+      const [slotHour, slotMinute] = startTime.split(':').map(Number);
+      
+      const currentTotalMinutes = currentHour * 60 + currentMinute;
+      const slotTotalMinutes = slotHour * 60 + slotMinute;
+      
+      if (slotTotalMinutes - currentTotalMinutes < 30) {
+        notify('알림', '당일 매치는 현재 시간보다 최소 30분 이후의 시간대만 선택 가능합니다.');
+        return;
+      }
+    }
+
+    if (!user?.is_admin && points < 12000) {
       notify('포인트 부족', '보유 포인트가 부족합니다. 매치 생성 및 참여를 위해 최소 12,000P가 필요합니다. 충전 후 이용해주세요.');
       return;
     }
@@ -188,7 +271,7 @@ export default function CreateMatchScreen({ navigation }) {
         ruleVideoUrls: [],
         location: { venue: venue.trim(), branch: branch.trim(), address: address.trim() },
         maxPlayers: parseInt(maxPlayers, 10),
-        is_flexible: isFlexibleChecked,
+        is_flexible: isFlexible,
       };
       const res = await apiFetch('/matches', { method: 'POST', token, json: body });
       if (!res.ok) {
@@ -412,10 +495,19 @@ export default function CreateMatchScreen({ navigation }) {
           </View>
         ) : null}
 
-        <Text style={styles.label}>최대 인원</Text>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Text style={styles.label}>모집 인원</Text>
+          {recommendedPlayers.label && (
+            <Text style={[
+              styles.recommendLabel, 
+              recommendedPlayers.invalid ? { color: colors.error } : { color: colors.primary }
+            ]}>
+              추천: {recommendedPlayers.label}
+            </Text>
+          )}
+        </View>
         <TextInput
           style={styles.input}
-          placeholder="4"
           value={maxPlayers}
           onChangeText={setMaxPlayers}
           keyboardType="number-pad"
@@ -494,7 +586,7 @@ export default function CreateMatchScreen({ navigation }) {
             <Text style={styles.modalTitle}>날짜 선택</Text>
             <Calendar
               current={date}
-              minDate={tomorrowISO()}
+              minDate={todayISO()}
               onDayPress={(day) => {
                 setDate(day.dateString);
                 setShowCalendar(false);
@@ -942,5 +1034,11 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: colors.text,
     fontWeight: '600',
+  },
+  recommendLabel: {
+    fontSize: 12,
+    fontWeight: 'bold',
+    color: colors.primary,
+    marginBottom: 8,
   },
 });
