@@ -20,7 +20,11 @@ export default function NotificationsScreen({ navigation }) {
 
   const handleTap = async (notif) => {
     if (!notif.read) await markNotificationRead(notif.id);
-    if (notif.match_business_id) {
+    if (['friend_request_received', 'friend_request_accepted', 'friend_message_received'].includes(notif.type)) {
+      navigation.navigate('Friends');
+    } else if (['manner_evaluation_started', 'match_completion_prompt'].includes(notif.type)) {
+      navigation.navigate('MyMatches');
+    } else if (notif.match_business_id) {
       navigation.navigate('MatchDetail', { matchId: notif.match_business_id });
     }
   };

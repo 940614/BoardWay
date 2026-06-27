@@ -1,5 +1,6 @@
 import uuid
 import re
+from datetime import datetime, timedelta, timezone
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 import models, schemas
@@ -301,6 +302,77 @@ def _recompute_manner_score(db: Session, nickname: str):
         user.mannerScore = int(avg + 0.5)
 
 
+HOST_REWARD_AMOUNT = 3000
+HOST_REWARD_THRESHOLD = 4.0
+
+
+def _maybe_reward_host_for_match(db: Session, match: models.Match):
+    """방장이 받은 평가 평균이 기준 이상이면 우수 방장 리워드를 1회 지급."""
+    if not match or not match.host_nickname:
+        return None
+    if not match.completed or not match.completed_at:
+        return None
+
+    host_user = get_user_by_nickname(db, match.host_nickname)
+    if not host_user:
+        return None
+
+    review_window_start = match.completed_at
+    review_window_end = match.completed_at + timedelta(minutes=30)
+    now = datetime.now(timezone.utc).replace(tzinfo=None)
+    if now < review_window_end:
+        return None
+
+    host_reviews = (
+        db.query(models.Review)
+        .join(models.User, models.User.id == models.Review.reviewer_id)
+        .filter(
+            models.Review.match_id == match.id,
+            models.Review.reviewee_nickname == match.host_nickname,
+            models.User.nickname != match.host_nickname,
+            models.Review.created_at >= review_window_start,
+            models.Review.created_at <= review_window_end,
+        )
+        .all()
+    )
+    if not host_reviews:
+        return None
+
+    average_rating = sum(review.rating for review in host_reviews) / len(host_reviews)
+    if average_rating < HOST_REWARD_THRESHOLD:
+        return None
+
+    reward_description = f"[{match.match_id}] 우수 방장 리워드"
+    already_rewarded = (
+        db.query(models.PointHistory)
+        .filter(
+            models.PointHistory.user_id == host_user.id,
+            models.PointHistory.amount == HOST_REWARD_AMOUNT,
+            models.PointHistory.description == reward_description,
+        )
+        .first()
+    )
+    if already_rewarded:
+        return None
+
+    updated_host = add_user_points(
+        db,
+        match.host_nickname,
+        HOST_REWARD_AMOUNT,
+        reward_description,
+    )
+    games_label = ", ".join(match.games or [])
+    create_notification(
+        db,
+        host_user.id,
+        "host_reward_paid",
+        "우수 방장 리워드 지급",
+        f"[{games_label}] 참여자 평가 평균 {average_rating:.1f}점으로 우수 방장 리워드 {HOST_REWARD_AMOUNT:,}P가 지급되었습니다.",
+        match_business_id=match.match_id,
+    )
+    return updated_host
+
+
 def create_match_reviews(db: Session, reviewer_id: int, match_business_id: str, items, comment: str = ""):
     """한 매치에 대한 참여자별 리뷰 N개를 한 트랜잭션으로 INSERT + reviewee 들의 매너 주사위 자동 갱신.
 
@@ -342,6 +414,7 @@ def create_match_reviews(db: Session, reviewer_id: int, match_business_id: str, 
         _recompute_manner_score(db, nickname)
 
     db.commit()
+    _maybe_reward_host_for_match(db, match)
 
     # 알림 생성 (리뷰가 정상 등록된 후 피평가자들에게 전송)
     reviewer = db.query(models.User).filter(models.User.id == reviewer_id).first()
@@ -365,7 +438,7 @@ def create_match_reviews(db: Session, reviewer_id: int, match_business_id: str, 
 MATCH_PARTICIPATION_COST = 12000
 
 
-def cancel_match(db: Session, match_business_id: str):
+def cancel_match(db: Session, match_business_id: str, host_forfeits: bool = False):
     """매치 취소 + 참여자 전원 환불 (한 트랜잭션).
 
     Returns:
@@ -386,7 +459,7 @@ def cancel_match(db: Session, match_business_id: str):
         if user is None:
             continue
 
-        if p.nickname == match.host_nickname:
+        if host_forfeits and p.nickname == match.host_nickname:
             create_notification(
                 db, user.id, "match_cancelled",
                 "개설 매치 취소 안내",
@@ -530,3 +603,289 @@ def get_user_point_history(db: Session, user_id: int):
         .order_by(models.PointHistory.created_at.desc(), models.PointHistory.id.desc())
         .all()
     )
+
+
+def complete_match(db: Session, match_business_id: str):
+    """Mark a match as successfully completed, and notify participants to evaluate.
+
+    Returns:
+        - "NOT_FOUND" / "ALREADY_COMPLETED" / "CANCELLED"
+        - dict: success status
+    """
+    from datetime import datetime, timezone
+    match = get_match_by_match_id(db, match_business_id)
+    if not match:
+        return "NOT_FOUND"
+    if match.cancelled:
+        return "CANCELLED"
+    if match.completed:
+        return "ALREADY_COMPLETED"
+
+    match.completed = True
+    match.completed_at = datetime.now(timezone.utc).replace(tzinfo=None)
+    db.flush()
+
+    games_label = ", ".join(match.games or ["자율 선택"])
+    # Notify all participants that manner evaluation has started
+    for p in match.participants:
+        user = get_user_by_nickname(db, p.nickname)
+        if user:
+            create_notification(
+                db, user.id, "manner_evaluation_started",
+                "매칭 성공 완료 안내",
+                f"[{games_label}] 매칭이 완료되었습니다. 참여자들의 상호 매너 주사위 평가를 진행해주세요!",
+                match_business_id=match.match_id,
+            )
+
+    db.commit()
+    return {"status": "success"}
+
+
+def create_suggestion(db: Session, suggestion_in: schemas.SuggestionCreate, user_id: int):
+    db_sug = models.Suggestion(
+        user_id=user_id,
+        category=suggestion_in.category,
+        content=suggestion_in.content
+    )
+    db.add(db_sug)
+    db.commit()
+    db.refresh(db_sug)
+    return db_sug
+
+
+def reply_to_suggestion(db: Session, suggestion_id: int, reply_text: str):
+    sug = db.query(models.Suggestion).filter(models.Suggestion.id == suggestion_id).first()
+    if not sug:
+        return None
+
+    from datetime import datetime, timezone
+
+    sug.admin_reply = reply_text
+    sug.answered_at = datetime.now(timezone.utc)
+    db.commit()
+    db.refresh(sug)
+    return sug
+
+
+def get_suggestions_by_user(db: Session, user_id: int):
+    return (
+        db.query(models.Suggestion)
+        .filter(models.Suggestion.user_id == user_id)
+        .order_by(models.Suggestion.created_at.desc())
+        .all()
+    )
+
+
+def get_all_suggestions(db: Session):
+    return (
+        db.query(models.Suggestion)
+        .order_by(models.Suggestion.created_at.desc())
+        .all()
+    )
+
+
+def _friendship_between(db: Session, user_id: int, other_user_id: int):
+    return (
+        db.query(models.Friendship)
+        .filter(
+            (
+                (models.Friendship.requester_id == user_id)
+                & (models.Friendship.addressee_id == other_user_id)
+            )
+            | (
+                (models.Friendship.requester_id == other_user_id)
+                & (models.Friendship.addressee_id == user_id)
+            )
+        )
+        .order_by(models.Friendship.id.desc())
+        .first()
+    )
+
+
+def are_friends(db: Session, user_id: int, other_user_id: int) -> bool:
+    friendship = _friendship_between(db, user_id, other_user_id)
+    return bool(friendship and friendship.status == "accepted")
+
+
+def create_friend_request(db: Session, requester: models.User, target_nickname: str):
+    target = get_user_by_nickname(db, target_nickname)
+    if not target:
+        return "USER_NOT_FOUND"
+    if target.id == requester.id:
+        return "SELF"
+
+    existing = _friendship_between(db, requester.id, target.id)
+    if existing:
+        if existing.status == "accepted":
+            return "ALREADY_FRIENDS"
+        if existing.status == "pending":
+            return "ALREADY_PENDING"
+        existing.requester_id = requester.id
+        existing.addressee_id = target.id
+        existing.status = "pending"
+        existing.responded_at = None
+        db.commit()
+        db.refresh(existing)
+        create_notification(
+            db,
+            target.id,
+            "friend_request_received",
+            "친구 신청 도착",
+            f"{requester.nickname}님이 친구 신청을 보냈습니다.",
+        )
+        return existing
+
+    row = models.Friendship(
+        requester_id=requester.id,
+        addressee_id=target.id,
+        status="pending",
+    )
+    db.add(row)
+    db.commit()
+    db.refresh(row)
+    create_notification(
+        db,
+        target.id,
+        "friend_request_received",
+        "친구 신청 도착",
+        f"{requester.nickname}님이 친구 신청을 보냈습니다.",
+    )
+    return row
+
+
+def list_friendships(db: Session, user_id: int):
+    return (
+        db.query(models.Friendship)
+        .filter(
+            models.Friendship.status == "accepted",
+            (
+                (models.Friendship.requester_id == user_id)
+                | (models.Friendship.addressee_id == user_id)
+            ),
+        )
+        .order_by(models.Friendship.responded_at.desc(), models.Friendship.id.desc())
+        .all()
+    )
+
+
+def list_friend_requests(db: Session, user_id: int):
+    incoming = (
+        db.query(models.Friendship)
+        .filter(
+            models.Friendship.addressee_id == user_id,
+            models.Friendship.status == "pending",
+        )
+        .order_by(models.Friendship.created_at.desc())
+        .all()
+    )
+    outgoing = (
+        db.query(models.Friendship)
+        .filter(
+            models.Friendship.requester_id == user_id,
+            models.Friendship.status == "pending",
+        )
+        .order_by(models.Friendship.created_at.desc())
+        .all()
+    )
+    return incoming, outgoing
+
+
+def respond_friend_request(db: Session, request_id: int, user: models.User, accept: bool):
+    from datetime import datetime, timezone
+
+    row = db.query(models.Friendship).filter(models.Friendship.id == request_id).first()
+    if not row:
+        return "NOT_FOUND"
+    if row.addressee_id != user.id:
+        return "FORBIDDEN"
+    if row.status != "pending":
+        return "ALREADY_HANDLED"
+
+    row.status = "accepted" if accept else "rejected"
+    row.responded_at = datetime.now(timezone.utc)
+    db.commit()
+    db.refresh(row)
+
+    requester = db.query(models.User).filter(models.User.id == row.requester_id).first()
+    if requester:
+        create_notification(
+            db,
+            requester.id,
+            "friend_request_accepted" if accept else "friend_request_rejected",
+            "친구 신청 수락" if accept else "친구 신청 거절",
+            f"{user.nickname}님이 친구 신청을 {'수락' if accept else '거절'}했습니다.",
+        )
+    return row
+
+
+def remove_friend(db: Session, user_id: int, friend_id: int):
+    row = _friendship_between(db, user_id, friend_id)
+    if not row or row.status != "accepted":
+        return "NOT_FOUND"
+    row.status = "rejected"
+    db.commit()
+    return True
+
+
+def list_friend_messages(db: Session, user_id: int, friend_id: int):
+    if not are_friends(db, user_id, friend_id):
+        return "NOT_FRIENDS"
+    return (
+        db.query(models.FriendMessage)
+        .filter(
+            (
+                (models.FriendMessage.sender_id == user_id)
+                & (models.FriendMessage.recipient_id == friend_id)
+            )
+            | (
+                (models.FriendMessage.sender_id == friend_id)
+                & (models.FriendMessage.recipient_id == user_id)
+            )
+        )
+        .order_by(models.FriendMessage.created_at.asc(), models.FriendMessage.id.asc())
+        .all()
+    )
+
+
+def create_friend_message(db: Session, sender: models.User, friend_id: int, content: str):
+    friend = db.query(models.User).filter(models.User.id == friend_id).first()
+    if not friend:
+        return "USER_NOT_FOUND"
+    if not are_friends(db, sender.id, friend_id):
+        return "NOT_FRIENDS"
+    msg = models.FriendMessage(
+        sender_id=sender.id,
+        recipient_id=friend_id,
+        content=content,
+    )
+    db.add(msg)
+    db.commit()
+    db.refresh(msg)
+    create_notification(
+        db,
+        friend_id,
+        "friend_message_received",
+        "친구 메시지 도착",
+        f"{sender.nickname}님이 메시지를 보냈습니다.",
+    )
+    return msg
+
+
+def get_friend_matches(db: Session, user_id: int, friend_id: int):
+    friend = db.query(models.User).filter(models.User.id == friend_id).first()
+    if not friend:
+        return "USER_NOT_FOUND"
+    if not are_friends(db, user_id, friend_id):
+        return "NOT_FRIENDS"
+    now = datetime.now()
+    upcoming = []
+    for match in get_user_matches(db, friend.nickname):
+        if match.cancelled:
+            continue
+        try:
+            match_start = datetime.fromisoformat(f"{match.date}T{match.startTime}:00")
+        except (TypeError, ValueError):
+            continue
+        if match_start > now:
+            upcoming.append(match)
+    return upcoming

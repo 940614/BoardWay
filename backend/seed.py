@@ -108,6 +108,11 @@ def seed_db(force_reset=False):
 
     if force_reset:
         print("기존 데이터를 초기화합니다...")
+        db.query(models.FriendMessage).delete()
+        db.query(models.Friendship).delete()
+        db.query(models.Suggestion).delete()
+        db.query(models.Notification).delete()
+        db.query(models.ConsumedPayment).delete()
         db.query(models.Message).delete()
         db.query(models.Review).delete()
         db.query(models.PointHistory).delete()

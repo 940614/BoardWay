@@ -303,7 +303,7 @@ export const AuthProvider = ({ children }) => {
   return (
     <AuthContext.Provider value={{
       user, token, loading, login, signup, logout, fetchUserInfo,
-      points, pointHistory, rechargePoints, verifyAndRechargePoints, usePoints,
+      points, pointHistory, loadUserPointHistory, rechargePoints, verifyAndRechargePoints, usePoints,
       reviewedMatches, submitMatchReviews,
       notifications, loadNotifications, markNotificationRead, markAllNotificationsRead,
     }}>

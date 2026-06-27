@@ -17,6 +17,10 @@ import MatchReviewScreen from '../screens/MatchReviewScreen';
 import CreateMatchScreen from '../screens/CreateMatchScreen';
 import NotificationsScreen from '../screens/NotificationsScreen';
 import PaymentWebViewScreen from '../screens/PaymentWebViewScreen';
+import CustomerSupportScreen from '../screens/CustomerSupportScreen';
+import FriendsScreen from '../screens/FriendsScreen';
+import FriendChatScreen from '../screens/FriendChatScreen';
+import FriendMatchesScreen from '../screens/FriendMatchesScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -42,6 +46,10 @@ export default function AppNavigator() {
       <Stack.Screen name="CreateMatch" component={CreateMatchScreen} options={{ animation: 'slide_from_bottom' }} />
       <Stack.Screen name="Notifications" component={NotificationsScreen} options={{ animation: 'slide_from_right' }} />
       <Stack.Screen name="PaymentWebView" component={PaymentWebViewScreen} options={{ animation: 'slide_from_bottom' }} />
+      <Stack.Screen name="CustomerSupport" component={CustomerSupportScreen} options={{ animation: 'slide_from_right' }} />
+      <Stack.Screen name="Friends" component={FriendsScreen} options={{ animation: 'slide_from_right' }} />
+      <Stack.Screen name="FriendChat" component={FriendChatScreen} options={{ animation: 'slide_from_right' }} />
+      <Stack.Screen name="FriendMatches" component={FriendMatchesScreen} options={{ animation: 'slide_from_right' }} />
       <Stack.Screen 
         name="MatchConfirmation" 
         component={MatchConfirmationScreen} 

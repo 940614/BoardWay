@@ -1,6 +1,7 @@
 import React, { useState, useContext, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal, SafeAreaView, ActivityIndicator, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { colors } from '../theme/colors';
 import { commonStyles } from '../theme/styles';
 import { MatchContext } from '../context/MatchContext';
@@ -8,6 +9,8 @@ import { AuthContext } from '../context/AuthContext';
 import { notify, confirmAction } from '../utils/dialog';
 import YoutubePlayer from "react-native-youtube-iframe";
 import { WebView } from 'react-native-webview';
+
+const hiddenChatKey = (userId) => `hiddenMatchChats:${userId || 'guest'}`;
 
 // 지도/유튜브 임베드 — 웹에선 iframe, 모바일은 기존 라이브러리.
 // Platform.OS 분기로 보호되어 모바일에선 iframe 코드가 호출되지 않음.
@@ -127,11 +130,30 @@ export default function MatchDetailScreen({ route, navigation }) {
   const isFull = match.participants.length >= match.maxPlayers;
   const isCancelled = !!match.cancelled;
   const isAdmin = !!user?.is_admin;
+  const isHost = user && match.host === user.nickname;
+
+  const openChatRoom = async () => {
+    if (user) {
+      try {
+        const key = hiddenChatKey(user.id || user.email || user.nickname);
+        const saved = await AsyncStorage.getItem(key);
+        const hiddenIds = saved ? JSON.parse(saved) : [];
+        const next = hiddenIds.filter((id) => id !== match.id);
+        await AsyncStorage.setItem(key, JSON.stringify(next));
+      } catch (error) {}
+    }
+    navigation.navigate('ChatRoom', { match });
+  };
 
   const handleCancelMatch = () => {
+    const title = isHost ? '매치 취소 (방장)' : '매치 취소';
+    const message = isHost
+      ? `방장 권한으로 이 매치를 취소하시겠습니까?\n\n⚠️ 방장 책임 규정에 따라 개설 시 차감된 참여비(12,000P)는 환불되지 않습니다.\n(참여자 ${match.participants.length - 1}명에게는 전액 자동 환불됩니다.)`
+      : `이 매치를 취소하시겠습니까?\n참여자 ${match.participants.length}명에게 12,000P 씩 자동 환불됩니다.`;
+
     confirmAction(
-      '매치 취소',
-      `이 매치를 취소하시겠습니까?\n참여자 ${match.participants.length}명에게 12,000P 씩 자동 환불됩니다.`,
+      title,
+      message,
       async () => {
         const result = await cancelMatch(match.id);
         if (result.success) {
@@ -158,6 +180,10 @@ export default function MatchDetailScreen({ route, navigation }) {
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.gameSection}>
           <Text style={styles.matchDate}>{match.date} {match.startTime}</Text>
+          <View style={styles.durationPill}>
+            <Ionicons name="time-outline" size={15} color={colors.primary} />
+            <Text style={styles.durationPillText}>정규 진행 시간 2시간</Text>
+          </View>
           <Text style={styles.matchTitle}>
             {match.is_flexible ? '🎲 모여서 게임 선택 (자율 매칭)' : match.games.join(' ➔ ')}
           </Text>
@@ -250,12 +276,24 @@ export default function MatchDetailScreen({ route, navigation }) {
       </ScrollView>
 
       <View style={styles.footer}>
-        {isAdmin && !isCancelled && (
+        {isAlreadyJoined && !isCancelled && (
+          <TouchableOpacity
+            style={[commonStyles.button, styles.chatRoomBtn]}
+            onPress={openChatRoom}
+          >
+            <Ionicons name="chatbubbles-outline" size={18} color="#FFFFFF" style={{ marginRight: 6 }} />
+            <Text style={commonStyles.buttonText}>채팅방 들어가기</Text>
+          </TouchableOpacity>
+        )}
+
+        {(isAdmin || isHost) && !isCancelled && !match.completed && (
           <TouchableOpacity
             style={[commonStyles.button, styles.cancelMatchBtn]}
             onPress={handleCancelMatch}
           >
-            <Text style={commonStyles.buttonText}>매치 취소 (운영진)</Text>
+            <Text style={commonStyles.buttonText}>
+              {isAdmin ? '매치 취소 (운영진)' : '매치 취소 (방장)'}
+            </Text>
           </TouchableOpacity>
         )}
         <TouchableOpacity
@@ -316,6 +354,12 @@ export default function MatchDetailScreen({ route, navigation }) {
                 <Text style={styles.paymentTotalLabel}>결제 후 잔액</Text>
                 <Text style={styles.paymentTotalValue}>
                   {user?.is_admin ? '무한 P' : `${(points - 12000).toLocaleString()} P`}
+                </Text>
+              </View>
+              <View style={styles.durationNoticeBox}>
+                <Ionicons name="time-outline" size={16} color={colors.primary} />
+                <Text style={styles.durationNoticeText}>
+                  모든 매칭의 정규 진행 시간은 시작 시각부터 2시간입니다. 더 즐기고 싶다면 참여자끼리 협의하여 자유롭게 연장할 수 있습니다.
                 </Text>
               </View>
             </View>
@@ -380,6 +424,22 @@ const styles = StyleSheet.create({
     color: colors.primary,
     fontWeight: 'bold',
     marginBottom: 8,
+  },
+  durationPill: {
+    alignSelf: 'flex-start',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    backgroundColor: colors.primary + '12',
+    borderRadius: 14,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    marginBottom: 10,
+  },
+  durationPillText: {
+    color: colors.primary,
+    fontSize: 12,
+    fontWeight: 'bold',
   },
   matchTitle: {
     fontSize: 24,
@@ -540,6 +600,21 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     marginBottom: 24,
   },
+  durationNoticeBox: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 7,
+    backgroundColor: colors.primary + '10',
+    borderRadius: 10,
+    padding: 10,
+    marginTop: 12,
+  },
+  durationNoticeText: {
+    flex: 1,
+    color: colors.text,
+    fontSize: 13,
+    lineHeight: 18,
+  },
   paymentRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -601,6 +676,10 @@ const styles = StyleSheet.create({
   },
   cancelMatchBtn: {
     backgroundColor: colors.error,
+    marginBottom: 12,
+  },
+  chatRoomBtn: {
+    flexDirection: 'row',
     marginBottom: 12,
   },
   flexibleNoticeBox: {

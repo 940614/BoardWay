@@ -14,7 +14,7 @@ export const MatchProvider = ({ children }) => {
   const fetchMatches = async () => {
     setError(null);
     try {
-      const response = await apiFetch('/matches');
+      const response = await apiFetch('/matches', token ? { token } : {});
       if (!response.ok) throw new Error(`서버 응답 오류 (${response.status})`);
       const data = await response.json();
       setMatches(data.matches || []);
@@ -28,7 +28,7 @@ export const MatchProvider = ({ children }) => {
 
   useEffect(() => {
     fetchMatches();
-  }, []);
+  }, [token]);
 
   const fetchMatchById = async (matchId) => {
     try {
@@ -83,6 +83,7 @@ export const MatchProvider = ({ children }) => {
         const data = await response.json();
         await fetchMatches();
         if (loadNotifications) await loadNotifications();
+        if (fetchUserInfo) await fetchUserInfo(token);
         return { success: true, message: data.message };
       } else if (response.status === 401) {
         await logout();
@@ -91,6 +92,31 @@ export const MatchProvider = ({ children }) => {
         const errorData = await response.json().catch(() => ({}));
         return { success: false, message: errorData.detail || '매치 취소에 실패했습니다.' };
       }
+    } catch (e) {
+      return { success: false, message: '서버와 통신할 수 없습니다.' };
+    }
+  };
+
+  const completeMatch = async (matchId) => {
+    if (!token) return { success: false, message: '로그인이 필요합니다.' };
+
+    try {
+      const response = await apiFetch(`/matches/${matchId}/complete`, {
+        method: 'POST',
+        token,
+      });
+      const data = await response.json().catch(() => ({}));
+
+      if (response.ok) {
+        await fetchMatches();
+        if (loadNotifications) await loadNotifications();
+        return { success: true, message: data.message };
+      }
+      if (response.status === 401) {
+        await logout();
+        return { success: false, message: '세션이 만료되었습니다.' };
+      }
+      return { success: false, message: data.detail || '매칭 완료 처리에 실패했습니다.' };
     } catch (e) {
       return { success: false, message: '서버와 통신할 수 없습니다.' };
     }
@@ -124,7 +150,7 @@ export const MatchProvider = ({ children }) => {
   };
 
   return (
-    <MatchContext.Provider value={{ matches, joinMatch, leaveMatch, cancelMatch, loading, error, fetchMatches, fetchMatchById }}>
+    <MatchContext.Provider value={{ matches, joinMatch, leaveMatch, cancelMatch, completeMatch, loading, error, fetchMatches, fetchMatchById }}>
       {children}
     </MatchContext.Provider>
   );

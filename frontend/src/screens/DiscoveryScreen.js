@@ -31,7 +31,7 @@ export default function DiscoveryScreen({ navigation }) {
   const dateList = useMemo(() => {
     const list = [];
     const weekDays = ['일', '월', '화', '수', '목', '금', '토'];
-    for (let i = 0; i < 14; i++) {
+    for (let i = 0; i < 10; i++) {
       const d = new Date();
       d.setDate(d.getDate() + i);
       list.push({
@@ -103,48 +103,51 @@ export default function DiscoveryScreen({ navigation }) {
   const renderMatchCard = ({ item }) => {
     const isFull = item.participants.length >= item.maxPlayers;
     const isMyMatch = user && item.participants.some(p => p.nickname === user.nickname);
+    const friendParticipants = item.friend_participants || [];
     
     // 시작 여부 체크
     const matchStart = new Date(`${item.date}T${item.startTime}:00`);
     const now = new Date();
     const isStarted = now > matchStart;
+    const isClosed = isFull || isStarted;
     
     return (
       <TouchableOpacity 
         style={[
           commonStyles.card, 
-          (isFull || isStarted) && styles.cardFull,
-          item.is_flexible && { borderLeftColor: '#9B59B6', backgroundColor: '#FDFBFF' }
+          isClosed && styles.cardFull,
+          item.is_flexible && { borderLeftColor: '#9B59B6', backgroundColor: isClosed ? '#EAEAEA' : '#FDFBFF' }
         ]}
-        onPress={() => !(isFull || isStarted) && navigation.navigate('MatchDetail', { matchId: item.id })}
-        activeOpacity={(isFull || isStarted) ? 1 : 0.8}
+        onPress={() => !isClosed && navigation.navigate('MatchDetail', { matchId: item.id })}
+        activeOpacity={isClosed ? 1 : 0.8}
       >
-        {isFull && (
+        {isClosed && (
           <View style={styles.overlayFull}>
-            <Text style={styles.overlayFullText}>매치마감</Text>
+            <Text style={styles.overlayFullText}>신청 마감</Text>
           </View>
         )}
 
-        {!isFull && isStarted && (
-          <View style={styles.overlayFull}>
-            <Text style={[styles.overlayFullText, { color: colors.textLight }]}>진행중</Text>
-          </View>
-        )}
+
         
         <View style={styles.cardHeader}>
           {item.is_flexible ? (
             <View style={{ flex: 1 }}>
-              <View style={[styles.flexibleBadge, isFull && { backgroundColor: colors.textLight }]}>
+              <View style={[styles.flexibleBadge, isClosed && { backgroundColor: colors.textLight }]}>
                 <Text style={styles.flexibleBadgeText}>자율성 매치</Text>
               </View>
-              <Text style={[styles.gameName, isFull && styles.textFull, { color: '#9B59B6', marginTop: 4 }]} numberOfLines={2}>
+              <Text style={[styles.gameName, isClosed && styles.textFull, { color: isClosed ? '#888888' : '#9B59B6', marginTop: 4 }]} numberOfLines={2}>
                 🎲 모여서 게임 선택
               </Text>
             </View>
           ) : (
-            <Text style={[styles.gameName, isFull && styles.textFull]} numberOfLines={2}>
+            <Text style={[styles.gameName, isClosed && styles.textFull]} numberOfLines={2}>
               {item.games.join(' ➔ ')}
             </Text>
+          )}
+          {isClosed && (
+            <View style={styles.closedBadge}>
+              <Text style={styles.closedBadgeText}>신청 마감</Text>
+            </View>
           )}
           {item.host && (
             <View style={styles.hostBadgeCard}>
@@ -156,20 +159,25 @@ export default function DiscoveryScreen({ navigation }) {
               <Text style={styles.myMatchBadgeText}>✓ 내 매치</Text>
             </View>
           )}
-          <Text style={[styles.difficulty, isFull && styles.textFull]}>난이도: {item.difficulty}</Text>
+          {!isMyMatch && friendParticipants.length > 0 && (
+            <View style={styles.friendMatchBadge}>
+              <Text style={styles.friendMatchBadgeText}>친구가 신청한 매칭</Text>
+            </View>
+          )}
+          <Text style={[styles.difficulty, isClosed && styles.textFull]}>난이도: {item.difficulty}</Text>
         </View>
         
         <View style={styles.locationContainer}>
           <Ionicons name="location-outline" size={16} color={colors.textLight} style={{ marginRight: 4 }} />
-          <Text style={[styles.locationText, isFull && styles.textFull]} numberOfLines={1}>
+          <Text style={[styles.locationText, isClosed && styles.textFull]} numberOfLines={1}>
             {item.location.venue} {item.location.branch}
           </Text>
         </View>
 
         <View style={styles.tagsContainer}>
           {item.tags.map((tag, index) => (
-            <View key={index} style={[styles.tag, isFull && styles.tagFull]}>
-              <Text style={[styles.tagText, isFull && styles.textFull]}>{tag}</Text>
+            <View key={index} style={[styles.tag, isClosed && styles.tagFull]}>
+              <Text style={[styles.tagText, isClosed && styles.textFull]}>{tag}</Text>
             </View>
           ))}
         </View>
@@ -177,11 +185,11 @@ export default function DiscoveryScreen({ navigation }) {
         <View style={styles.cardFooter}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
             <Ionicons name="time-outline" size={16} color={colors.textLight} />
-            <Text style={[styles.timeText, isFull && styles.textFull]}>시작: {item.startTime}</Text>
+            <Text style={[styles.timeText, isClosed && styles.textFull]}>시작: {item.startTime} · 정규 2시간</Text>
           </View>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-            <Ionicons name="people-outline" size={16} color={isFull ? colors.textLight : colors.primary} />
-            <Text style={[styles.playersText, isFull && styles.textFull, { color: isFull ? colors.textLight : colors.primary }]}>모집: {item.participants.length}/{item.maxPlayers}명 (최소 {item.minPlayers || 3}명)</Text>
+            <Ionicons name="people-outline" size={16} color={isClosed ? colors.textLight : colors.primary} />
+            <Text style={[styles.playersText, isClosed && styles.textFull, { color: isClosed ? colors.textLight : colors.primary }]}>모집: {item.participants.length}/{item.maxPlayers}명 (최소 {item.minPlayers || 3}명)</Text>
           </View>
         </View>
       </TouchableOpacity>
@@ -571,6 +579,18 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: 'bold',
   },
+  closedBadge: {
+    backgroundColor: '#FDECEA',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+    alignSelf: 'center',
+  },
+  closedBadgeText: {
+    color: colors.error,
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
   myMatchBadge: {
     backgroundColor: '#E8F5E9',
     paddingHorizontal: 8,
@@ -580,6 +600,18 @@ const styles = StyleSheet.create({
   },
   myMatchBadgeText: {
     color: '#2E7D32',
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
+  friendMatchBadge: {
+    backgroundColor: '#EAF3FF',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+    alignSelf: 'center',
+  },
+  friendMatchBadgeText: {
+    color: colors.primary,
     fontSize: 12,
     fontWeight: 'bold',
   },

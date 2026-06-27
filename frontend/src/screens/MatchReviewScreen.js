@@ -22,14 +22,21 @@ export default function MatchReviewScreen({ route, navigation }) {
   };
 
   const handleSubmit = async () => {
-    // 시간 체크 (종료 후 30분 이내인지)
-    const matchStart = new Date(`${match.date}T${match.startTime}:00`);
-    const matchEnd = new Date(matchStart.getTime() + 2 * 60 * 60 * 1000); 
-    const reviewDeadline = new Date(matchEnd.getTime() + 30 * 60 * 1000);
+    // 방장이 완료 처리한 시점부터 30분 동안만 평가 가능
+    const completedAt = match.completed_at ? new Date(match.completed_at) : null;
+    const reviewDeadline = completedAt
+      ? new Date(completedAt.getTime() + 30 * 60 * 1000)
+      : null;
     const now = new Date();
 
+    if (!completedAt) {
+      notify('평가 대기', '방장이 매칭 완료를 확인한 뒤 평가할 수 있습니다.');
+      navigation.goBack();
+      return;
+    }
+
     if (now > reviewDeadline) {
-      notify('리뷰 기간 만료', '매치 종료 후 30분이 경과하여 리뷰를 남길 수 없습니다. (매너 주사위 및 리워드에 반영되지 않습니다)');
+      notify('리뷰 기간 만료', '매칭 완료 후 30분이 경과하여 리뷰를 남길 수 없습니다. (매너 주사위 및 리워드에 반영되지 않습니다)');
       navigation.goBack();
       return;
     }

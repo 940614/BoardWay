@@ -19,7 +19,7 @@ LocaleConfig.locales['kr'] = {
 LocaleConfig.defaultLocale = 'kr';
 
 export default function MyMatchesScreen({ navigation }) {
-  const { matches, leaveMatch } = useContext(MatchContext);
+  const { matches, leaveMatch, cancelMatch, completeMatch } = useContext(MatchContext);
   const { user, reviewedMatches } = useContext(AuthContext);
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
 
@@ -65,6 +65,38 @@ export default function MyMatchesScreen({ navigation }) {
         }
       },
       { confirmText: '취소하기', destructive: true },
+    );
+  };
+
+  const handleHostCancel = (match) => {
+    confirmAction(
+      '매치 취소 (방장)',
+      `방장 권한으로 이 매치를 취소하시겠습니까?\n\n⚠️ 방장 책임 규정에 따라 개설 시 차감된 참여비(12,000P)는 환불되지 않습니다.\n(참여자 ${match.participants.length - 1}명에게는 전액 자동 환불됩니다.)`,
+      async () => {
+        const result = await cancelMatch(match.id);
+        if (result.success) {
+          notify('취소 완료', result.message || '매치가 취소되었습니다.');
+        } else {
+          notify('오류', result.message);
+        }
+      },
+      { confirmText: '취소하기', destructive: true },
+    );
+  };
+
+  const handleCompleteMatch = (match) => {
+    confirmAction(
+      '매칭 완료 확인',
+      '모임이 정상적으로 끝났나요? 완료 처리하면 지금부터 30분 동안 모든 참여자의 상호 매너 평가가 시작됩니다.',
+      async () => {
+        const result = await completeMatch(match.id);
+        if (result.success) {
+          notify('완료 처리', result.message || '상호 매너 평가가 시작되었습니다.');
+        } else {
+          notify('오류', result.message);
+        }
+      },
+      { confirmText: '완료하고 평가 시작' },
     );
   };
 
@@ -123,12 +155,16 @@ export default function MyMatchesScreen({ navigation }) {
 
     const matchStart = new Date(`${item.date}T${item.startTime}:00`);
     const matchEnd = new Date(matchStart.getTime() + 2 * 60 * 60 * 1000);
-    const reviewDeadline = new Date(matchEnd.getTime() + 30 * 60 * 1000);
+    const completedAt = item.completed_at ? new Date(item.completed_at) : null;
+    const reviewDeadline = completedAt
+      ? new Date(completedAt.getTime() + 30 * 60 * 1000)
+      : null;
     const now = new Date();
 
-    const isPastMatch = now > matchEnd;
-    const isWithinWindow = now >= matchEnd && now <= reviewDeadline;
+    const isPastMatch = now >= matchEnd;
+    const isWithinWindow = !!completedAt && now <= reviewDeadline;
     const isBeforeStart = now < matchStart;
+    const isHost = user && item.host === user.nickname;
 
     return (
       <View style={styles.matchItemContainer}>
@@ -157,6 +193,17 @@ export default function MyMatchesScreen({ navigation }) {
           </View>
         ) : isBeforeStart ? (
           (() => {
+            if (isHost) {
+              return (
+                <TouchableOpacity
+                  style={[styles.reviewBtn, styles.leaveBtn]}
+                  onPress={() => handleHostCancel(item)}
+                >
+                  <Ionicons name="close-circle-outline" size={16} color={colors.error} />
+                  <Text style={styles.leaveBtnText}>매치 취소 (환불 불가)</Text>
+                </TouchableOpacity>
+              );
+            }
             let refundText = "참여 취소 (12,000P 환불)";
             if (user && item.participants) {
               const myPart = item.participants.find(p => p.nickname === user.nickname);
@@ -184,25 +231,41 @@ export default function MyMatchesScreen({ navigation }) {
               </TouchableOpacity>
             );
           })()
-        ) : isPastMatch && (
-          isReviewed ? (
-            <View style={[styles.reviewBtn, styles.reviewedBtn]}>
-              <Ionicons name="checkmark-circle-outline" size={16} color={colors.textLight} />
-              <Text style={styles.reviewedBtnText}>리뷰 완료</Text>
-            </View>
-          ) : isWithinWindow ? (
+        ) : !isPastMatch ? (
+          <View style={[styles.reviewBtn, styles.waitingBtn]}>
+            <Text style={styles.waitingBtnText}>매치 진행 중...</Text>
+          </View>
+        ) : !item.completed ? (
+          isHost ? (
             <TouchableOpacity
-              style={styles.reviewBtn}
-              onPress={() => navigation.navigate('MatchReview', { match: item })}
+              style={[styles.reviewBtn, styles.completeBtn]}
+              onPress={() => handleCompleteMatch(item)}
             >
-              <Ionicons name="star" size={16} color="#FFFFFF" />
-              <Text style={styles.reviewBtnText}>리뷰 남기기 (제한시간 30분)</Text>
+              <Ionicons name="checkmark-done-circle" size={18} color="#FFFFFF" />
+              <Text style={styles.reviewBtnText}>매칭 성공적으로 완료</Text>
             </TouchableOpacity>
           ) : (
             <View style={[styles.reviewBtn, styles.waitingBtn]}>
-              <Text style={styles.waitingBtnText}>매치 진행 중...</Text>
+              <Text style={styles.waitingBtnText}>방장의 매칭 완료 확인을 기다리는 중...</Text>
             </View>
           )
+        ) : isReviewed ? (
+          <View style={[styles.reviewBtn, styles.reviewedBtn]}>
+            <Ionicons name="checkmark-circle-outline" size={16} color={colors.textLight} />
+            <Text style={styles.reviewedBtnText}>리뷰 완료</Text>
+          </View>
+        ) : isWithinWindow ? (
+          <TouchableOpacity
+            style={styles.reviewBtn}
+            onPress={() => navigation.navigate('MatchReview', { match: item })}
+          >
+            <Ionicons name="star" size={16} color="#FFFFFF" />
+            <Text style={styles.reviewBtnText}>매너 평가하기 (완료 후 30분)</Text>
+          </TouchableOpacity>
+        ) : (
+          <View style={[styles.reviewBtn, styles.waitingBtn]}>
+            <Text style={styles.waitingBtnText}>매너 평가 시간이 종료되었습니다.</Text>
+          </View>
         )}
       </View>
     );
@@ -352,6 +415,9 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontWeight: 'bold',
     fontSize: 14,
+  },
+  completeBtn: {
+    backgroundColor: colors.success,
   },
   reviewedBtn: {
     backgroundColor: '#F5F5F5',

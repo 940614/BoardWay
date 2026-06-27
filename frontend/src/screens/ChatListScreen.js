@@ -1,19 +1,60 @@
-import React, { useContext } from 'react';
+import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { View, Text, StyleSheet, SafeAreaView, FlatList, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { colors } from '../theme/colors';
 import { commonStyles } from '../theme/styles';
 import { MatchContext } from '../context/MatchContext';
 import { AuthContext } from '../context/AuthContext';
+import { confirmAction, notify } from '../utils/dialog';
+
+const hiddenChatKey = (userId) => `hiddenMatchChats:${userId || 'guest'}`;
 
 export default function ChatListScreen({ navigation }) {
   const { matches } = useContext(MatchContext);
   const { user } = useContext(AuthContext);
+  const [hiddenChatIds, setHiddenChatIds] = useState([]);
+
+  const loadHiddenChats = useCallback(async () => {
+    if (!user) {
+      setHiddenChatIds([]);
+      return;
+    }
+    try {
+      const saved = await AsyncStorage.getItem(hiddenChatKey(user.id || user.email || user.nickname));
+      setHiddenChatIds(saved ? JSON.parse(saved) : []);
+    } catch (error) {
+      setHiddenChatIds([]);
+    }
+  }, [user]);
+
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('focus', loadHiddenChats);
+    loadHiddenChats();
+    return unsubscribe;
+  }, [navigation, loadHiddenChats]);
+
+  const hideChatRoom = (match) => {
+    confirmAction(
+      '채팅방 나가기',
+      '이 채팅방에서 나갈까요? 채팅 기록은 삭제되지 않으며, 매칭 상세 페이지에서 다시 들어올 수 있습니다.',
+      async () => {
+        const next = Array.from(new Set([...hiddenChatIds, match.id]));
+        setHiddenChatIds(next);
+        await AsyncStorage.setItem(hiddenChatKey(user.id || user.email || user.nickname), JSON.stringify(next));
+        notify('채팅방 나가기 완료', '채팅방에서 나갔습니다. 매칭 상세 페이지에서 다시 들어올 수 있어요.');
+      },
+      { confirmText: '나가기', destructive: true },
+    );
+  };
 
   // 내가 참여 중인 매치만 필터링
-  const myMatches = matches.filter(match => 
-    user && match.participants.some(p => p.nickname === user.nickname)
+  const participatingMatches = matches.filter(match =>
+    user
+    && match.participants.some(p => p.nickname === user.nickname)
   );
+  const myMatches = participatingMatches.filter(match => !hiddenChatIds.includes(match.id));
+  const hasHiddenChats = participatingMatches.length > 0 && myMatches.length === 0;
 
   const renderChatItem = ({ item }) => (
     <TouchableOpacity 
@@ -42,6 +83,13 @@ export default function ChatListScreen({ navigation }) {
       <View style={styles.badge}>
         <Text style={styles.badgeText}>{item.participants.length}</Text>
       </View>
+      <TouchableOpacity
+        style={styles.deleteChatBtn}
+        onPress={() => hideChatRoom(item)}
+        hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+      >
+        <Ionicons name="exit-outline" size={18} color={colors.error} />
+      </TouchableOpacity>
     </TouchableOpacity>
   );
 
@@ -61,7 +109,9 @@ export default function ChatListScreen({ navigation }) {
       ) : (
         <View style={styles.emptyContainer}>
           <Ionicons name="chatbubbles-outline" size={80} color={colors.border} />
-          <Text style={styles.emptyText}>참여 중인 매치가 없습니다.</Text>
+          <Text style={styles.emptyText}>
+            {hasHiddenChats ? '나간 채팅방은 매칭 상세 페이지에서 다시 들어갈 수 있습니다.' : '참여 중인 매치가 없습니다.'}
+          </Text>
           <TouchableOpacity 
             style={styles.goMatchBtn}
             onPress={() => navigation.navigate('Discovery')}
@@ -167,6 +217,15 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 10,
     fontWeight: 'bold',
+  },
+  deleteChatBtn: {
+    marginLeft: 8,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#FDECEA',
   },
   chatHostBadge: {
     backgroundColor: '#FFF9E6',

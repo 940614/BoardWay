@@ -94,6 +94,8 @@ class Match(Base):
     created_by_user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
     cancelled = Column(Boolean, default=False, nullable=False)
     is_flexible = Column(Boolean, default=False, nullable=False)
+    completed = Column(Boolean, default=False, nullable=False)
+    completed_at = Column(DateTime, nullable=True)
 
     participants = relationship("MatchParticipant", back_populates="match", cascade="all, delete-orphan")
 
@@ -140,3 +142,43 @@ class MatchParticipant(Base):
     joined_at = Column(DateTime, default=datetime.now, nullable=False)
 
     match = relationship("Match", back_populates="participants")
+
+
+class Suggestion(Base):
+    __tablename__ = "suggestions"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    category = Column(String, nullable=False)
+    content = Column(String, nullable=False)
+    admin_reply = Column(String, nullable=True)
+    answered_at = Column(DateTime(timezone=True), nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+
+
+class Friendship(Base):
+    __tablename__ = "friendships"
+
+    id = Column(Integer, primary_key=True, index=True)
+    requester_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    addressee_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    status = Column(String, nullable=False, default="pending")  # pending | accepted | rejected
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    responded_at = Column(DateTime(timezone=True), nullable=True)
+
+    requester = relationship("User", foreign_keys=[requester_id])
+    addressee = relationship("User", foreign_keys=[addressee_id])
+
+
+class FriendMessage(Base):
+    __tablename__ = "friend_messages"
+
+    id = Column(Integer, primary_key=True, index=True)
+    sender_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    recipient_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    content = Column(String, nullable=False)
+    read = Column(Boolean, default=False, nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+
+    sender = relationship("User", foreign_keys=[sender_id])
+    recipient = relationship("User", foreign_keys=[recipient_id])

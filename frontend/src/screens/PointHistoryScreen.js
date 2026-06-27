@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useContext, useEffect } from 'react';
 import { View, Text, StyleSheet, SafeAreaView, FlatList, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../theme/colors';
@@ -6,27 +6,35 @@ import { commonStyles } from '../theme/styles';
 import { AuthContext } from '../context/AuthContext';
 
 export default function PointHistoryScreen({ navigation }) {
-  const { pointHistory } = useContext(AuthContext);
+  const { pointHistory, loadUserPointHistory } = useContext(AuthContext);
+
+  useEffect(() => {
+    loadUserPointHistory?.();
+  }, []);
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     return `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, '0')}.${String(date.getDate()).padStart(2, '0')} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
   };
 
-  const renderHistoryItem = ({ item }) => (
-    <View style={styles.historyItem}>
-      <View style={styles.itemLeft}>
-        <Text style={styles.itemType}>{item.type}</Text>
-        <Text style={styles.itemDate}>{formatDate(item.date)}</Text>
+  const renderHistoryItem = ({ item }) => {
+    const isPlus = item.type === '충전' || item.description?.includes('리워드');
+
+    return (
+      <View style={styles.historyItem}>
+        <View style={styles.itemLeft}>
+          <Text style={styles.itemType}>{item.type}</Text>
+          <Text style={styles.itemDate}>{formatDate(item.date)}</Text>
+        </View>
+        <View style={styles.itemRight}>
+          <Text style={[styles.itemAmount, isPlus ? styles.plusAmount : styles.minusAmount]}>
+            {isPlus ? '+' : '-'}{item.amount.toLocaleString()} P
+          </Text>
+          <Text style={styles.itemDescription}>{item.description}</Text>
+        </View>
       </View>
-      <View style={styles.itemRight}>
-        <Text style={[styles.itemAmount, item.type === '충전' ? styles.plusAmount : styles.minusAmount]}>
-          {item.type === '충전' ? '+' : '-'}{item.amount.toLocaleString()} P
-        </Text>
-        <Text style={styles.itemDescription}>{item.description}</Text>
-      </View>
-    </View>
-  );
+    );
+  };
 
   return (
     <SafeAreaView style={commonStyles.container}>

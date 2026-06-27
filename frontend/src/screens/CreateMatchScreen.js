@@ -55,6 +55,15 @@ function todayISO() {
   return `${year}-${month}-${day}`;
 }
 
+function maxBookableDateISO() {
+  const d = new Date();
+  d.setDate(d.getDate() + 9);
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
 function tomorrowISO() {
   const d = new Date();
   d.setDate(d.getDate() + 1);
@@ -222,15 +231,20 @@ export default function CreateMatchScreen({ navigation }) {
       return;
     }
 
+    if (date < todayISO() || date > maxBookableDateISO()) {
+      notify('알림', '매칭은 오늘부터 10일 이내 날짜로만 생성할 수 있습니다.');
+      return;
+    }
+
     if (date === todayISO()) {
       const now = new Date();
       const currentHour = now.getHours();
       const currentMinute = now.getMinutes();
       const [slotHour, slotMinute] = startTime.split(':').map(Number);
-      
+
       const currentTotalMinutes = currentHour * 60 + currentMinute;
       const slotTotalMinutes = slotHour * 60 + slotMinute;
-      
+
       if (slotTotalMinutes - currentTotalMinutes < 30) {
         notify('알림', '당일 매치는 현재 시간보다 최소 30분 이후의 시간대만 선택 가능합니다.');
         return;
@@ -551,6 +565,11 @@ export default function CreateMatchScreen({ navigation }) {
               </View>
 
               <View style={styles.ruleItem}>
+                <Text style={styles.ruleTitle}>⏱️ 정규 진행 시간 2시간</Text>
+                <Text style={styles.ruleDesc}>모든 매칭의 정규 진행 시간은 시작 시각부터 2시간입니다. 더 즐기고 싶다면 참여자끼리 협의하여 자유롭게 연장할 수 있으며, 정규 시간이 지난 뒤 방장은 '매칭 성공적으로 완료' 버튼을 눌러 참여자 평가를 시작할 수 있습니다.</Text>
+              </View>
+
+              <View style={styles.ruleItem}>
                 <Text style={styles.ruleTitle}>🎲 설명 및 게임 리드</Text>
                 <Text style={styles.ruleDesc}>참여자들에게 게임의 룰을 상냥하고 명확히 설명해 주고, 초보자 분들도 낙오되지 않도록 게임 테이블의 분위기를 지탱해 주세요.</Text>
               </View>
@@ -558,6 +577,11 @@ export default function CreateMatchScreen({ navigation }) {
               <View style={styles.ruleItem}>
                 <Text style={styles.ruleTitle}>🎁 우수 방장 리워드 (3,000P 반환)</Text>
                 <Text style={styles.ruleDesc}>매칭이 종료된 후, 참여자들로부터 받은 매너 주사위 평가 평균이 4.0점 이상일 경우 감사 리워드로 3,000P를 페이백 해드립니다.</Text>
+              </View>
+
+              <View style={styles.ruleItem}>
+                <Text style={styles.ruleTitle}>⚠️ 매치 취소 시 포인트 환불 불가</Text>
+                <Text style={styles.ruleDesc}>개설 완료된 매칭을 방장의 자발적 취소로 취소하는 경우, 모임에 대한 책임감을 부여하고 다른 참여자를 보호하기 위해 개설 시 차감된 참여비(12,000P)는 환불되지 않습니다. (최소 인원 미달로 인한 자동 취소 시에는 전액 환불됩니다.)</Text>
               </View>
             </ScrollView>
 
@@ -572,7 +596,12 @@ export default function CreateMatchScreen({ navigation }) {
                 style={[styles.modalBtn, styles.confirmBtn]}
                 onPress={executeSubmit}
               >
-                <Text style={styles.confirmBtnText}>동의하고 매칭 개설</Text>
+                <View style={styles.confirmBtnContent}>
+                  <Text style={styles.confirmBtnText}>동의하고 매칭 개설</Text>
+                  <View style={styles.pointCostBadge}>
+                    <Text style={styles.pointCostBadgeText}>-12,000P</Text>
+                  </View>
+                </View>
               </TouchableOpacity>
             </View>
           </View>
@@ -587,6 +616,7 @@ export default function CreateMatchScreen({ navigation }) {
             <Calendar
               current={date}
               minDate={todayISO()}
+              maxDate={maxBookableDateISO()}
               onDayPress={(day) => {
                 setDate(day.dateString);
                 setShowCalendar(false);
@@ -828,10 +858,27 @@ const styles = StyleSheet.create({
   confirmBtn: {
     backgroundColor: colors.primary,
   },
+  confirmBtnContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+  },
   confirmBtnText: {
     fontSize: 14,
     fontWeight: 'bold',
     color: '#FFFFFF',
+  },
+  pointCostBadge: {
+    backgroundColor: '#FFF3F0',
+    borderRadius: 10,
+    paddingHorizontal: 7,
+    paddingVertical: 2,
+  },
+  pointCostBadgeText: {
+    fontSize: 11,
+    fontWeight: 'bold',
+    color: colors.error,
   },
   labelCount: {
     fontSize: 13,

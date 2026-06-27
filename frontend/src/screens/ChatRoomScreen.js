@@ -181,7 +181,10 @@ export default function ChatRoomScreen({ route, navigation }) {
             placeholder="메시지를 입력하세요..."
             value={message}
             onChangeText={setMessage}
-            multiline
+            multiline={false}
+            blurOnSubmit={false}
+            returnKeyType="send"
+            onSubmitEditing={handleSend}
           />
           <TouchableOpacity
             style={[styles.sendBtn, (message.trim() === '' || sending) && styles.sendBtnDisabled]}

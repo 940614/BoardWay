@@ -17,6 +17,10 @@ export default function SignUpScreen({ navigation }) {
   const passwordConfirmRef = useRef(null);
 
   const handleSignUp = async () => {
+    if (/\s/.test(nickname)) {
+      notify('알림', '닉네임에는 띄어쓰기를 사용할 수 없습니다.');
+      return;
+    }
     if (password !== passwordConfirm) {
       notify('알림', '비밀번호가 일치하지 않습니다.');
       return;
@@ -58,7 +62,12 @@ export default function SignUpScreen({ navigation }) {
             style={styles.input}
             placeholder="사용하실 닉네임"
             value={nickname}
-            onChangeText={setNickname}
+            onChangeText={(text) => {
+              if (/\s/.test(text)) {
+                notify('알림', '닉네임에는 띄어쓰기를 사용할 수 없습니다.');
+              }
+              setNickname(text.replace(/\s/g, ''));
+            }}
             returnKeyType="next"
             onSubmitEditing={() => passwordRef.current?.focus()}
             blurOnSubmit={false}

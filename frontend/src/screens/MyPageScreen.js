@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useMemo, useState } from 'react';
 import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, Modal, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../theme/colors';
@@ -7,7 +7,7 @@ import { AuthContext } from '../context/AuthContext';
 import { notify, confirmAction } from '../utils/dialog';
 
 export default function MyPageScreen({ navigation }) {
-  const { user, logout, points } = useContext(AuthContext);
+  const { user, logout, points, notifications } = useContext(AuthContext);
   const [rechargeModalVisible, setRechargeModalVisible] = useState(false);
   const [mannerModalVisible, setMannerModalVisible] = useState(false);
   const [expandedFaq, setExpandedFaq] = useState(null);
@@ -16,14 +16,24 @@ export default function MyPageScreen({ navigation }) {
     setExpandedFaq(expandedFaq === index ? null : index);
   };
 
+  const unreadFriendMessageCount = useMemo(() => (
+    (notifications || []).filter((notif) => (
+      !notif.read && notif.type === 'friend_message_received'
+    )).length
+  ), [notifications]);
+
   const FAQ_DATA = [
     {
       q: "매칭 취소 및 포인트 환불 규정은 어떻게 되나요?",
-      a: "• 최소 인원 미달 취소: 매치 시작 30분 전까지 최소 필요 인원이 충족되지 않으면 매칭이 자동 취소(파토)되며, 참여비 12,000P가 전액 자동 환불됩니다.\n• 자발적 참여 취소 환불 규정:\n  - 매칭 신청 후 1시간 이내 취소: 100% 환불 (12,000P 환불)\n  - 매칭 신청 후 1시간 경과 후 취소: 20% 환불 (2,400P 환불)\n  - 매칭 시작 30분 미만 시점 취소: 환불 불가 (참여 취소는 가능하나 0P 환불)"
+      a: "• 최소 인원 미달 취소: 매치 시작 30분 전까지 최소 필요 인원이 충족되지 않으면 매칭이 자동 취소(파토)되며, 참여비 12,000P가 전액 자동 환불됩니다.\n• 자발적 참여 취소 환불 규정 (참여자):\n  - 매칭 신청 후 1시간 이내 취소: 100% 환불 (12,000P 환불)\n  - 매칭 신청 후 1시간 경과 후 취소: 20% 환불 (2,400P 환불)\n  - 매칭 시작 30분 미만 시점 취소: 환불 불가 (참여 취소는 가능하나 0P 환불)\n• 방장의 자발적 매치 취소 규정:\n  - 방장 권한으로 개설 완료된 매치를 취소하는 경우, 방장의 책임감 있는 모임 관리를 위해 개설 참여비(12,000P)는 환불되지 않습니다. (단, 타 참여자들에게는 전액 자동 환불됩니다.)"
     },
     {
       q: "매칭이 확정되는 기준은 무엇인가요?",
       a: "각 보드게임의 원활한 플레이를 위해 시스템이 계산한 '최소 인원'이 모이는 순간 즉시 매칭이 확정되며 모든 참여자에게 알림이 전송됩니다. 자율성 매치는 기본 3인 이상 신청 시 확정됩니다."
+    },
+    {
+      q: "매칭 정규 진행 시간은 얼마나 되나요?",
+      a: "모든 매칭의 정규 진행 시간은 시작 시각부터 2시간입니다. 더 즐기고 싶다면 참여자끼리 협의하여 자유롭게 연장할 수 있습니다. 정규 시간이 지난 뒤 방장이 '매칭 성공적으로 완료' 버튼을 누르면 참여자들의 상호 매너 평가가 시작됩니다."
     },
     {
       q: "매너 주사위(Manner Dice) 점수가 무엇인가요?",
@@ -157,9 +167,22 @@ export default function MyPageScreen({ navigation }) {
                 <Ionicons name="chevron-forward" size={20} color={colors.textLight} />
               </TouchableOpacity>
 
-              <TouchableOpacity style={styles.menuItem} onPress={() => notify('준비 중', '고객센터 기능은 준비 중입니다.')}>
-                <Ionicons name="help-circle-outline" size={24} color={colors.text} style={styles.menuIcon} />
-                <Text style={styles.menuText}>고객센터</Text>
+              <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate('CustomerSupport')}>
+                <Ionicons name={user?.is_admin ? "file-tray-full-outline" : "help-circle-outline"} size={24} color={colors.text} style={styles.menuIcon} />
+                <Text style={styles.menuText}>{user?.is_admin ? '고객 의견 관리' : '고객센터'}</Text>
+                <Ionicons name="chevron-forward" size={20} color={colors.textLight} />
+              </TouchableOpacity>
+
+              <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate('Friends')}>
+                <Ionicons name="people-outline" size={24} color={colors.text} style={styles.menuIcon} />
+                <Text style={styles.menuText}>친구</Text>
+                {unreadFriendMessageCount > 0 && (
+                  <View style={styles.friendMessageBadge}>
+                    <Text style={styles.friendMessageBadgeText}>
+                      {unreadFriendMessageCount > 9 ? '9+' : unreadFriendMessageCount}
+                    </Text>
+                  </View>
+                )}
                 <Ionicons name="chevron-forward" size={20} color={colors.textLight} />
               </TouchableOpacity>
 
@@ -449,6 +472,21 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: colors.text,
     fontWeight: '500',
+  },
+  friendMessageBadge: {
+    minWidth: 18,
+    height: 18,
+    borderRadius: 9,
+    backgroundColor: colors.error,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 5,
+    marginRight: 8,
+  },
+  friendMessageBadgeText: {
+    color: '#FFFFFF',
+    fontSize: 10,
+    fontWeight: 'bold',
   },
   modalOverlay: {
     flex: 1,

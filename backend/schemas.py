@@ -1,5 +1,5 @@
 from pydantic import BaseModel, EmailStr, Field, field_validator
-from typing import List, Optional
+from typing import List, Optional, Literal
 from datetime import datetime
 
 class LocationBase(BaseModel):
@@ -71,11 +71,62 @@ class MessageItem(BaseModel):
         from_attributes = True
 
 
+class FriendRequestCreate(BaseModel):
+    nickname: str = Field(..., min_length=1, max_length=50)
+
+    @field_validator("nickname")
+    @classmethod
+    def _strip_nickname(cls, value: str):
+        value = value.strip()
+        if not value:
+            raise ValueError("닉네임을 입력해주세요.")
+        return value
+
+
+class FriendItem(BaseModel):
+    friendship_id: int
+    user_id: int
+    nickname: str
+    mannerScore: int
+    status: str = "accepted"
+
+
+class FriendRequestItem(BaseModel):
+    id: int
+    requester_id: int
+    requester_nickname: str
+    addressee_id: int
+    addressee_nickname: str
+    status: str
+    created_at: datetime
+
+
+class FriendMessageItem(BaseModel):
+    id: int
+    sender_id: int
+    sender_nickname: str
+    recipient_id: int
+    recipient_nickname: str
+    content: str
+    read: bool
+    created_at: datetime
+
+
 class UserCreate(BaseModel):
     email: EmailStr
     password: str
     nickname: str
     mannerScore: int = 5
+
+    @field_validator("nickname")
+    @classmethod
+    def _validate_nickname(cls, value: str):
+        value = value.strip()
+        if not value:
+            raise ValueError("닉네임을 입력해주세요.")
+        if any(ch.isspace() for ch in value):
+            raise ValueError("닉네임에는 띄어쓰기를 사용할 수 없습니다.")
+        return value
 
 class UserResponse(BaseModel):
     id: int
@@ -158,6 +209,45 @@ class GameBase(BaseModel):
     description: str
     ruleUrl: str
     image: str
+
+    class Config:
+        from_attributes = True
+
+
+class SuggestionCreate(BaseModel):
+    category: Literal["게임 추가", "기능 개선", "불편 신고", "기타"]
+    content: str = Field(..., min_length=5, max_length=1000)
+
+    @field_validator("category", "content")
+    @classmethod
+    def _strip_suggestion_text(cls, value: str):
+        value = value.strip()
+        if not value:
+            raise ValueError("빈 내용은 입력할 수 없습니다.")
+        return value
+
+
+class SuggestionReplyRequest(BaseModel):
+    admin_reply: str = Field(..., min_length=1, max_length=1000)
+
+    @field_validator("admin_reply")
+    @classmethod
+    def _strip_reply_text(cls, value: str):
+        value = value.strip()
+        if not value:
+            raise ValueError("답변 내용을 입력해주세요.")
+        return value
+
+
+class SuggestionResponse(BaseModel):
+    id: int
+    user_id: int
+    category: str
+    content: str
+    created_at: datetime
+    user_nickname: Optional[str] = None
+    admin_reply: Optional[str] = None
+    answered_at: Optional[datetime] = None
 
     class Config:
         from_attributes = True

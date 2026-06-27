@@ -5,6 +5,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 from typing import List, Dict
+from datetime import datetime, timedelta, timezone
 from jose import JWTError, jwt
 
 import models, schemas, crud
@@ -37,6 +38,7 @@ if not os.path.exists(IMAGES_DIR):
 app.mount("/images", StaticFiles(directory=IMAGES_DIR), name="images")
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
+optional_oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login", auto_error=False)
 
 # 현재 로그인한 사용자 가져오기 dependency
 async def get_current_user(db: Session = Depends(get_db), token: str = Depends(oauth2_scheme)):
@@ -71,7 +73,7 @@ async def global_exception_handler(request: Request, exc: Exception):
         content={"message": "Internal Server Error", "detail": str(exc), "traceback": error_details},
     )
 
-def format_match(m, db: Session = None):
+def format_match(m, db: Session = None, friend_nicknames: set = None):
     try:
         rule_video_urls = m.ruleVideoUrls
         if db and (not rule_video_urls or all(not url for url in rule_video_urls)):
@@ -89,6 +91,18 @@ def format_match(m, db: Session = None):
         min_players = 3
         if db:
             min_players = crud.calculate_min_players_for_match(db, m.games)
+
+        friend_nicknames = friend_nicknames or set()
+        friend_participants = []
+        try:
+            match_start = datetime.fromisoformat(f"{m.date}T{m.startTime}:00")
+            if match_start > datetime.now():
+                friend_participants = [
+                    p.nickname for p in m.participants
+                    if p.nickname in friend_nicknames
+                ]
+        except (TypeError, ValueError):
+            friend_participants = []
 
         return {
             "id": m.match_id,
@@ -108,6 +122,9 @@ def format_match(m, db: Session = None):
             "host": m.host_nickname,
             "cancelled": m.cancelled,
             "is_flexible": m.is_flexible,
+            "completed": getattr(m, "completed", False),
+            "completed_at": f"{m.completed_at.isoformat()}Z" if getattr(m, "completed_at", None) else None,
+            "friend_participants": friend_participants,
             "participants": [{"nickname": p.nickname, "mannerScore": p.mannerScore, "joined_at": p.joined_at.isoformat() if getattr(p, "joined_at", None) else None, "isMe": False} for p in m.participants]
         }
     except Exception as e:
@@ -131,9 +148,31 @@ def read_root():
     return {"message": "Welcome to BoardWay API Server! (DB Connected)"}
 
 @app.get("/matches")
-def get_matches(db: Session = Depends(get_db)):
+def get_matches(
+    db: Session = Depends(get_db),
+    token: str = Depends(optional_oauth2_scheme),
+):
     matches = crud.get_matches(db)
-    formatted = [format_match(m, db) for m in matches]
+    friend_nicknames = set()
+    current_user = None
+    if token:
+        try:
+            payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+            email = payload.get("sub")
+            current_user = crud.get_user_by_email(db, email=email) if email else None
+        except JWTError:
+            current_user = None
+    else:
+        current_user = None
+
+    if current_user:
+        friend_rows = crud.list_friendships(db, current_user.id)
+        friend_nicknames = {
+            (row.addressee.nickname if row.requester_id == current_user.id else row.requester.nickname)
+            for row in friend_rows
+            if row.requester and row.addressee
+        }
+    formatted = [format_match(m, db, friend_nicknames=friend_nicknames) for m in matches]
     return {"matches": [f for f in formatted if f is not None]}
 
 @app.get("/matches/{match_id}")
@@ -149,6 +188,16 @@ def create_match(
     db: Session = Depends(get_db),
     current_user: models.User = Depends(get_current_user),
 ):
+    try:
+        match_date = datetime.strptime(match.date, "%Y-%m-%d").date()
+    except (TypeError, ValueError):
+        raise HTTPException(status_code=400, detail="날짜 형식이 올바르지 않습니다. (YYYY-MM-DD)")
+
+    today = datetime.now(timezone(timedelta(hours=9))).date()
+    max_bookable_date = today + timedelta(days=9)
+    if match_date < today or match_date > max_bookable_date:
+        raise HTTPException(status_code=400, detail="매칭은 오늘부터 10일 이내 날짜로만 생성할 수 있습니다.")
+
     new_match = crud.create_match(
         db, match, creator_user_id=current_user.id, host_nickname=current_user.nickname
     )
@@ -311,12 +360,196 @@ def read_my_point_history(
     return crud.get_user_point_history(db, current_user.id)
 
 
+def _friend_item(row: models.Friendship, current_user_id: int):
+    friend = row.addressee if row.requester_id == current_user_id else row.requester
+    return {
+        "friendship_id": row.id,
+        "user_id": friend.id,
+        "nickname": friend.nickname,
+        "mannerScore": friend.mannerScore,
+        "status": row.status,
+    }
+
+
+def _friend_request_item(row: models.Friendship):
+    return {
+        "id": row.id,
+        "requester_id": row.requester_id,
+        "requester_nickname": row.requester.nickname if row.requester else "",
+        "addressee_id": row.addressee_id,
+        "addressee_nickname": row.addressee.nickname if row.addressee else "",
+        "status": row.status,
+        "created_at": row.created_at,
+    }
+
+
+def _friend_message_item(row: models.FriendMessage):
+    return {
+        "id": row.id,
+        "sender_id": row.sender_id,
+        "sender_nickname": row.sender.nickname if row.sender else "",
+        "recipient_id": row.recipient_id,
+        "recipient_nickname": row.recipient.nickname if row.recipient else "",
+        "content": row.content,
+        "read": row.read,
+        "created_at": row.created_at,
+    }
+
+
+@app.post("/friends/requests")
+def send_friend_request(
+    payload: schemas.FriendRequestCreate,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user),
+):
+    result = crud.create_friend_request(db, current_user, payload.nickname)
+    if result == "USER_NOT_FOUND":
+        raise HTTPException(status_code=404, detail="해당 닉네임의 사용자를 찾을 수 없습니다.")
+    if result == "SELF":
+        raise HTTPException(status_code=400, detail="자기 자신에게는 친구 신청을 보낼 수 없습니다.")
+    if result == "ALREADY_FRIENDS":
+        raise HTTPException(status_code=400, detail="이미 친구로 등록된 사용자입니다.")
+    if result == "ALREADY_PENDING":
+        raise HTTPException(status_code=400, detail="이미 대기 중인 친구 신청이 있습니다.")
+    return _friend_request_item(result)
+
+
+@app.get("/friends")
+def list_my_friends(
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user),
+):
+    rows = crud.list_friendships(db, current_user.id)
+    return {"friends": [_friend_item(row, current_user.id) for row in rows]}
+
+
+@app.get("/friends/requests")
+def list_my_friend_requests(
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user),
+):
+    incoming, outgoing = crud.list_friend_requests(db, current_user.id)
+    return {
+        "incoming": [_friend_request_item(row) for row in incoming],
+        "outgoing": [_friend_request_item(row) for row in outgoing],
+    }
+
+
+@app.post("/friends/requests/{request_id}/accept")
+def accept_friend_request(
+    request_id: int,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user),
+):
+    result = crud.respond_friend_request(db, request_id, current_user, True)
+    if result == "NOT_FOUND":
+        raise HTTPException(status_code=404, detail="친구 신청을 찾을 수 없습니다.")
+    if result == "FORBIDDEN":
+        raise HTTPException(status_code=403, detail="내게 온 친구 신청만 처리할 수 있습니다.")
+    if result == "ALREADY_HANDLED":
+        raise HTTPException(status_code=400, detail="이미 처리된 친구 신청입니다.")
+    return _friend_item(result, current_user.id)
+
+
+@app.post("/friends/requests/{request_id}/reject")
+def reject_friend_request(
+    request_id: int,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user),
+):
+    result = crud.respond_friend_request(db, request_id, current_user, False)
+    if result == "NOT_FOUND":
+        raise HTTPException(status_code=404, detail="친구 신청을 찾을 수 없습니다.")
+    if result == "FORBIDDEN":
+        raise HTTPException(status_code=403, detail="내게 온 친구 신청만 처리할 수 있습니다.")
+    if result == "ALREADY_HANDLED":
+        raise HTTPException(status_code=400, detail="이미 처리된 친구 신청입니다.")
+    return {"status": "rejected"}
+
+
+@app.delete("/friends/{friend_id}")
+def delete_friend(
+    friend_id: int,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user),
+):
+    result = crud.remove_friend(db, current_user.id, friend_id)
+    if result == "NOT_FOUND":
+        raise HTTPException(status_code=404, detail="친구 관계를 찾을 수 없습니다.")
+    return {"status": "removed"}
+
+
+@app.get("/friends/{friend_id}/messages")
+def list_friend_messages(
+    friend_id: int,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user),
+):
+    result = crud.list_friend_messages(db, current_user.id, friend_id)
+    if result == "NOT_FRIENDS":
+        raise HTTPException(status_code=403, detail="친구로 등록된 사용자와만 채팅할 수 있습니다.")
+    return {"messages": [_friend_message_item(row) for row in result]}
+
+
+@app.post("/friends/{friend_id}/messages")
+def create_friend_message(
+    friend_id: int,
+    payload: schemas.MessageCreate,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user),
+):
+    content = (payload.content or "").strip()
+    if not content:
+        raise HTTPException(status_code=400, detail="메시지 내용을 입력해주세요.")
+    result = crud.create_friend_message(db, current_user, friend_id, content)
+    if result == "USER_NOT_FOUND":
+        raise HTTPException(status_code=404, detail="사용자를 찾을 수 없습니다.")
+    if result == "NOT_FRIENDS":
+        raise HTTPException(status_code=403, detail="친구로 등록된 사용자와만 채팅할 수 있습니다.")
+    return _friend_message_item(result)
+
+
+@app.get("/friends/{friend_id}/matches")
+def list_friend_matches(
+    friend_id: int,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user),
+):
+    result = crud.get_friend_matches(db, current_user.id, friend_id)
+    if result == "USER_NOT_FOUND":
+        raise HTTPException(status_code=404, detail="사용자를 찾을 수 없습니다.")
+    if result == "NOT_FRIENDS":
+        raise HTTPException(status_code=403, detail="친구로 등록된 사용자의 매칭만 확인할 수 있습니다.")
+    return {"matches": [format_match(m, db) for m in result]}
+
+
 @app.post("/me/reviews", response_model=List[schemas.ReviewItem])
 def submit_match_reviews(
     payload: schemas.ReviewCreateRequest,
     db: Session = Depends(get_db),
     current_user: models.User = Depends(get_current_user),
 ):
+    match = crud.get_match_by_match_id(db, payload.match_id)
+    if not match:
+        raise HTTPException(status_code=404, detail="매치를 찾을 수 없습니다.")
+    if not getattr(match, "completed", False) or not match.completed_at:
+        raise HTTPException(status_code=400, detail="방장이 매칭 완료를 확인한 뒤 평가할 수 있습니다.")
+    if datetime.now(timezone.utc).replace(tzinfo=None) > match.completed_at + timedelta(minutes=30):
+        raise HTTPException(status_code=400, detail="매너 평가 가능 시간(완료 후 30분)이 지났습니다.")
+
+    participant_names = {p.nickname for p in match.participants}
+    if current_user.nickname not in participant_names:
+        raise HTTPException(status_code=403, detail="이 매치에 참여한 사용자만 평가할 수 있습니다.")
+
+    reviewee_names = [item.reviewee_nickname for item in payload.reviews]
+    allowed_reviewees = participant_names - {current_user.nickname}
+    if not reviewee_names:
+        raise HTTPException(status_code=400, detail="평가할 참여자가 없습니다.")
+    if len(reviewee_names) != len(set(reviewee_names)):
+        raise HTTPException(status_code=400, detail="같은 참여자를 중복 평가할 수 없습니다.")
+    if not set(reviewee_names).issubset(allowed_reviewees):
+        raise HTTPException(status_code=400, detail="본인 또는 매치에 참여하지 않은 사용자는 평가할 수 없습니다.")
+
     result = crud.create_match_reviews(
         db, current_user.id, payload.match_id, payload.reviews, payload.comment
     )
@@ -414,12 +647,14 @@ def cancel_match_endpoint(
         raise HTTPException(status_code=404, detail="매치를 찾을 수 없습니다.")
     if match.cancelled:
         raise HTTPException(status_code=400, detail="이미 취소된 매치입니다.")
+    if getattr(match, "completed", False):
+        raise HTTPException(status_code=400, detail="완료된 매치는 취소할 수 없습니다.")
 
     is_host = (match.host_nickname == current_user.nickname)
     if not current_user.is_admin and not is_host:
         raise HTTPException(status_code=403, detail="매치 취소는 운영진 또는 개설자(방장)만 가능합니다.")
 
-    result = crud.cancel_match(db, match_id)
+    result = crud.cancel_match(db, match_id, host_forfeits=is_host)
     
     if is_host:
         msg = f"매치가 취소되었습니다. 동료 참여자 {result['refunded_count']}명에게 환불이 완료되었습니다. 방장 개설 참여비는 환불되지 않습니다."
@@ -573,6 +808,125 @@ async def websocket_chat(websocket: WebSocket, match_id: str, db: Session = Depe
     except WebSocketDisconnect:
         ws_manager.disconnect(websocket, match_id)
 
+@app.post("/matches/{match_id}/complete")
+def complete_match_endpoint(
+    match_id: str,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user),
+):
+    """방장이 매칭 성공 완료 처리. 방장 또는 관리자만 가능."""
+    match = crud.get_match_by_match_id(db, match_id)
+    if not match:
+        raise HTTPException(status_code=404, detail="매치를 찾을 수 없습니다.")
+    if match.cancelled:
+        raise HTTPException(status_code=400, detail="취소된 매치입니다.")
+    if match.completed:
+        raise HTTPException(status_code=400, detail="이미 완료 처리된 매치입니다.")
+
+    try:
+        match_end = datetime.fromisoformat(f"{match.date}T{match.startTime}:00") + timedelta(hours=2)
+    except ValueError:
+        raise HTTPException(status_code=500, detail="매치 일정 정보가 올바르지 않습니다.")
+    korea_now = datetime.now(timezone(timedelta(hours=9))).replace(tzinfo=None)
+    if korea_now < match_end:
+        raise HTTPException(status_code=400, detail="매칭 종료 시각 이후에 완료 처리할 수 있습니다.")
+
+    is_host = (match.host_nickname == current_user.nickname)
+    if not current_user.is_admin and not is_host:
+        raise HTTPException(status_code=403, detail="방장 또는 운영진만 완료 처리할 수 있습니다.")
+
+    result = crud.complete_match(db, match_id)
+    if isinstance(result, str):
+        raise HTTPException(status_code=400, detail=result)
+
+    return {"status": "success", "message": "매칭이 성공적으로 완료 처리되었습니다. 상호 매너 평가를 진행해주세요!"}
+
+
+@app.post("/suggestions")
+def create_suggestion(
+    req: schemas.SuggestionCreate,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user),
+):
+    """사용자 건의사항 제출."""
+    sug = crud.create_suggestion(db, req, current_user.id)
+    return {
+        "id": sug.id,
+        "user_id": sug.user_id,
+        "user_nickname": current_user.nickname,
+        "category": sug.category,
+        "content": sug.content,
+        "admin_reply": sug.admin_reply,
+        "answered_at": sug.answered_at.isoformat() if sug.answered_at else None,
+        "created_at": sug.created_at.isoformat() if sug.created_at else None,
+    }
+
+
+@app.get("/suggestions")
+def get_suggestions(
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user),
+):
+    """관리자는 전체 건의 조회, 일반 사용자는 본인 건의만 조회."""
+    if current_user.is_admin:
+        items = crud.get_all_suggestions(db)
+    else:
+        items = crud.get_suggestions_by_user(db, current_user.id)
+
+    result = []
+    for sug in items:
+        # user_nickname 조회
+        user = db.query(models.User).filter(models.User.id == sug.user_id).first()
+        result.append({
+            "id": sug.id,
+            "user_id": sug.user_id,
+            "user_nickname": user.nickname if user else None,
+            "category": sug.category,
+            "content": sug.content,
+            "admin_reply": sug.admin_reply,
+            "answered_at": sug.answered_at.isoformat() if sug.answered_at else None,
+            "created_at": sug.created_at.isoformat() if sug.created_at else None,
+        })
+    return {"suggestions": result}
+
+
+@app.post("/suggestions/{suggestion_id}/reply")
+def reply_to_suggestion(
+    suggestion_id: int,
+    req: schemas.SuggestionReplyRequest,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user),
+):
+    """관리자가 사용자 건의에 답변."""
+    if not current_user.is_admin:
+        raise HTTPException(status_code=403, detail="운영진만 답변할 수 있습니다.")
+
+    sug = crud.reply_to_suggestion(db, suggestion_id, req.admin_reply)
+    if not sug:
+        raise HTTPException(status_code=404, detail="건의를 찾을 수 없습니다.")
+
+    user = db.query(models.User).filter(models.User.id == sug.user_id).first()
+    if user:
+        crud.create_notification(
+            db,
+            user.id,
+            "suggestion_replied",
+            "고객센터 답변 도착",
+            f"보내주신 [{sug.category}] 의견에 운영진 답변이 등록되었습니다.",
+        )
+
+    return {
+        "id": sug.id,
+        "user_id": sug.user_id,
+        "user_nickname": user.nickname if user else None,
+        "category": sug.category,
+        "content": sug.content,
+        "admin_reply": sug.admin_reply,
+        "answered_at": sug.answered_at.isoformat() if sug.answered_at else None,
+        "created_at": sug.created_at.isoformat() if sug.created_at else None,
+    }
+
+
 def check_and_cancel_matches(db: Session):
     from datetime import datetime, timedelta
     now = datetime.now()
@@ -588,7 +942,34 @@ def check_and_cancel_matches(db: Session):
         participants_count = len(match.participants)
 
         time_until_start = match_start - now
-        if time_until_start <= timedelta(minutes=30) and participants_count < min_required:
+        if match.completed:
+            crud._maybe_reward_host_for_match(db, match)
+            continue
+
+        if now < match_start and participants_count >= min_required:
+            already_confirmed = (
+                db.query(models.Notification)
+                .filter(
+                    models.Notification.type == "match_confirmed",
+                    models.Notification.match_business_id == match.match_id,
+                )
+                .first()
+            )
+            if not already_confirmed:
+                games_label = ", ".join(match.games or ["자율 선택"])
+                for p in list(match.participants):
+                    p_user = crud.get_user_by_nickname(db, p.nickname)
+                    if p_user:
+                        crud.create_notification(
+                            db,
+                            p_user.id,
+                            "match_confirmed",
+                            "매칭 확정 알림",
+                            f"[{games_label}] 매칭의 최소 인원({min_required}명)이 충족되어 매칭이 확정되었습니다!",
+                            match_business_id=match.match_id,
+                        )
+
+        if timedelta(0) <= time_until_start <= timedelta(minutes=30) and participants_count < min_required:
             match.cancelled = True
             db.flush()
 
@@ -607,6 +988,31 @@ def check_and_cancel_matches(db: Session):
                         match_business_id=match.match_id
                     )
             db.commit()
+            continue
+
+        match_end = match_start + timedelta(hours=2)
+        if now >= match_end and not match.completed and match.host_nickname:
+            host_user = crud.get_user_by_nickname(db, match.host_nickname)
+            if host_user:
+                already_prompted = (
+                    db.query(models.Notification)
+                    .filter(
+                        models.Notification.user_id == host_user.id,
+                        models.Notification.type == "match_completion_prompt",
+                        models.Notification.match_business_id == match.match_id,
+                    )
+                    .first()
+                )
+                if not already_prompted:
+                    games_label = ", ".join(match.games or ["자율 선택"])
+                    crud.create_notification(
+                        db,
+                        host_user.id,
+                        "match_completion_prompt",
+                        "매칭 완료 확인 필요",
+                        f"[{games_label}] 매칭 종료 시간이 지났습니다. 내 매칭에서 '매칭 성공적으로 완료' 버튼을 눌러 참여자 평가를 시작해주세요.",
+                        match_business_id=match.match_id,
+                    )
 
 def start_match_cancellation_scheduler():
     import threading
