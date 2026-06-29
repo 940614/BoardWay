@@ -18,6 +18,11 @@ LocaleConfig.locales['kr'] = {
 };
 LocaleConfig.defaultLocale = 'kr';
 
+const WEEKEND_TEXT_COLORS = {
+  sunday: '#E74C3C',
+  saturday: '#3498DB',
+};
+
 export default function MyMatchesScreen({ navigation }) {
   const { matches, leaveMatch, cancelMatch, completeMatch } = useContext(MatchContext);
   const { user, reviewedMatches } = useContext(AuthContext);
@@ -165,6 +170,8 @@ export default function MyMatchesScreen({ navigation }) {
     const isWithinWindow = !!completedAt && now <= reviewDeadline;
     const isBeforeStart = now < matchStart;
     const isHost = user && item.host === user.nickname;
+    const minPlayers = item.minPlayers || 3;
+    const hasMinimumPlayers = (item.participants?.length || 0) >= minPlayers;
 
     return (
       <View style={styles.matchItemContainer}>
@@ -236,6 +243,12 @@ export default function MyMatchesScreen({ navigation }) {
             <Text style={styles.waitingBtnText}>매치 진행 중...</Text>
           </View>
         ) : !item.completed ? (
+          !hasMinimumPlayers ? (
+            <View style={[styles.reviewBtn, styles.cancelledBtn]}>
+              <Ionicons name="alert-circle-outline" size={16} color={colors.error} />
+              <Text style={styles.cancelledBtnText}>최소 인원 미달로 취소 대상</Text>
+            </View>
+          ) :
           isHost ? (
             <TouchableOpacity
               style={[styles.reviewBtn, styles.completeBtn]}
@@ -281,6 +294,34 @@ export default function MyMatchesScreen({ navigation }) {
         <Calendar
           onDayPress={day => setSelectedDate(day.dateString)}
           markedDates={markedDates}
+          dayComponent={({ date, state, marking }) => {
+            const isSelected = date.dateString === selectedDate || marking?.selected;
+            const isMarked = marking?.marked;
+            const dayOfWeek = new Date(`${date.dateString}T00:00:00`).getDay();
+            const weekendColor = dayOfWeek === 0
+              ? WEEKEND_TEXT_COLORS.sunday
+              : dayOfWeek === 6
+                ? WEEKEND_TEXT_COLORS.saturday
+                : colors.text;
+            const textColor = state === 'disabled'
+              ? colors.textLight
+              : isSelected
+                ? '#FFFFFF'
+                : weekendColor;
+
+            return (
+              <TouchableOpacity
+                disabled={state === 'disabled'}
+                onPress={() => setSelectedDate(date.dateString)}
+                style={[styles.calendarDay, isSelected && styles.calendarDaySelected]}
+              >
+                <Text style={[styles.calendarDayText, { color: textColor }]}>
+                  {date.day}
+                </Text>
+                {isMarked && !isSelected && <View style={styles.calendarDot} />}
+              </TouchableOpacity>
+            );
+          }}
           theme={{
             todayTextColor: colors.secondary,
             arrowColor: colors.primary,
@@ -366,6 +407,28 @@ const styles = StyleSheet.create({
     paddingBottom: 10,
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
+  },
+  calendarDay: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  calendarDaySelected: {
+    backgroundColor: colors.primary,
+  },
+  calendarDayText: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  calendarDot: {
+    position: 'absolute',
+    bottom: 2,
+    width: 5,
+    height: 5,
+    borderRadius: 2.5,
+    backgroundColor: colors.secondary,
   },
   listSection: {
     flex: 1,

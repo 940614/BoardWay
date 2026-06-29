@@ -823,6 +823,14 @@ def complete_match_endpoint(
     if match.completed:
         raise HTTPException(status_code=400, detail="이미 완료 처리된 매치입니다.")
 
+    min_required = crud.calculate_min_players_for_match(db, match.games)
+    participants_count = len(match.participants)
+    if participants_count < min_required:
+        raise HTTPException(
+            status_code=400,
+            detail=f"최소 인원({min_required}명)을 충족하지 못한 매치는 완료 처리할 수 없습니다. 현재 참여자 {participants_count}명",
+        )
+
     try:
         match_end = datetime.fromisoformat(f"{match.date}T{match.startTime}:00") + timedelta(hours=2)
     except ValueError:
@@ -969,7 +977,7 @@ def check_and_cancel_matches(db: Session):
                             match_business_id=match.match_id,
                         )
 
-        if timedelta(0) <= time_until_start <= timedelta(minutes=30) and participants_count < min_required:
+        if time_until_start <= timedelta(minutes=30) and participants_count < min_required:
             match.cancelled = True
             db.flush()
 

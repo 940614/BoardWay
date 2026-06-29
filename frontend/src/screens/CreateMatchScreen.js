@@ -9,6 +9,11 @@ import { apiFetch } from '../utils/api';
 import { MatchContext } from '../context/MatchContext';
 import { AuthContext } from '../context/AuthContext';
 
+const WEEKEND_TEXT_COLORS = {
+  sunday: '#E74C3C',
+  saturday: '#3498DB',
+};
+
 const GENRE_TABS = ['전체', '다인용 게임', '전략', '파티', '마피아', '추리', '카드', '타일', '고전', '단어'];
 
 const DIFFICULTIES = ['쉬움', '보통', '어려움', '매우 어려움'];
@@ -621,6 +626,35 @@ export default function CreateMatchScreen({ navigation }) {
                 setDate(day.dateString);
                 setShowCalendar(false);
               }}
+              dayComponent={({ date: dayDate, state }) => {
+                const isSelected = dayDate.dateString === date;
+                const dayOfWeek = new Date(`${dayDate.dateString}T00:00:00`).getDay();
+                const weekendColor = dayOfWeek === 0
+                  ? WEEKEND_TEXT_COLORS.sunday
+                  : dayOfWeek === 6
+                    ? WEEKEND_TEXT_COLORS.saturday
+                    : colors.text;
+                const textColor = state === 'disabled'
+                  ? colors.textLight
+                  : isSelected
+                    ? '#FFFFFF'
+                    : weekendColor;
+
+                return (
+                  <TouchableOpacity
+                    disabled={state === 'disabled'}
+                    onPress={() => {
+                      setDate(dayDate.dateString);
+                      setShowCalendar(false);
+                    }}
+                    style={[styles.calendarDay, isSelected && styles.calendarDaySelected]}
+                  >
+                    <Text style={[styles.calendarDayText, { color: textColor }]}>
+                      {dayDate.day}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              }}
               markedDates={{
                 [date]: { selected: true, selectedColor: colors.primary }
               }}
@@ -1071,6 +1105,20 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.15,
     shadowRadius: 10,
     elevation: 5,
+  },
+  calendarDay: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  calendarDaySelected: {
+    backgroundColor: colors.primary,
+  },
+  calendarDayText: {
+    fontSize: 16,
+    fontWeight: '600',
   },
   optionItem: {
     paddingVertical: 14,

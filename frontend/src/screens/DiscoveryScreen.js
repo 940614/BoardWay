@@ -6,6 +6,11 @@ import { commonStyles } from '../theme/styles';
 import { MatchContext } from '../context/MatchContext';
 import { AuthContext } from '../context/AuthContext';
 
+const WEEKEND_TEXT_COLORS = {
+  sunday: '#E74C3C',
+  saturday: '#3498DB',
+};
+
 const GENRES = ['전체', '입문', '전략', '파티', '추리', '마피아', '심리전', '힐링'];
 const LOCATIONS = ['전체', '강남', '홍대', '신촌', '건대', '잠실', '노원', '수원', '인천', '분당'];
 const TIMES = ['전체', '오전 (12시 이전)', '오후 (12~18시)', '저녁 (18시 이후)'];
@@ -39,6 +44,7 @@ export default function DiscoveryScreen({ navigation }) {
         month: d.getMonth() + 1,
         date: d.getDate(),
         day: weekDays[d.getDay()],
+        dayIndex: d.getDay(),
         isToday: i === 0,
       });
     }
@@ -85,20 +91,29 @@ export default function DiscoveryScreen({ navigation }) {
 
   const modalData = getModalData();
 
-  const renderDateItem = ({ item }) => (
-    <TouchableOpacity
-      style={[styles.dateItem, activeDate === item.full && styles.dateItemActive]}
-      onPress={() => setActiveDate(item.full)}
-    >
-      <Text style={[styles.dateDay, activeDate === item.full && styles.dateTextActive]}>
-        {item.day}
-      </Text>
-      <Text style={[styles.dateNumber, activeDate === item.full && styles.dateTextActive]}>
-        {item.date}
-      </Text>
-      {item.isToday && <View style={[styles.todayDot, activeDate === item.full && { backgroundColor: colors.primary }]} />}
-    </TouchableOpacity>
-  );
+  const renderDateItem = ({ item }) => {
+    const isActive = activeDate === item.full;
+    const weekendStyle = item.dayIndex === 0
+      ? styles.dateSunday
+      : item.dayIndex === 6
+        ? styles.dateSaturday
+        : null;
+
+    return (
+      <TouchableOpacity
+        style={[styles.dateItem, isActive && styles.dateItemActive]}
+        onPress={() => setActiveDate(item.full)}
+      >
+        <Text style={[styles.dateDay, weekendStyle, isActive && styles.dateTextActive]}>
+          {item.day}
+        </Text>
+        <Text style={[styles.dateNumber, weekendStyle, isActive && styles.dateTextActive]}>
+          {item.date}
+        </Text>
+        {item.isToday && <View style={[styles.todayDot, isActive && { backgroundColor: colors.primary }]} />}
+      </TouchableOpacity>
+    );
+  };
 
   const renderMatchCard = ({ item }) => {
     const isFull = item.participants.length >= item.maxPlayers;
@@ -475,6 +490,12 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     color: '#FFFFFF',
+  },
+  dateSunday: {
+    color: WEEKEND_TEXT_COLORS.sunday,
+  },
+  dateSaturday: {
+    color: WEEKEND_TEXT_COLORS.saturday,
   },
   dateTextActive: {
     color: colors.primary,
