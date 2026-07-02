@@ -21,6 +21,9 @@ import CustomerSupportScreen from '../screens/CustomerSupportScreen';
 import FriendsScreen from '../screens/FriendsScreen';
 import FriendChatScreen from '../screens/FriendChatScreen';
 import FriendMatchesScreen from '../screens/FriendMatchesScreen';
+import AdminUserManagementScreen from '../screens/AdminUserManagementScreen';
+import AdminUserDetailScreen from '../screens/AdminUserDetailScreen';
+import AdminPointGrantScreen from '../screens/AdminPointGrantScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -50,6 +53,9 @@ export default function AppNavigator() {
       <Stack.Screen name="Friends" component={FriendsScreen} options={{ animation: 'slide_from_right' }} />
       <Stack.Screen name="FriendChat" component={FriendChatScreen} options={{ animation: 'slide_from_right' }} />
       <Stack.Screen name="FriendMatches" component={FriendMatchesScreen} options={{ animation: 'slide_from_right' }} />
+      <Stack.Screen name="AdminUsers" component={AdminUserManagementScreen} options={{ animation: 'slide_from_right' }} />
+      <Stack.Screen name="AdminUserDetail" component={AdminUserDetailScreen} options={{ animation: 'slide_from_right' }} />
+      <Stack.Screen name="AdminPointGrant" component={AdminPointGrantScreen} options={{ animation: 'slide_from_right' }} />
       <Stack.Screen 
         name="MatchConfirmation" 
         component={MatchConfirmationScreen} 

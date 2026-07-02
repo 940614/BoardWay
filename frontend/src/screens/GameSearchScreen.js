@@ -98,20 +98,18 @@ export default function GameSearchScreen({ navigation }) {
         </View>
       </View>
       <View style={styles.gameInfo}>
-        <Text style={styles.gameName}>{item.name}</Text>
+        <Text style={styles.gameName} numberOfLines={1}>{item.name}</Text>
         {item.genre && (
           <View style={styles.genrePill}>
-            <Text style={styles.genrePillText}>{item.genre}</Text>
+            <Text style={styles.genrePillText} numberOfLines={1}>{item.genre}</Text>
           </View>
         )}
-        <Text style={styles.gameDesc} numberOfLines={2}>{item.description}</Text>
         <View style={styles.gameMeta}>
           <View style={styles.metaBadge}>
             <Text style={styles.metaBadgeText}>👥 {item.players}</Text>
           </View>
         </View>
       </View>
-      <Ionicons name="chevron-forward" size={20} color={colors.primary} />
     </TouchableOpacity>
   );
 
@@ -151,9 +149,12 @@ export default function GameSearchScreen({ navigation }) {
         <ActivityIndicator size="large" color={colors.primary} style={{ marginTop: 50 }} />
       ) : (
         <FlatList
+          key="game-grid-2"
           data={filteredGames}
           renderItem={renderGameItem}
           keyExtractor={item => item.id}
+          numColumns={2}
+          columnWrapperStyle={styles.gameGridRow}
           ListHeaderComponent={ListHeader}
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
@@ -250,10 +251,11 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
   },
   listContent: {
+    paddingHorizontal: 16,
     paddingBottom: 30,
   },
   listHeaderContainer: {
-    padding: 16,
+    paddingVertical: 16,
   },
   featuredCard: {
     width: '100%',
@@ -299,34 +301,38 @@ const styles = StyleSheet.create({
     color: '#B2BEC3',
   },
   gameCard: {
+    width: '48.5%',
     flexDirection: 'row',
-    backgroundColor: '#FFFFFF',
-    marginHorizontal: 16,
-    marginBottom: 16,
-    borderRadius: 16,
-    padding: 12,
     alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 14,
+    padding: 9,
     ...commonStyles.shadow,
+  },
+  gameGridRow: {
+    justifyContent: 'space-between',
+    marginBottom: 12,
   },
   gameImageContainer: {
     position: 'relative',
+    width: 62,
+    height: 62,
+    flexShrink: 0,
   },
   gameImage: {
-    width: 90,
-    height: 90,
-    borderRadius: 12,
+    width: 62,
+    height: 62,
+    borderRadius: 10,
     backgroundColor: '#F1F2F6',
   },
   gameDifficultyBadge: {
     position: 'absolute',
-    top: -5,
-    left: -5,
+    left: 4,
+    bottom: 4,
     backgroundColor: colors.primary,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 8,
-    borderWidth: 2,
-    borderColor: '#FFFFFF',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 6,
   },
   difficultyBadgeText: {
     color: '#FFFFFF',
@@ -335,45 +341,40 @@ const styles = StyleSheet.create({
   },
   gameInfo: {
     flex: 1,
-    marginLeft: 16,
-    marginRight: 8,
+    marginLeft: 10,
+    minWidth: 0,
   },
   gameName: {
-    fontSize: 18,
+    fontSize: 14,
     fontWeight: 'bold',
     color: '#2D3436',
-    marginBottom: 4,
+    marginBottom: 5,
   },
   genrePill: {
     alignSelf: 'flex-start',
     backgroundColor: '#EEF2FF',
-    paddingHorizontal: 8,
-    paddingVertical: 3,
+    maxWidth: '100%',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
     borderRadius: 6,
-    marginBottom: 6,
+    marginBottom: 5,
   },
   genrePillText: {
-    fontSize: 11,
+    fontSize: 10,
     color: colors.primary,
     fontWeight: '600',
-  },
-  gameDesc: {
-    fontSize: 13,
-    color: '#636E72',
-    lineHeight: 18,
-    marginBottom: 8,
   },
   gameMeta: {
     flexDirection: 'row',
   },
   metaBadge: {
     backgroundColor: '#F1F2F6',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
+    paddingHorizontal: 7,
+    paddingVertical: 3,
     borderRadius: 6,
   },
   metaBadgeText: {
-    fontSize: 12,
+    fontSize: 11,
     color: '#2D3436',
     fontWeight: '600',
   },

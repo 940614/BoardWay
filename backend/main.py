@@ -320,6 +320,66 @@ def login(request: schemas.LoginRequest, db: Session = Depends(get_db)):
 def read_users_me(current_user: models.User = Depends(get_current_user)):
     return current_user
 
+@app.get("/admin/users", response_model=List[schemas.UserResponse])
+def admin_list_users(
+    q: str = "",
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user),
+):
+    if not current_user.is_admin:
+        raise HTTPException(status_code=403, detail="관리자만 회원을 조회할 수 있습니다.")
+
+    query = db.query(models.User)
+    keyword = q.strip()
+    if keyword:
+        like_keyword = f"%{keyword}%"
+        query = query.filter(
+            (models.User.email.ilike(like_keyword))
+            | (models.User.nickname.ilike(like_keyword))
+        )
+
+    return query.order_by(models.User.id.desc()).limit(100).all()
+
+
+@app.get("/admin/users/{user_id}/detail", response_model=schemas.AdminUserDetailResponse)
+def admin_get_user_detail(
+    user_id: int,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user),
+):
+    if not current_user.is_admin:
+        raise HTTPException(status_code=403, detail="관리자만 회원 상세 정보를 조회할 수 있습니다.")
+
+    target_user = db.query(models.User).filter(models.User.id == user_id).first()
+    if not target_user:
+        raise HTTPException(status_code=404, detail="대상 사용자를 찾을 수 없습니다.")
+
+    point_history = crud.get_user_point_history(db, target_user.id)
+    matches = crud.get_user_matches(db, target_user.nickname)
+    suggestions = crud.get_suggestions_by_user(db, target_user.id)
+
+    suggestion_items = []
+    for sug in suggestions:
+        suggestion_items.append(
+            {
+                "id": sug.id,
+                "user_id": sug.user_id,
+                "user_nickname": target_user.nickname,
+                "category": sug.category,
+                "content": sug.content,
+                "admin_reply": sug.admin_reply,
+                "answered_at": sug.answered_at,
+                "created_at": sug.created_at,
+            }
+        )
+
+    return {
+        "user": target_user,
+        "point_history": point_history[:20],
+        "matches": [format_match(m, db) for m in matches[:20]],
+        "suggestions": suggestion_items[:20],
+    }
+
 @app.post("/me/points/adjust", response_model=schemas.UserResponse)
 def adjust_my_points(
     payload: schemas.PointsAdjustRequest,
@@ -358,6 +418,51 @@ def read_my_point_history(
     current_user: models.User = Depends(get_current_user),
 ):
     return crud.get_user_point_history(db, current_user.id)
+
+
+@app.post("/admin/users/points/adjust", response_model=schemas.UserResponse)
+def admin_adjust_user_points(
+    payload: schemas.AdminPointsAdjustRequest,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user),
+):
+    if not current_user.is_admin:
+        raise HTTPException(status_code=403, detail="관리자만 포인트를 지급/차감할 수 있습니다.")
+
+    identifier = payload.user_identifier.strip()
+    target_user = (
+        crud.get_user_by_email(db, identifier)
+        if "@" in identifier
+        else crud.get_user_by_nickname(db, identifier)
+    )
+    if not target_user:
+        raise HTTPException(status_code=404, detail="대상 사용자를 찾을 수 없습니다.")
+
+    description = payload.description.strip() or (
+        "관리자 포인트 지급" if payload.delta > 0 else "관리자 포인트 차감"
+    )
+    updated = crud.add_user_points(
+        db,
+        target_user.nickname,
+        payload.delta,
+        description,
+    )
+    if updated is False:
+        raise HTTPException(status_code=400, detail="대상 사용자의 포인트 잔액이 부족합니다.")
+    if updated is None:
+        raise HTTPException(status_code=404, detail="대상 사용자를 찾을 수 없습니다.")
+
+    type_ = "admin_point_granted" if payload.delta > 0 else "admin_point_deducted"
+    title = "관리자 포인트 지급" if payload.delta > 0 else "관리자 포인트 차감"
+    crud.create_notification(
+        db,
+        updated.id,
+        type_,
+        title,
+        f"{abs(payload.delta):,}P가 {description} 처리되었습니다. (현재 보유 포인트: {updated.points:,}P)",
+        match_business_id=None,
+    )
+    return updated
 
 
 def _friend_item(row: models.Friendship, current_user_id: int):

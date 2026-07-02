@@ -173,6 +173,14 @@ export default function MyPageScreen({ navigation }) {
                 <Ionicons name="chevron-forward" size={20} color={colors.textLight} />
               </TouchableOpacity>
 
+              {user?.is_admin && (
+                <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate('AdminUsers')}>
+                  <Ionicons name="people-circle-outline" size={24} color={colors.text} style={styles.menuIcon} />
+                  <Text style={styles.menuText}>회원/포인트 관리</Text>
+                  <Ionicons name="chevron-forward" size={20} color={colors.textLight} />
+                </TouchableOpacity>
+              )}
+
               <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate('Friends')}>
                 <Ionicons name="people-outline" size={24} color={colors.text} style={styles.menuIcon} />
                 <Text style={styles.menuText}>친구</Text>

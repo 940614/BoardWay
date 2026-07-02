@@ -145,6 +145,24 @@ class PointsAdjustRequest(BaseModel):
     description: str = ""
 
 
+class AdminPointsAdjustRequest(BaseModel):
+    user_identifier: str = Field(..., min_length=1, max_length=100)
+    delta: int
+    description: str = ""
+
+    @field_validator("user_identifier")
+    @classmethod
+    def _strip_user_identifier(cls, value: str):
+        return value.strip()
+
+    @field_validator("delta")
+    @classmethod
+    def _validate_delta(cls, value: int):
+        if value == 0:
+            raise ValueError("0P는 지급/차감할 수 없습니다.")
+        return value
+
+
 class ReviewItemIn(BaseModel):
     reviewee_nickname: str
     rating: int = Field(..., ge=1, le=6)
@@ -251,3 +269,10 @@ class SuggestionResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class AdminUserDetailResponse(BaseModel):
+    user: UserResponse
+    point_history: List[PointHistoryItem] = []
+    matches: List[dict] = []
+    suggestions: List[SuggestionResponse] = []

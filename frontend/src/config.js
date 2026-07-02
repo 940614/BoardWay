@@ -8,7 +8,7 @@ function inferApiUrl() {
   if (envApiUrl) return envApiUrl;
 
   // 2. 웹 (브라우저) — 같은 PC 라서 localhost 면 끝
-  if (Platform.OS === 'web') return 'http://localhost:8000';
+  if (Platform.OS === 'web') return 'http://127.0.0.1:8000';
 
   // 3. 폰(Expo Go): Metro 가 폰한테 알려준 호스트 IP 를 자동 추출
   //    예: "192.168.0.42:8081" → "192.168.0.42"
