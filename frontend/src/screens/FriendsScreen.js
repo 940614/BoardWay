@@ -142,16 +142,25 @@ export default function FriendsScreen({ navigation }) {
     navigation.navigate('FriendChat', { friend });
   };
 
+  const openFriendProfile = (friend) => {
+    navigation.navigate('UserProfile', {
+      userId: friend.user_id,
+      nickname: friend.nickname,
+    });
+  };
+
   const renderFriend = ({ item }) => {
     const unreadMessageCount = getUnreadMessageNotifications(item).length;
     return (
       <View style={[styles.friendCard, unreadMessageCount > 0 && styles.friendCardUnread]}>
-        <View style={styles.avatar}>
+        <TouchableOpacity style={styles.avatar} onPress={() => openFriendProfile(item)}>
           <Text style={styles.avatarText}>{item.nickname?.[0] || '?'}</Text>
-        </View>
+        </TouchableOpacity>
         <View style={styles.friendInfo}>
           <View style={styles.friendNameRow}>
-            <Text style={styles.friendName}>{item.nickname}</Text>
+            <TouchableOpacity onPress={() => openFriendProfile(item)}>
+              <Text style={styles.friendName}>{item.nickname}</Text>
+            </TouchableOpacity>
             {unreadMessageCount > 0 && (
               <View style={styles.newMessagePill}>
                 <Text style={styles.newMessagePillText}>새 답장</Text>

@@ -17,6 +17,12 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
+    bind = op.get_bind()
+    inspector = sa.inspect(bind)
+    existing_columns = {column["name"] for column in inspector.get_columns("match_participants")}
+    if "joined_at" in existing_columns:
+        return
+
     op.add_column(
         "match_participants",
         sa.Column(

@@ -94,6 +94,11 @@ def format_match(m, db: Session = None, friend_nicknames: set = None):
 
         friend_nicknames = friend_nicknames or set()
         friend_participants = []
+        participant_users = {}
+        if db and m.participants:
+            participant_nicknames = [p.nickname for p in m.participants if p.nickname]
+            users = db.query(models.User).filter(models.User.nickname.in_(participant_nicknames)).all()
+            participant_users = {u.nickname: u for u in users}
         try:
             match_start = datetime.fromisoformat(f"{m.date}T{m.startTime}:00")
             if match_start > datetime.now():
@@ -125,7 +130,16 @@ def format_match(m, db: Session = None, friend_nicknames: set = None):
             "completed": getattr(m, "completed", False),
             "completed_at": f"{m.completed_at.isoformat()}Z" if getattr(m, "completed_at", None) else None,
             "friend_participants": friend_participants,
-            "participants": [{"nickname": p.nickname, "mannerScore": p.mannerScore, "joined_at": p.joined_at.isoformat() if getattr(p, "joined_at", None) else None, "isMe": False} for p in m.participants]
+            "participants": [
+                {
+                    "user_id": participant_users[p.nickname].id if p.nickname in participant_users else None,
+                    "nickname": p.nickname,
+                    "mannerScore": p.mannerScore,
+                    "joined_at": p.joined_at.isoformat() if getattr(p, "joined_at", None) else None,
+                    "isMe": False,
+                }
+                for p in m.participants
+            ]
         }
     except Exception as e:
         print(f"Error formatting match {getattr(m, 'match_id', m.id)}: {e}")
@@ -308,16 +322,101 @@ def login(request: schemas.LoginRequest, db: Session = Depends(get_db)):
         "access_token": access_token, 
         "token_type": "bearer",
         "user": {
+            "id": user.id,
             "email": user.email,
             "nickname": user.nickname,
             "mannerScore": user.mannerScore,
             "points": user.points,
             "is_admin": user.is_admin,
+            "bio": user.bio or "",
+            "preferred_genres": user.preferred_genres or [],
+            "preferred_locations": user.preferred_locations or [],
         }
     }
 
 @app.get("/me", response_model=schemas.UserResponse)
 def read_users_me(current_user: models.User = Depends(get_current_user)):
+    return current_user
+
+
+def _share_visible_match(db: Session, nickname_a: str, nickname_b: str) -> bool:
+    if not nickname_a or not nickname_b:
+        return False
+    candidate_matches = (
+        db.query(models.Match)
+        .join(models.MatchParticipant)
+        .filter(
+            models.Match.cancelled == False,
+            models.MatchParticipant.nickname.in_([nickname_a, nickname_b]),
+        )
+        .all()
+    )
+    for match in candidate_matches:
+        participant_nicknames = {p.nickname for p in match.participants}
+        if nickname_a in participant_nicknames and nickname_b in participant_nicknames:
+            return True
+    return False
+
+
+@app.get("/users/{user_id}/profile", response_model=schemas.PublicUserProfile)
+def read_public_user_profile(
+    user_id: int,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user),
+):
+    target_user = db.query(models.User).filter(models.User.id == user_id).first()
+    if not target_user:
+        raise HTTPException(status_code=404, detail="사용자를 찾을 수 없습니다.")
+
+    is_me = target_user.id == current_user.id
+    is_friend = crud.are_friends(db, current_user.id, target_user.id)
+    is_matchmate = _share_visible_match(db, current_user.nickname, target_user.nickname)
+    if not (is_me or is_friend or is_matchmate):
+        raise HTTPException(status_code=403, detail="프로필을 볼 수 있는 권한이 없습니다.")
+
+    relation = "me" if is_me else "friend" if is_friend else "matchmate"
+    return {
+        "id": target_user.id,
+        "nickname": target_user.nickname,
+        "mannerScore": target_user.mannerScore,
+        "bio": target_user.bio or "",
+        "preferred_genres": target_user.preferred_genres or [],
+        "preferred_locations": target_user.preferred_locations or [],
+        "relation": relation,
+    }
+
+
+@app.put("/me/profile", response_model=schemas.UserResponse)
+def update_my_profile(
+    payload: schemas.UserProfileUpdate,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user),
+):
+    next_nickname = payload.nickname.strip()
+    if next_nickname != current_user.nickname:
+        existing = crud.get_user_by_nickname(db, next_nickname)
+        if existing:
+            raise HTTPException(status_code=400, detail="이미 사용 중인 닉네임입니다.")
+        old_nickname = current_user.nickname
+        db.query(models.MatchParticipant).filter(
+            models.MatchParticipant.nickname == old_nickname
+        ).update({"nickname": next_nickname}, synchronize_session=False)
+        db.query(models.Match).filter(
+            models.Match.host_nickname == old_nickname
+        ).update({"host_nickname": next_nickname}, synchronize_session=False)
+        db.query(models.Review).filter(
+            models.Review.reviewee_nickname == old_nickname
+        ).update({"reviewee_nickname": next_nickname}, synchronize_session=False)
+        db.query(models.Message).filter(
+            models.Message.sender_nickname == old_nickname
+        ).update({"sender_nickname": next_nickname}, synchronize_session=False)
+
+    current_user.nickname = next_nickname
+    current_user.bio = payload.bio.strip()
+    current_user.preferred_genres = payload.preferred_genres
+    current_user.preferred_locations = payload.preferred_locations
+    db.commit()
+    db.refresh(current_user)
     return current_user
 
 @app.get("/admin/users", response_model=List[schemas.UserResponse])
@@ -744,6 +843,7 @@ def verify_payment(
 @app.post("/matches/{match_id}/cancel", response_model=schemas.CancelResponse)
 def cancel_match_endpoint(
     match_id: str,
+    as_admin: bool = False,
     db: Session = Depends(get_db),
     current_user: models.User = Depends(get_current_user),
 ):
@@ -759,9 +859,10 @@ def cancel_match_endpoint(
     if not current_user.is_admin and not is_host:
         raise HTTPException(status_code=403, detail="매치 취소는 운영진 또는 개설자(방장)만 가능합니다.")
 
-    result = crud.cancel_match(db, match_id, host_forfeits=is_host)
+    host_forfeits = is_host and not (current_user.is_admin and as_admin)
+    result = crud.cancel_match(db, match_id, host_forfeits=host_forfeits)
     
-    if is_host:
+    if host_forfeits:
         msg = f"매치가 취소되었습니다. 동료 참여자 {result['refunded_count']}명에게 환불이 완료되었습니다. 방장 개설 참여비는 환불되지 않습니다."
     else:
         msg = f"매치가 취소되었습니다. 참여자 {result['refunded_count']}명에게 {result['refund_amount']:,}P씩 환불 완료."

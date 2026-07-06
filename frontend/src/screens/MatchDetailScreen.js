@@ -69,6 +69,17 @@ export default function MatchDetailScreen({ route, navigation }) {
 
   const isAlreadyJoined = user && match.participants.some(p => p.nickname === user.nickname);
 
+  const openParticipantProfile = (participant) => {
+    if (!participant.user_id) {
+      notify('알림', '이 사용자의 프로필 정보를 찾을 수 없습니다.');
+      return;
+    }
+    navigation.navigate('UserProfile', {
+      userId: participant.user_id,
+      nickname: participant.nickname,
+    });
+  };
+
   const handleJoin = async () => {
     if (!user?.is_admin && points < 12000) {
       notify('포인트 부족', '보유 포인트가 부족합니다. 충전 후 이용해주세요.');
@@ -218,7 +229,9 @@ export default function MatchDetailScreen({ route, navigation }) {
           {match.participants.map((participant, index) => (
             <View key={index} style={styles.participantBox}>
               <View style={styles.participantNameRow}>
-                <Text style={styles.participantName}>{participant.nickname}</Text>
+                <TouchableOpacity onPress={() => openParticipantProfile(participant)}>
+                  <Text style={styles.participantName}>{participant.nickname}</Text>
+                </TouchableOpacity>
                 {match.host === participant.nickname && <Text style={styles.hostBadge}>👑 방장</Text>}
                 {user && user.nickname === participant.nickname && <Text style={styles.meBadge}>(본인)</Text>}
               </View>

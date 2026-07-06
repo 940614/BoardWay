@@ -10,6 +10,8 @@ import GameSearchScreen from '../screens/GameSearchScreen';
 import GameDetailScreen from '../screens/GameDetailScreen';
 import MyMatchesScreen from '../screens/MyMatchesScreen';
 import MyPageScreen from '../screens/MyPageScreen';
+import ProfileEditScreen from '../screens/ProfileEditScreen';
+import UserProfileScreen from '../screens/UserProfileScreen';
 import PointHistoryScreen from '../screens/PointHistoryScreen';
 import ChatListScreen from '../screens/ChatListScreen';
 import ChatRoomScreen from '../screens/ChatRoomScreen';
@@ -24,6 +26,7 @@ import FriendMatchesScreen from '../screens/FriendMatchesScreen';
 import AdminUserManagementScreen from '../screens/AdminUserManagementScreen';
 import AdminUserDetailScreen from '../screens/AdminUserDetailScreen';
 import AdminPointGrantScreen from '../screens/AdminPointGrantScreen';
+import AdminMatchManagementScreen from '../screens/AdminMatchManagementScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -42,6 +45,8 @@ export default function AppNavigator() {
       <Stack.Screen name="GameDetail" component={GameDetailScreen} options={{ title: '게임 정보' }} />
       <Stack.Screen name="MyMatches" component={MyMatchesScreen} />
       <Stack.Screen name="MyPage" component={MyPageScreen} options={{ animation: 'fade' }} />
+      <Stack.Screen name="ProfileEdit" component={ProfileEditScreen} options={{ animation: 'slide_from_right' }} />
+      <Stack.Screen name="UserProfile" component={UserProfileScreen} options={{ animation: 'slide_from_right' }} />
       <Stack.Screen name="PointHistory" component={PointHistoryScreen} options={{ title: '포인트 내역' }} />
       <Stack.Screen name="ChatList" component={ChatListScreen} />
       <Stack.Screen name="ChatRoom" component={ChatRoomScreen} options={{ headerShown: false }} />
@@ -56,6 +61,7 @@ export default function AppNavigator() {
       <Stack.Screen name="AdminUsers" component={AdminUserManagementScreen} options={{ animation: 'slide_from_right' }} />
       <Stack.Screen name="AdminUserDetail" component={AdminUserDetailScreen} options={{ animation: 'slide_from_right' }} />
       <Stack.Screen name="AdminPointGrant" component={AdminPointGrantScreen} options={{ animation: 'slide_from_right' }} />
+      <Stack.Screen name="AdminMatches" component={AdminMatchManagementScreen} options={{ animation: 'slide_from_right' }} />
       <Stack.Screen 
         name="MatchConfirmation" 
         component={MatchConfirmationScreen} 

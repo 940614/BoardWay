@@ -70,11 +70,12 @@ export const MatchProvider = ({ children }) => {
     }
   };
 
-  const cancelMatch = async (matchId) => {
+  const cancelMatch = async (matchId, options = {}) => {
     if (!token) return { success: false, message: '로그인이 필요합니다.' };
 
     try {
-      const response = await apiFetch(`/matches/${matchId}/cancel`, {
+      const suffix = options.asAdmin ? '?as_admin=true' : '';
+      const response = await apiFetch(`/matches/${matchId}/cancel${suffix}`, {
         method: 'POST',
         token,
       });

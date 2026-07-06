@@ -14,6 +14,9 @@ class User(Base):
     mannerScore = Column(Integer, default=5)
     points = Column(Integer, default=0, nullable=False)
     is_admin = Column(Boolean, default=False, nullable=False)
+    bio = Column(String, default="", nullable=False)
+    preferred_genres = Column(JSON, default=list, nullable=False)
+    preferred_locations = Column(JSON, default=list, nullable=False)
 
     point_history = relationship(
         "PointHistory",

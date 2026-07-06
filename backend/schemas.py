@@ -135,9 +135,54 @@ class UserResponse(BaseModel):
     mannerScore: int
     points: int = 0
     is_admin: bool = False
+    bio: str = ""
+    preferred_genres: List[str] = Field(default_factory=list)
+    preferred_locations: List[str] = Field(default_factory=list)
 
     class Config:
         from_attributes = True
+
+
+class PublicUserProfile(BaseModel):
+    id: int
+    nickname: str
+    mannerScore: int
+    bio: str = ""
+    preferred_genres: List[str] = Field(default_factory=list)
+    preferred_locations: List[str] = Field(default_factory=list)
+    relation: str = "visible"
+
+
+class UserProfileUpdate(BaseModel):
+    nickname: str = Field(..., min_length=1, max_length=50)
+    bio: str = Field("", max_length=300)
+    preferred_genres: List[str] = Field(default_factory=list)
+    preferred_locations: List[str] = Field(default_factory=list)
+
+    @field_validator("nickname")
+    @classmethod
+    def _validate_nickname(cls, value: str):
+        value = value.strip()
+        if not value:
+            raise ValueError("닉네임을 입력해주세요.")
+        if any(ch.isspace() for ch in value):
+            raise ValueError("닉네임에는 공백을 사용할 수 없습니다.")
+        return value
+
+    @field_validator("bio")
+    @classmethod
+    def _validate_bio(cls, value: str):
+        return value.strip()
+
+    @field_validator("preferred_genres", "preferred_locations")
+    @classmethod
+    def _clean_list(cls, value: List[str]):
+        cleaned = []
+        for item in value or []:
+            text = str(item).strip()
+            if text and text not in cleaned:
+                cleaned.append(text)
+        return cleaned[:10]
 
 
 class PointsAdjustRequest(BaseModel):

@@ -161,7 +161,7 @@ export default function MyPageScreen({ navigation }) {
             {/* 메뉴 리스트 */}
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>내 계정</Text>
-              <TouchableOpacity style={styles.menuItem} onPress={() => notify('준비 중', '프로필 수정 기능은 준비 중입니다.')}>
+              <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate('ProfileEdit')}>
                 <Ionicons name="create-outline" size={24} color={colors.text} style={styles.menuIcon} />
                 <Text style={styles.menuText}>프로필 수정</Text>
                 <Ionicons name="chevron-forward" size={20} color={colors.textLight} />
@@ -177,6 +177,14 @@ export default function MyPageScreen({ navigation }) {
                 <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate('AdminUsers')}>
                   <Ionicons name="people-circle-outline" size={24} color={colors.text} style={styles.menuIcon} />
                   <Text style={styles.menuText}>회원/포인트 관리</Text>
+                  <Ionicons name="chevron-forward" size={20} color={colors.textLight} />
+                </TouchableOpacity>
+              )}
+
+              {user?.is_admin && (
+                <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate('AdminMatches')}>
+                  <Ionicons name="calendar-outline" size={24} color={colors.text} style={styles.menuIcon} />
+                  <Text style={styles.menuText}>매칭 운영 관리</Text>
                   <Ionicons name="chevron-forward" size={20} color={colors.textLight} />
                 </TouchableOpacity>
               )}
