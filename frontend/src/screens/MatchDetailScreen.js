@@ -234,6 +234,19 @@ export default function MatchDetailScreen({ route, navigation }) {
                 </TouchableOpacity>
                 {match.host === participant.nickname && <Text style={styles.hostBadge}>👑 방장</Text>}
                 {user && user.nickname === participant.nickname && <Text style={styles.meBadge}>(본인)</Text>}
+                {participant.user_id && user && user.nickname !== participant.nickname && (
+                  <TouchableOpacity
+                    onPress={() => navigation.navigate('ReportUser', {
+                      reportedUserId: participant.user_id,
+                      reportedNickname: participant.nickname,
+                      matchId: match.id,
+                    })}
+                    style={styles.participantReportButton}
+                  >
+                    <Ionicons name="flag-outline" size={14} color={colors.error} />
+                    <Text style={styles.participantReportText}>신고</Text>
+                  </TouchableOpacity>
+                )}
               </View>
               {participant.mannerScore >= 5 && (
                 <Text style={styles.bestGuide}>⭐ 굿 매너 유저</Text>
@@ -514,6 +527,21 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: colors.text,
+  },
+  participantReportButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+    marginLeft: 8,
+    paddingHorizontal: 7,
+    paddingVertical: 4,
+    borderRadius: 7,
+    backgroundColor: '#FFF4F4',
+  },
+  participantReportText: {
+    color: colors.error,
+    fontSize: 11,
+    fontWeight: 'bold',
   },
   meBadge: {
     fontSize: 12,

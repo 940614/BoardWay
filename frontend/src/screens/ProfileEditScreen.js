@@ -21,7 +21,6 @@ const LOCATIONS = ['강남', '홍대', '건대', '신촌', '잠실', '노원', '
 
 export default function ProfileEditScreen({ navigation }) {
   const { user, token, fetchUserInfo } = useContext(AuthContext);
-  const [nickname, setNickname] = useState(user?.nickname || '');
   const [bio, setBio] = useState(user?.bio || '');
   const [preferredGenres, setPreferredGenres] = useState(user?.preferred_genres || []);
   const [preferredLocations, setPreferredLocations] = useState(user?.preferred_locations || []);
@@ -36,17 +35,8 @@ export default function ProfileEditScreen({ navigation }) {
   };
 
   const handleSave = async () => {
-    const trimmedNickname = nickname.trim();
     const trimmedBio = bio.trim();
 
-    if (!trimmedNickname) {
-      notify('입력 필요', '닉네임을 입력해주세요.');
-      return;
-    }
-    if (/\s/.test(trimmedNickname)) {
-      notify('닉네임 확인', '닉네임에는 띄어쓰기를 사용할 수 없습니다.');
-      return;
-    }
     if (trimmedBio.length > 300) {
       notify('자기소개 확인', '자기소개는 300자 이하로 입력해주세요.');
       return;
@@ -58,7 +48,6 @@ export default function ProfileEditScreen({ navigation }) {
         method: 'PUT',
         token,
         json: {
-          nickname: trimmedNickname,
           bio: trimmedBio,
           preferred_genres: preferredGenres,
           preferred_locations: preferredLocations,
@@ -98,23 +87,12 @@ export default function ProfileEditScreen({ navigation }) {
           <View style={{ flex: 1 }}>
             <Text style={styles.noticeTitle}>내 보드웨이 프로필</Text>
             <Text style={styles.noticeText}>
-              닉네임, 자기소개, 선호 장르와 지역을 설정해두면 나중에 친구/매칭 추천 기능에 활용할 수 있습니다.
+              자기소개, 선호 장르와 지역을 설정해두면 나중에 친구·매칭 추천 기능에 활용할 수 있습니다.
             </Text>
           </View>
         </View>
 
         <View style={styles.formCard}>
-          <Text style={styles.label}>닉네임</Text>
-          <TextInput
-            style={styles.input}
-            value={nickname}
-            onChangeText={setNickname}
-            placeholder="닉네임"
-            placeholderTextColor={colors.textLight}
-            autoCapitalize="none"
-          />
-          <Text style={styles.helperText}>띄어쓰기 없이 입력해주세요. 이미 사용 중인 닉네임은 저장할 수 없습니다.</Text>
-
           <Text style={styles.label}>자기소개</Text>
           <TextInput
             style={[styles.input, styles.bioInput]}

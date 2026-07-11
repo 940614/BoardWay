@@ -358,6 +358,28 @@ def _share_visible_match(db: Session, nickname_a: str, nickname_b: str) -> bool:
     return False
 
 
+def _format_user_report(report: models.UserReport, include_admin_details: bool = True):
+    result = {
+        "id": report.id,
+        "reporter_id": report.reporter_id,
+        "reporter_nickname": report.reporter.nickname if report.reporter else "알 수 없음",
+        "reported_user_id": report.reported_user_id,
+        "reported_user_nickname": report.reported_user.nickname if report.reported_user else "알 수 없음",
+        "match_id": report.match.match_id if report.match else None,
+        "category": report.category,
+        "content": report.content,
+        "status": report.status,
+        "created_at": report.created_at.isoformat() if report.created_at else None,
+    }
+    if include_admin_details:
+        result.update({
+            "admin_note": report.admin_note,
+            "handled_by_nickname": report.handled_by.nickname if report.handled_by else None,
+            "handled_at": report.handled_at.isoformat() if report.handled_at else None,
+        })
+    return result
+
+
 @app.get("/users/{user_id}/profile", response_model=schemas.PublicUserProfile)
 def read_public_user_profile(
     user_id: int,
@@ -392,32 +414,106 @@ def update_my_profile(
     db: Session = Depends(get_db),
     current_user: models.User = Depends(get_current_user),
 ):
-    next_nickname = payload.nickname.strip()
-    if next_nickname != current_user.nickname:
-        existing = crud.get_user_by_nickname(db, next_nickname)
-        if existing:
-            raise HTTPException(status_code=400, detail="이미 사용 중인 닉네임입니다.")
-        old_nickname = current_user.nickname
-        db.query(models.MatchParticipant).filter(
-            models.MatchParticipant.nickname == old_nickname
-        ).update({"nickname": next_nickname}, synchronize_session=False)
-        db.query(models.Match).filter(
-            models.Match.host_nickname == old_nickname
-        ).update({"host_nickname": next_nickname}, synchronize_session=False)
-        db.query(models.Review).filter(
-            models.Review.reviewee_nickname == old_nickname
-        ).update({"reviewee_nickname": next_nickname}, synchronize_session=False)
-        db.query(models.Message).filter(
-            models.Message.sender_nickname == old_nickname
-        ).update({"sender_nickname": next_nickname}, synchronize_session=False)
-
-    current_user.nickname = next_nickname
     current_user.bio = payload.bio.strip()
     current_user.preferred_genres = payload.preferred_genres
     current_user.preferred_locations = payload.preferred_locations
     db.commit()
     db.refresh(current_user)
     return current_user
+
+
+@app.post("/reports", response_model=schemas.UserReportResponse)
+def create_user_report(
+    payload: schemas.UserReportCreate,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user),
+):
+    """친구 또는 같은 매칭 참여자를 신고한다."""
+    target_user = db.query(models.User).filter(models.User.id == payload.reported_user_id).first()
+    if not target_user:
+        raise HTTPException(status_code=404, detail="신고 대상을 찾을 수 없습니다.")
+    if target_user.id == current_user.id:
+        raise HTTPException(status_code=400, detail="자기 자신은 신고할 수 없습니다.")
+
+    match = None
+    if payload.match_id:
+        match = crud.get_match_by_match_id(db, payload.match_id)
+        if not match:
+            raise HTTPException(status_code=404, detail="관련 매칭을 찾을 수 없습니다.")
+        participant_names = {participant.nickname for participant in match.participants}
+        if current_user.nickname not in participant_names or target_user.nickname not in participant_names:
+            raise HTTPException(status_code=403, detail="두 사용자가 함께 참여한 매칭만 신고에 연결할 수 있습니다.")
+    elif not (
+        crud.are_friends(db, current_user.id, target_user.id)
+        or _share_visible_match(db, current_user.nickname, target_user.nickname)
+    ):
+        raise HTTPException(status_code=403, detail="친구 또는 같은 매칭 참여자만 신고할 수 있습니다.")
+
+    report = crud.create_user_report(
+        db,
+        payload,
+        reporter_id=current_user.id,
+        reported_user_id=target_user.id,
+        match_db_id=match.id if match else None,
+    )
+    if report == "DUPLICATE":
+        raise HTTPException(status_code=400, detail="같은 대상에 대한 미처리 신고가 이미 접수되어 있습니다.")
+    return _format_user_report(report)
+
+
+@app.get("/reports", response_model=List[schemas.UserReportResponse])
+def get_user_reports(
+    status_filter: str | None = None,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user),
+):
+    if status_filter and status_filter not in {"received", "reviewing", "resolved"}:
+        raise HTTPException(status_code=400, detail="올바르지 않은 신고 상태입니다.")
+    reports = (
+        crud.get_all_user_reports(db, status_filter)
+        if current_user.is_admin
+        else crud.get_user_reports(db, current_user.id)
+    )
+    return [
+        _format_user_report(report, include_admin_details=current_user.is_admin)
+        for report in reports
+    ]
+
+
+@app.patch("/reports/{report_id}/status", response_model=schemas.UserReportResponse)
+def update_user_report_status(
+    report_id: int,
+    payload: schemas.UserReportStatusUpdate,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user),
+):
+    if not current_user.is_admin:
+        raise HTTPException(status_code=403, detail="운영진만 신고를 처리할 수 있습니다.")
+
+    report = crud.update_user_report_status(
+        db,
+        report_id,
+        payload.status,
+        payload.admin_note,
+        current_user.id,
+    )
+    if not report:
+        raise HTTPException(status_code=404, detail="신고 내역을 찾을 수 없습니다.")
+
+    status_labels = {
+        "received": "접수됨",
+        "reviewing": "검토 중",
+        "resolved": "처리 완료",
+    }
+    crud.create_notification(
+        db,
+        report.reporter_id,
+        "report_status_updated",
+        "신고 처리 상태 안내",
+        f"접수하신 신고가 ‘{status_labels[payload.status]}’ 상태로 변경되었습니다.",
+    )
+    return _format_user_report(report)
+
 
 @app.get("/admin/users", response_model=List[schemas.UserResponse])
 def admin_list_users(

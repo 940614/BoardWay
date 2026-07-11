@@ -159,6 +159,27 @@ class Suggestion(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
 
+class UserReport(Base):
+    __tablename__ = "user_reports"
+
+    id = Column(Integer, primary_key=True, index=True)
+    reporter_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    reported_user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    match_id = Column(Integer, ForeignKey("matches.id"), nullable=True, index=True)
+    category = Column(String, nullable=False)
+    content = Column(String, nullable=False)
+    status = Column(String, nullable=False, default="received", index=True)
+    admin_note = Column(String, nullable=True)
+    handled_by_user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    handled_at = Column(DateTime(timezone=True), nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+
+    reporter = relationship("User", foreign_keys=[reporter_id])
+    reported_user = relationship("User", foreign_keys=[reported_user_id])
+    match = relationship("Match", foreign_keys=[match_id])
+    handled_by = relationship("User", foreign_keys=[handled_by_user_id])
+
+
 class Friendship(Base):
     __tablename__ = "friendships"
 

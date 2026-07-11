@@ -684,6 +684,73 @@ def get_all_suggestions(db: Session):
     )
 
 
+def create_user_report(
+    db: Session,
+    report_in: schemas.UserReportCreate,
+    reporter_id: int,
+    reported_user_id: int,
+    match_db_id: int | None,
+):
+    duplicate_query = db.query(models.UserReport).filter(
+        models.UserReport.reporter_id == reporter_id,
+        models.UserReport.reported_user_id == reported_user_id,
+        models.UserReport.status.in_(["received", "reviewing"]),
+    )
+    if match_db_id is None:
+        duplicate_query = duplicate_query.filter(models.UserReport.match_id.is_(None))
+    else:
+        duplicate_query = duplicate_query.filter(models.UserReport.match_id == match_db_id)
+    if duplicate_query.first():
+        return "DUPLICATE"
+
+    report = models.UserReport(
+        reporter_id=reporter_id,
+        reported_user_id=reported_user_id,
+        match_id=match_db_id,
+        category=report_in.category,
+        content=report_in.content,
+    )
+    db.add(report)
+    db.commit()
+    db.refresh(report)
+    return report
+
+
+def get_user_reports(db: Session, reporter_id: int):
+    return (
+        db.query(models.UserReport)
+        .filter(models.UserReport.reporter_id == reporter_id)
+        .order_by(models.UserReport.created_at.desc())
+        .all()
+    )
+
+
+def get_all_user_reports(db: Session, status: str | None = None):
+    query = db.query(models.UserReport)
+    if status:
+        query = query.filter(models.UserReport.status == status)
+    return query.order_by(models.UserReport.created_at.desc()).all()
+
+
+def update_user_report_status(
+    db: Session,
+    report_id: int,
+    status: str,
+    admin_note: str,
+    handled_by_user_id: int,
+):
+    report = db.query(models.UserReport).filter(models.UserReport.id == report_id).first()
+    if not report:
+        return None
+    report.status = status
+    report.admin_note = admin_note or None
+    report.handled_by_user_id = handled_by_user_id
+    report.handled_at = datetime.now(timezone.utc)
+    db.commit()
+    db.refresh(report)
+    return report
+
+
 def _friendship_between(db: Session, user_id: int, other_user_id: int):
     return (
         db.query(models.Friendship)

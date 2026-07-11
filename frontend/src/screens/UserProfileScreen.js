@@ -91,6 +91,18 @@ export default function UserProfileScreen({ route, navigation }) {
             <Text style={styles.mannerText}>
               매너 주사위 {Number(profile.mannerScore || 0).toFixed(1)}
             </Text>
+            {profile.relation !== 'me' && (
+              <TouchableOpacity
+                style={styles.reportButton}
+                onPress={() => navigation.navigate('ReportUser', {
+                  reportedUserId: profile.id,
+                  reportedNickname: profile.nickname,
+                })}
+              >
+                <Ionicons name="flag-outline" size={16} color={colors.error} />
+                <Text style={styles.reportButtonText}>사용자 신고</Text>
+              </TouchableOpacity>
+            )}
           </View>
 
           <View style={styles.section}>
@@ -178,6 +190,12 @@ const styles = StyleSheet.create({
   },
   relationBadgeText: { color: colors.primary, fontSize: 12, fontWeight: '700' },
   mannerText: { marginTop: 10, color: colors.textLight, fontSize: 14 },
+  reportButton: {
+    flexDirection: 'row', alignItems: 'center', gap: 5, marginTop: 18,
+    borderWidth: 1, borderColor: '#FECACA', backgroundColor: '#FFF7F7',
+    borderRadius: 10, paddingHorizontal: 12, paddingVertical: 8,
+  },
+  reportButtonText: { color: colors.error, fontSize: 13, fontWeight: '700' },
   section: {
     backgroundColor: colors.surface,
     borderRadius: 16,

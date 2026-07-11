@@ -27,6 +27,8 @@ import AdminUserManagementScreen from '../screens/AdminUserManagementScreen';
 import AdminUserDetailScreen from '../screens/AdminUserDetailScreen';
 import AdminPointGrantScreen from '../screens/AdminPointGrantScreen';
 import AdminMatchManagementScreen from '../screens/AdminMatchManagementScreen';
+import AdminReportManagementScreen from '../screens/AdminReportManagementScreen';
+import ReportUserScreen from '../screens/ReportUserScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -62,6 +64,8 @@ export default function AppNavigator() {
       <Stack.Screen name="AdminUserDetail" component={AdminUserDetailScreen} options={{ animation: 'slide_from_right' }} />
       <Stack.Screen name="AdminPointGrant" component={AdminPointGrantScreen} options={{ animation: 'slide_from_right' }} />
       <Stack.Screen name="AdminMatches" component={AdminMatchManagementScreen} options={{ animation: 'slide_from_right' }} />
+      <Stack.Screen name="AdminReports" component={AdminReportManagementScreen} options={{ animation: 'slide_from_right' }} />
+      <Stack.Screen name="ReportUser" component={ReportUserScreen} options={{ animation: 'slide_from_right' }} />
       <Stack.Screen 
         name="MatchConfirmation" 
         component={MatchConfirmationScreen} 

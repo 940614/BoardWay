@@ -154,20 +154,9 @@ class PublicUserProfile(BaseModel):
 
 
 class UserProfileUpdate(BaseModel):
-    nickname: str = Field(..., min_length=1, max_length=50)
     bio: str = Field("", max_length=300)
     preferred_genres: List[str] = Field(default_factory=list)
     preferred_locations: List[str] = Field(default_factory=list)
-
-    @field_validator("nickname")
-    @classmethod
-    def _validate_nickname(cls, value: str):
-        value = value.strip()
-        if not value:
-            raise ValueError("닉네임을 입력해주세요.")
-        if any(ch.isspace() for ch in value):
-            raise ValueError("닉네임에는 공백을 사용할 수 없습니다.")
-        return value
 
     @field_validator("bio")
     @classmethod
@@ -314,6 +303,47 @@ class SuggestionResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class UserReportCreate(BaseModel):
+    reported_user_id: int = Field(..., gt=0)
+    match_id: Optional[str] = Field(None, max_length=100)
+    category: Literal["노쇼", "부적절한 언행", "괴롭힘", "사기·금전 요구", "기타"]
+    content: str = Field(..., min_length=5, max_length=1000)
+
+    @field_validator("content")
+    @classmethod
+    def _strip_report_content(cls, value: str):
+        value = value.strip()
+        if not value:
+            raise ValueError("신고 내용을 입력해주세요.")
+        return value
+
+
+class UserReportStatusUpdate(BaseModel):
+    status: Literal["received", "reviewing", "resolved"]
+    admin_note: str = Field("", max_length=1000)
+
+    @field_validator("admin_note")
+    @classmethod
+    def _strip_admin_note(cls, value: str):
+        return value.strip()
+
+
+class UserReportResponse(BaseModel):
+    id: int
+    reporter_id: int
+    reporter_nickname: str
+    reported_user_id: int
+    reported_user_nickname: str
+    match_id: Optional[str] = None
+    category: str
+    content: str
+    status: str
+    admin_note: Optional[str] = None
+    handled_by_nickname: Optional[str] = None
+    handled_at: Optional[datetime] = None
+    created_at: datetime
 
 
 class AdminUserDetailResponse(BaseModel):
