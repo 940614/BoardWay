@@ -307,7 +307,8 @@ class SuggestionResponse(BaseModel):
 
 class UserReportCreate(BaseModel):
     reported_user_id: int = Field(..., gt=0)
-    match_id: Optional[str] = Field(None, max_length=100)
+    # 신고는 반드시 동일한 매칭의 참여자 사이에서만 접수한다.
+    match_id: str = Field(..., min_length=1, max_length=100)
     category: Literal["노쇼", "부적절한 언행", "괴롭힘", "사기·금전 요구", "기타"]
     content: str = Field(..., min_length=5, max_length=1000)
 

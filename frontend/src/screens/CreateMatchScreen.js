@@ -571,7 +571,7 @@ export default function CreateMatchScreen({ navigation }) {
 
               <View style={styles.ruleItem}>
                 <Text style={styles.ruleTitle}>⏱️ 정규 진행 시간 2시간</Text>
-                <Text style={styles.ruleDesc}>모든 매칭의 정규 진행 시간은 시작 시각부터 2시간입니다. 더 즐기고 싶다면 참여자끼리 협의하여 자유롭게 연장할 수 있으며, 정규 시간이 지난 뒤 방장은 '매칭 성공적으로 완료' 버튼을 눌러 참여자 평가를 시작할 수 있습니다.</Text>
+                <Text style={styles.ruleDesc}>모든 매칭의 정규 진행 시간은 시작 시각부터 2시간입니다. 더 즐기고 싶다면 참여자끼리 협의하여 자유롭게 연장할 수 있습니다. 정규 시간이 끝나면 방장에게 완료 안내가 오며, 방장은 '매칭 성공적으로 완료' 버튼으로 참여자 평가를 시작할 수 있습니다. 종료 후 1시간 안에 완료하지 않으면 평가는 자동으로 시작되고 방장 리워드는 지급되지 않습니다.</Text>
               </View>
 
               <View style={styles.ruleItem}>

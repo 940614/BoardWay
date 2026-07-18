@@ -310,7 +310,7 @@ def _maybe_reward_host_for_match(db: Session, match: models.Match):
     """방장이 받은 평가 평균이 기준 이상이면 우수 방장 리워드를 1회 지급."""
     if not match or not match.host_nickname:
         return None
-    if not match.completed or not match.completed_at:
+    if not match.completed or not match.completed_at or not getattr(match, "completed_by_host", False):
         return None
 
     host_user = get_user_by_nickname(db, match.host_nickname)
@@ -605,7 +605,7 @@ def get_user_point_history(db: Session, user_id: int):
     )
 
 
-def complete_match(db: Session, match_business_id: str):
+def complete_match(db: Session, match_business_id: str, completed_by_host: bool = True):
     """Mark a match as successfully completed, and notify participants to evaluate.
 
     Returns:
@@ -623,17 +623,25 @@ def complete_match(db: Session, match_business_id: str):
 
     match.completed = True
     match.completed_at = datetime.now(timezone.utc).replace(tzinfo=None)
+    match.completed_by_host = completed_by_host
     db.flush()
 
     games_label = ", ".join(match.games or ["자율 선택"])
+    if completed_by_host:
+        notification_title = "매칭 성공적으로 완료"
+        notification_body = f"[{games_label}] 매칭이 완료되었습니다. 지금부터 30분 동안 참여자들과 상호 매너 평가를 진행해주세요!"
+    else:
+        notification_title = "매너 평가 자동 시작"
+        notification_body = f"[{games_label}] 방장의 완료 확인 시간이 지나 자동으로 평가가 시작되었습니다. 지금부터 30분 동안 상호 매너 평가를 진행해주세요!"
+
     # Notify all participants that manner evaluation has started
     for p in match.participants:
         user = get_user_by_nickname(db, p.nickname)
         if user:
             create_notification(
                 db, user.id, "manner_evaluation_started",
-                "매칭 성공 완료 안내",
-                f"[{games_label}] 매칭이 완료되었습니다. 참여자들의 상호 매너 주사위 평가를 진행해주세요!",
+                notification_title,
+                notification_body,
                 match_business_id=match.match_id,
             )
 

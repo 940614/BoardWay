@@ -99,6 +99,8 @@ class Match(Base):
     is_flexible = Column(Boolean, default=False, nullable=False)
     completed = Column(Boolean, default=False, nullable=False)
     completed_at = Column(DateTime, nullable=True)
+    # 자동 평가 시작 건에는 방장 리워드를 지급하지 않기 위한 기록
+    completed_by_host = Column(Boolean, default=False, nullable=False)
 
     participants = relationship("MatchParticipant", back_populates="match", cascade="all, delete-orphan")
 

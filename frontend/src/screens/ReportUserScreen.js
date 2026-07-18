@@ -26,6 +26,10 @@ export default function ReportUserScreen({ route, navigation }) {
   const [submitting, setSubmitting] = useState(false);
 
   const submitReport = async () => {
+    if (!matchId) {
+      notify('신고할 수 없음', '신고는 같은 매칭에 참여한 사용자에게만 할 수 있습니다. 매칭 상세 페이지에서 신고해주세요.');
+      return;
+    }
     const trimmedContent = content.trim();
     if (trimmedContent.length < 5) {
       notify('신고 내용 확인', '상황을 5자 이상 구체적으로 작성해주세요.');
@@ -39,7 +43,7 @@ export default function ReportUserScreen({ route, navigation }) {
         token,
         json: {
           reported_user_id: reportedUserId,
-          match_id: matchId || null,
+          match_id: matchId,
           category,
           content: trimmedContent,
         },
@@ -74,7 +78,7 @@ export default function ReportUserScreen({ route, navigation }) {
           <View style={{ flex: 1 }}>
             <Text style={styles.noticeTitle}>{reportedNickname || '사용자'} 님 신고</Text>
             <Text style={styles.noticeText}>
-              사실과 다른 신고는 서비스 이용에 제한이 있을 수 있습니다. 운영진이 내용과 관련 매칭 정보를 확인합니다.
+              성공적으로 완료된 같은 매칭의 참여자만 신고할 수 있습니다. 사실과 다른 신고는 서비스 이용에 제한이 있을 수 있으며, 운영진이 내용과 관련 매칭 정보를 확인합니다.
             </Text>
           </View>
         </View>

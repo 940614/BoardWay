@@ -92,7 +92,7 @@ export default function MyMatchesScreen({ navigation }) {
   const handleCompleteMatch = (match) => {
     confirmAction(
       '매칭 완료 확인',
-      '모임이 정상적으로 끝났나요? 완료 처리하면 지금부터 30분 동안 모든 참여자의 상호 매너 평가가 시작됩니다.',
+      '모임이 정상적으로 끝났나요? 완료 처리하면 지금부터 30분 동안 모든 참여자의 상호 매너 평가가 시작됩니다. 종료 후 1시간 안에 처리하지 않으면 평가는 자동으로 시작됩니다.',
       async () => {
         const result = await completeMatch(match.id);
         if (result.success) {
@@ -259,7 +259,7 @@ export default function MyMatchesScreen({ navigation }) {
             </TouchableOpacity>
           ) : (
             <View style={[styles.reviewBtn, styles.waitingBtn]}>
-              <Text style={styles.waitingBtnText}>방장의 매칭 완료 확인을 기다리는 중...</Text>
+              <Text style={styles.waitingBtnText}>방장의 매칭 완료 확인을 기다리는 중... (종료 1시간 후 자동으로 평가 시작)</Text>
             </View>
           )
         ) : isReviewed ? (

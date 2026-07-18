@@ -129,6 +129,7 @@ def format_match(m, db: Session = None, friend_nicknames: set = None):
             "is_flexible": m.is_flexible,
             "completed": getattr(m, "completed", False),
             "completed_at": f"{m.completed_at.isoformat()}Z" if getattr(m, "completed_at", None) else None,
+            "completed_by_host": getattr(m, "completed_by_host", False),
             "friend_participants": friend_participants,
             "participants": [
                 {
@@ -428,33 +429,38 @@ def create_user_report(
     db: Session = Depends(get_db),
     current_user: models.User = Depends(get_current_user),
 ):
-    """친구 또는 같은 매칭 참여자를 신고한다."""
+    """성공적으로 완료된 같은 매칭의 참여자를 신고한다."""
     target_user = db.query(models.User).filter(models.User.id == payload.reported_user_id).first()
     if not target_user:
         raise HTTPException(status_code=404, detail="신고 대상을 찾을 수 없습니다.")
     if target_user.id == current_user.id:
         raise HTTPException(status_code=400, detail="자기 자신은 신고할 수 없습니다.")
 
-    match = None
-    if payload.match_id:
-        match = crud.get_match_by_match_id(db, payload.match_id)
-        if not match:
-            raise HTTPException(status_code=404, detail="관련 매칭을 찾을 수 없습니다.")
-        participant_names = {participant.nickname for participant in match.participants}
-        if current_user.nickname not in participant_names or target_user.nickname not in participant_names:
-            raise HTTPException(status_code=403, detail="두 사용자가 함께 참여한 매칭만 신고에 연결할 수 있습니다.")
-    elif not (
-        crud.are_friends(db, current_user.id, target_user.id)
-        or _share_visible_match(db, current_user.nickname, target_user.nickname)
-    ):
-        raise HTTPException(status_code=403, detail="친구 또는 같은 매칭 참여자만 신고할 수 있습니다.")
+    match = crud.get_match_by_match_id(db, payload.match_id)
+    if not match:
+        raise HTTPException(status_code=404, detail="관련 매칭을 찾을 수 없습니다.")
+    if match.cancelled or not match.completed:
+        raise HTTPException(status_code=400, detail="신고는 매칭이 성공적으로 완료된 후에만 접수할 수 있습니다.")
+    participant_names = {participant.nickname for participant in match.participants}
+    if current_user.nickname not in participant_names or target_user.nickname not in participant_names:
+        raise HTTPException(status_code=403, detail="신고는 같은 매칭에 참여한 사용자에게만 할 수 있습니다.")
+    has_submitted_review = (
+        db.query(models.Review.id)
+        .filter(
+            models.Review.match_id == match.id,
+            models.Review.reviewer_id == current_user.id,
+        )
+        .first()
+    )
+    if not has_submitted_review:
+        raise HTTPException(status_code=403, detail="신고는 해당 매칭의 상호 매너 평가를 제출한 후에 할 수 있습니다.")
 
     report = crud.create_user_report(
         db,
         payload,
         reporter_id=current_user.id,
         reported_user_id=target_user.id,
-        match_db_id=match.id if match else None,
+        match_db_id=match.id,
     )
     if report == "DUPLICATE":
         raise HTTPException(status_code=400, detail="같은 대상에 대한 미처리 신고가 이미 접수되어 있습니다.")
@@ -1239,7 +1245,8 @@ def reply_to_suggestion(
 
 def check_and_cancel_matches(db: Session):
     from datetime import datetime, timedelta
-    now = datetime.now()
+    # 매칭 일시(date/startTime)는 한국 시간으로 저장되므로 Railway(UTC)에서도 같은 기준으로 비교한다.
+    now = datetime.now(timezone(timedelta(hours=9))).replace(tzinfo=None)
     active_matches = db.query(models.Match).filter(models.Match.cancelled == False).all()
     for match in active_matches:
         try:
@@ -1302,6 +1309,12 @@ def check_and_cancel_matches(db: Session):
 
         match_end = match_start + timedelta(hours=2)
         if now >= match_end and not match.completed and match.host_nickname:
+            # 종료 후 1시간 동안 방장의 완료 확인을 기다린 뒤 평가를 자동 시작한다.
+            # 자동 시작 건은 방장 리워드 지급 대상이 아니다.
+            if now >= match_end + timedelta(hours=1):
+                crud.complete_match(db, match.match_id, completed_by_host=False)
+                continue
+
             host_user = crud.get_user_by_nickname(db, match.host_nickname)
             if host_user:
                 already_prompted = (
@@ -1320,7 +1333,7 @@ def check_and_cancel_matches(db: Session):
                         host_user.id,
                         "match_completion_prompt",
                         "매칭 완료 확인 필요",
-                        f"[{games_label}] 매칭 종료 시간이 지났습니다. 내 매칭에서 '매칭 성공적으로 완료' 버튼을 눌러 참여자 평가를 시작해주세요.",
+                        f"[{games_label}] 매칭 종료 시간이 지났습니다. 내 매칭에서 '매칭 성공적으로 완료' 버튼을 눌러 참여자 평가를 시작해주세요. 종료 후 1시간 안에 완료 처리하지 않으면 평가는 자동으로 시작되며, 방장 리워드는 지급되지 않습니다.",
                         match_business_id=match.match_id,
                     )
 
