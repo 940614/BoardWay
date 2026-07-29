@@ -291,7 +291,7 @@ export default function MatchDetailScreen({ route, navigation }) {
       <View style={styles.footer}>
         {isAlreadyJoined && !isCancelled && (
           <TouchableOpacity
-            style={[commonStyles.button, styles.chatRoomBtn]}
+            style={[commonStyles.button, styles.footerActionBtn, styles.chatRoomBtn]}
             onPress={openChatRoom}
           >
             <Ionicons name="chatbubbles-outline" size={18} color="#FFFFFF" style={{ marginRight: 6 }} />
@@ -301,7 +301,7 @@ export default function MatchDetailScreen({ route, navigation }) {
 
         {(isAdmin || isHost) && !isCancelled && !match.completed && (
           <TouchableOpacity
-            style={[commonStyles.button, styles.cancelMatchBtn]}
+            style={[commonStyles.button, styles.footerActionBtn, styles.cancelMatchBtn]}
             onPress={handleCancelMatch}
           >
             <Text style={commonStyles.buttonText}>
@@ -312,6 +312,7 @@ export default function MatchDetailScreen({ route, navigation }) {
         <TouchableOpacity
           style={[
             commonStyles.button,
+            styles.footerActionBtn,
             (isAlreadyJoined || isFull || isStarted || isCancelled) && { backgroundColor: '#A0A0A0' }
           ]}
           disabled={isAlreadyJoined || isFull || isStarted || isCancelled}
@@ -582,10 +583,29 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   footer: {
-    padding: 20,
+    paddingHorizontal: Platform.OS === 'web' ? 20 : 16,
+    paddingVertical: Platform.OS === 'web' ? 12 : 14,
     backgroundColor: colors.surface,
     borderTopWidth: 1,
     borderTopColor: colors.border,
+    flexDirection: Platform.OS === 'web' ? 'row' : 'column',
+    justifyContent: Platform.OS === 'web' ? 'flex-end' : 'center',
+    alignItems: Platform.OS === 'web' ? 'center' : 'stretch',
+    gap: Platform.OS === 'web' ? 10 : 8,
+  },
+  footerActionBtn: {
+    minHeight: 42,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 10,
+    marginBottom: 0,
+    ...(Platform.OS === 'web'
+      ? {
+          width: 'auto',
+          minWidth: 180,
+          maxWidth: 260,
+        }
+      : {}),
   },
   modalOverlay: {
     flex: 1,
@@ -689,11 +709,9 @@ const styles = StyleSheet.create({
   },
   cancelMatchBtn: {
     backgroundColor: colors.error,
-    marginBottom: 12,
   },
   chatRoomBtn: {
     flexDirection: 'row',
-    marginBottom: 12,
   },
   flexibleNoticeBox: {
     flexDirection: 'row',
