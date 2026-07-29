@@ -23,6 +23,14 @@ const WEEKEND_TEXT_COLORS = {
   saturday: '#3498DB',
 };
 
+// 이전 서버 응답에는 UTC 시각에 시간대 표기가 없었다. 이 경우 브라우저가
+// 한국 시간으로 해석해 신청 후 경과 시간이 9시간 크게 보일 수 있으므로 UTC로 보정한다.
+const parseJoinedAt = (value) => {
+  if (!value) return null;
+  const hasTimezone = /(?:Z|[+-]\d{2}:\d{2})$/i.test(value);
+  return new Date(hasTimezone ? value : `${value}Z`);
+};
+
 export default function MyMatchesScreen({ navigation }) {
   const { matches, leaveMatch, cancelMatch, completeMatch } = useContext(MatchContext);
   const { user, reviewedMatches } = useContext(AuthContext);
@@ -34,7 +42,7 @@ export default function MyMatchesScreen({ navigation }) {
     if (user && match.participants) {
       const myPart = match.participants.find(p => p.nickname === user.nickname);
       if (myPart && myPart.joined_at) {
-        const joinedAt = new Date(myPart.joined_at);
+        const joinedAt = parseJoinedAt(myPart.joined_at);
         const matchStart = new Date(`${match.date}T${match.startTime}:00`);
         const now = new Date();
         const timeToStartMs = matchStart.getTime() - now.getTime();
@@ -215,7 +223,7 @@ export default function MyMatchesScreen({ navigation }) {
             if (user && item.participants) {
               const myPart = item.participants.find(p => p.nickname === user.nickname);
               if (myPart && myPart.joined_at) {
-                const joinedAt = new Date(myPart.joined_at);
+                const joinedAt = parseJoinedAt(myPart.joined_at);
                 const timeToStartMs = matchStart.getTime() - now.getTime();
                 const timeSinceJoinMs = now.getTime() - joinedAt.getTime();
                 

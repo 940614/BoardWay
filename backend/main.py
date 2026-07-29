@@ -136,7 +136,9 @@ def format_match(m, db: Session = None, friend_nicknames: set = None):
                     "user_id": participant_users[p.nickname].id if p.nickname in participant_users else None,
                     "nickname": p.nickname,
                     "mannerScore": p.mannerScore,
-                    "joined_at": p.joined_at.isoformat() if getattr(p, "joined_at", None) else None,
+                    # Railway에서는 신청 시각을 UTC 기준으로 저장한다. 시간대 정보 없이
+                    # 전달하면 브라우저가 로컬 시간으로 잘못 해석하므로 UTC임을 명시한다.
+                    "joined_at": f"{p.joined_at.isoformat()}Z" if getattr(p, "joined_at", None) else None,
                     "isMe": False,
                 }
                 for p in m.participants
