@@ -75,6 +75,19 @@ export default function DiscoveryScreen({ navigation }) {
       .sort((a, b) => a.startTime.localeCompare(b.startTime));
   }, [matches, activeDate, activeGenre, activeLocation, activeTime]);
 
+  const listItems = useMemo(() => {
+    const matchItems = filteredMatches.map(match => ({
+      type: 'match',
+      id: match.id,
+      match,
+    }));
+
+    return [
+      { type: 'filters', id: '__filters' },
+      ...(matchItems.length > 0 ? matchItems : [{ type: 'empty', id: '__empty' }]),
+    ];
+  }, [filteredMatches]);
+
   const handleFilterSelect = (item) => {
     if (activeModal === 'genre') setActiveGenre(item);
     if (activeModal === 'location') setActiveLocation(item);
@@ -211,6 +224,36 @@ export default function DiscoveryScreen({ navigation }) {
     );
   };
 
+  const FilterBar = () => (
+    <View style={styles.filterSection}>
+      <TouchableOpacity style={styles.filterDropdownBtn} onPress={() => setActiveModal('genre')}>
+        <Text style={styles.filterBtnLabel}>장르 ▾</Text>
+        <Text style={styles.filterBtnValue} numberOfLines={1}>{activeGenre}</Text>
+      </TouchableOpacity>
+      <TouchableOpacity style={styles.filterDropdownBtn} onPress={() => setActiveModal('location')}>
+        <Text style={styles.filterBtnLabel}>장소 ▾</Text>
+        <Text style={styles.filterBtnValue} numberOfLines={1}>{activeLocation}</Text>
+      </TouchableOpacity>
+      <TouchableOpacity style={styles.filterDropdownBtn} onPress={() => setActiveModal('time')}>
+        <Text style={styles.filterBtnLabel}>시간 ▾</Text>
+        <Text style={styles.filterBtnValue} numberOfLines={1}>{activeTime}</Text>
+      </TouchableOpacity>
+    </View>
+  );
+
+  const renderDiscoveryItem = ({ item }) => {
+    if (item.type === 'filters') return <FilterBar />;
+    if (item.type === 'empty') {
+      return (
+        <View style={styles.emptyContainer}>
+          <Text style={styles.emptyText}>해당 날짜와 조건에 맞는 매치가 없습니다.</Text>
+          <Text style={styles.emptySubText}>다른 날짜를 선택해보세요!</Text>
+        </View>
+      );
+    }
+    return renderMatchCard({ item: item.match });
+  };
+
   const ListHeader = () => (
     <>
       <View style={styles.headerContainer}>
@@ -261,36 +304,18 @@ export default function DiscoveryScreen({ navigation }) {
         </ScrollView>
       </View>
 
-      <View style={styles.filterSection}>
-        <TouchableOpacity style={styles.filterDropdownBtn} onPress={() => setActiveModal('genre')}>
-          <Text style={styles.filterBtnLabel}>장르 ▾</Text>
-          <Text style={styles.filterBtnValue} numberOfLines={1}>{activeGenre}</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.filterDropdownBtn} onPress={() => setActiveModal('location')}>
-          <Text style={styles.filterBtnLabel}>장소 ▾</Text>
-          <Text style={styles.filterBtnValue} numberOfLines={1}>{activeLocation}</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.filterDropdownBtn} onPress={() => setActiveModal('time')}>
-          <Text style={styles.filterBtnLabel}>시간 ▾</Text>
-          <Text style={styles.filterBtnValue} numberOfLines={1}>{activeTime}</Text>
-        </TouchableOpacity>
-      </View>
     </>
   );
 
   return (
     <SafeAreaView style={commonStyles.container}>
       <FlatList
-        data={filteredMatches}
-        renderItem={renderMatchCard}
+        data={listItems}
+        renderItem={renderDiscoveryItem}
         keyExtractor={item => item.id}
         ListHeaderComponent={ListHeader}
-        ListEmptyComponent={
-          <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>해당 날짜와 조건에 맞는 매치가 없습니다.</Text>
-            <Text style={styles.emptySubText}>다른 날짜를 선택해보세요!</Text>
-          </View>
-        }
+        stickyHeaderIndices={[1]}
+        style={styles.matchList}
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
       />
@@ -513,6 +538,8 @@ const styles = StyleSheet.create({
     padding: 16,
     backgroundColor: colors.background,
     gap: 8,
+    zIndex: 5,
+    elevation: 5,
   },
   filterDropdownBtn: {
     flex: 1,
@@ -552,7 +579,11 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   listContent: {
-    paddingBottom: 24,
+    paddingBottom: 132,
+    flexGrow: 1,
+  },
+  matchList: {
+    flex: 1,
   },
   cardFull: {
     opacity: 0.6,
@@ -770,4 +801,3 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   }
 });
-
