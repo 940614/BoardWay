@@ -2,13 +2,22 @@ import { Platform } from 'react-native';
 import Constants from 'expo-constants';
 
 const envApiUrl = process.env.EXPO_PUBLIC_API_URL;
+const PRODUCTION_API_URL = 'https://boardway-production.up.railway.app';
 
 function inferApiUrl() {
   // 1. .env 에 명시했으면 그거 우선 (배포·터널 같은 특수 케이스)
   if (envApiUrl) return envApiUrl;
 
   // 2. 웹 (브라우저) — 같은 PC 라서 localhost 면 끝
-  if (Platform.OS === 'web') return 'http://127.0.0.1:8000';
+  if (Platform.OS === 'web') {
+    const hostname = typeof window !== 'undefined' ? window.location.hostname : '';
+    const isLocalWeb =
+      hostname === 'localhost' ||
+      hostname === '127.0.0.1' ||
+      hostname === '';
+
+    return isLocalWeb ? 'http://127.0.0.1:8000' : PRODUCTION_API_URL;
+  }
 
   // 3. 폰(Expo Go): Metro 가 폰한테 알려준 호스트 IP 를 자동 추출
   //    예: "192.168.0.42:8081" → "192.168.0.42"
