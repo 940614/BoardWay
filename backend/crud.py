@@ -414,21 +414,27 @@ def create_match_reviews(db: Session, reviewer_id: int, match_business_id: str, 
         _recompute_manner_score(db, nickname)
 
     db.commit()
-    _maybe_reward_host_for_match(db, match)
+    try:
+        _maybe_reward_host_for_match(db, match)
+    except Exception as exc:
+        print(f"Failed to process host reward for match {match_business_id}: {exc}")
 
     # 알림 생성 (리뷰가 정상 등록된 후 피평가자들에게 전송)
-    reviewer = db.query(models.User).filter(models.User.id == reviewer_id).first()
-    reviewer_nickname = reviewer.nickname if reviewer else "참여자"
-    games_label = ", ".join(match.games or [])
-    for nickname in affected_nicknames:
-        reviewee_user = get_user_by_nickname(db, nickname)
-        if reviewee_user:
-            create_notification(
-                db, reviewee_user.id, "manner_evaluated",
-                "매너 주사위 평가 도착",
-                f"[{games_label}] 매치 참여자({reviewer_nickname}님)가 회원님에게 매너 주사위 평가를 남겼습니다. 마이페이지에서 확인해 보세요!",
-                match_business_id=match.match_id
-            )
+    try:
+        reviewer = db.query(models.User).filter(models.User.id == reviewer_id).first()
+        reviewer_nickname = reviewer.nickname if reviewer else "참여자"
+        games_label = ", ".join(match.games or [])
+        for nickname in affected_nicknames:
+            reviewee_user = get_user_by_nickname(db, nickname)
+            if reviewee_user:
+                create_notification(
+                    db, reviewee_user.id, "manner_evaluated",
+                    "매너 주사위 평가 도착",
+                    f"[{games_label}] 매치 참여자({reviewer_nickname}님)가 회원님에게 매너 주사위 평가를 남겼습니다. 마이페이지에서 확인해 보세요!",
+                    match_business_id=match.match_id
+                )
+    except Exception as exc:
+        print(f"Failed to create review notifications for match {match_business_id}: {exc}")
 
     for row in created:
         db.refresh(row)

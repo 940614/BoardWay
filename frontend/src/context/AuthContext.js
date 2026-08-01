@@ -281,7 +281,10 @@ export const AuthProvider = ({ children }) => {
       return { success: true };
     } catch (e) {
       console.error('Failed to submit reviews', e);
-      return { success: false, message: '서버와 연결할 수 없습니다.' };
+      return {
+        success: false,
+        message: `서버와 연결할 수 없습니다. (${e?.message || 'network error'})`,
+      };
     }
   };
 

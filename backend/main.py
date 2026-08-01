@@ -17,13 +17,21 @@ from auth_utils import verify_password, create_access_token, SECRET_KEY, ALGORIT
 app = FastAPI(title="BoardWay API")
 
 # 개발 기본값: Expo Web(8081), Vite(5173), Expo dev(19006), 휴대폰 LAN IP에서의 접근까지 허용
-DEFAULT_DEV_ORIGINS = "http://localhost:8081,http://localhost:5173,http://localhost:19006"
+DEFAULT_DEV_ORIGINS = ",".join([
+    "http://localhost:8081",
+    "http://localhost:5173",
+    "http://localhost:19006",
+    "http://127.0.0.1:8081",
+    "http://127.0.0.1:5173",
+    "https://board-way.vercel.app",
+])
 _origins_env = os.getenv("CORS_ORIGINS", DEFAULT_DEV_ORIGINS)
 ALLOWED_ORIGINS = [o.strip() for o in _origins_env.split(",") if o.strip()]
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=ALLOWED_ORIGINS,
+    allow_origin_regex=r"https://.*\.vercel\.app",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
