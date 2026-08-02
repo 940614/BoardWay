@@ -908,9 +908,19 @@ def submit_match_reviews(
     if not set(reviewee_names).issubset(allowed_reviewees):
         raise HTTPException(status_code=400, detail="본인 또는 매치에 참여하지 않은 사용자는 평가할 수 없습니다.")
 
-    result = crud.create_match_reviews(
-        db, current_user.id, payload.match_id, payload.reviews, payload.comment
-    )
+    try:
+        result = crud.create_match_reviews(
+            db, current_user.id, payload.match_id, payload.reviews, payload.comment
+        )
+    except Exception as exc:
+        # 배포 DB 스키마 불일치 등 저장 예외가 발생해도 CORS 헤더가 포함된
+        # JSON 응답을 반환해야 브라우저가 단순 "Failed to fetch"로 숨기지 않는다.
+        db.rollback()
+        print(f"Review submission failed for match {payload.match_id}: {exc}")
+        raise HTTPException(
+            status_code=500,
+            detail="리뷰 저장 중 서버 오류가 발생했습니다. 운영진에게 문의해주세요.",
+        )
     if result is None:
         raise HTTPException(status_code=404, detail="매치를 찾을 수 없습니다.")
     if result == "ALREADY_REVIEWED":
