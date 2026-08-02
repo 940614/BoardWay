@@ -206,7 +206,7 @@ export default function MyMatchesScreen({ navigation }) {
             <Ionicons name="close-circle-outline" size={16} color={colors.error} />
             <Text style={styles.cancelledBtnText}>취소된 매치 (환불 완료)</Text>
           </View>
-        ) : isBeforeStart ? (
+        ) : !item.completed && isBeforeStart ? (
           (() => {
             if (isHost) {
               return (
@@ -246,7 +246,7 @@ export default function MyMatchesScreen({ navigation }) {
               </TouchableOpacity>
             );
           })()
-        ) : !isPastMatch ? (
+        ) : !item.completed && !isPastMatch ? (
           <View style={[styles.reviewBtn, styles.waitingBtn]}>
             <Text style={styles.waitingBtnText}>매치 진행 중...</Text>
           </View>
