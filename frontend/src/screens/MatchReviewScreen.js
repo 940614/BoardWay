@@ -43,7 +43,7 @@ export default function MatchReviewScreen({ route, navigation }) {
     const now = new Date();
 
     if (!completedAt) {
-      notify('평가 대기', '방장이 매칭 완료를 확인한 뒤 평가할 수 있습니다.');
+      notify('평가 대기', '방장 또는 운영진이 매칭을 완료 처리한 뒤 평가할 수 있습니다.');
       navigation.goBack();
       return;
     }

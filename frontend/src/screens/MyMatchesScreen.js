@@ -1,4 +1,4 @@
-import React, { useState, useContext, useMemo } from 'react';
+import React, { useState, useContext, useEffect, useMemo } from 'react';
 import { View, Text, StyleSheet, SafeAreaView, FlatList, TouchableOpacity } from 'react-native';
 import { Calendar, LocaleConfig } from 'react-native-calendars';
 import { colors } from '../theme/colors';
@@ -32,9 +32,33 @@ const parseJoinedAt = (value) => {
 };
 
 export default function MyMatchesScreen({ navigation }) {
-  const { matches, leaveMatch, cancelMatch, completeMatch } = useContext(MatchContext);
-  const { user, reviewedMatches } = useContext(AuthContext);
+  const { matches, leaveMatch, cancelMatch, completeMatch, fetchMatches } = useContext(MatchContext);
+  const { user, reviewedMatches, notifications } = useContext(AuthContext);
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+
+  // 완료 알림을 확인하거나 이 화면으로 돌아오면 서버의 최신 상태를 다시 받아
+  // 운영진 완료 처리된 매치의 평가 버튼이 즉시 표시되도록 합니다.
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('focus', () => {
+      fetchMatches?.();
+    });
+    return unsubscribe;
+  }, [navigation, fetchMatches]);
+
+  // 다른 참여자가 매칭 목록을 보고 있는 중에도 완료 처리 알림이 도착하면
+  // 최신 완료 상태를 받아 평가 버튼을 표시합니다. (알림은 5초마다 갱신됩니다.)
+  const latestEvaluationNotificationId = useMemo(() => {
+    const latest = (notifications || []).find(
+      (notification) => notification.type === 'manner_evaluation_started',
+    );
+    return latest?.id || null;
+  }, [notifications]);
+
+  useEffect(() => {
+    if (latestEvaluationNotificationId) {
+      fetchMatches?.();
+    }
+  }, [latestEvaluationNotificationId]);
 
   const handleLeave = (match) => {
     let refundAmount = 12000;

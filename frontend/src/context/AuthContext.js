@@ -267,14 +267,30 @@ export const AuthProvider = ({ children }) => {
 
   const submitMatchReviews = async (matchId, reviews, comment = '') => {
     if (!user || !token) return { success: false, message: '로그인이 필요합니다.' };
+    const submitRequest = () => apiFetch('/me/reviews', {
+      method: 'POST',
+      token,
+      json: { match_id: matchId, comment, reviews },
+    });
+
     try {
-      const response = await apiFetch('/me/reviews', {
-        method: 'POST',
-        token,
-        json: { match_id: matchId, comment, reviews },
-      });
+      let response;
+      try {
+        response = await submitRequest();
+      } catch (firstError) {
+        // Railway 재시작·일시적인 네트워크 단절로 응답을 못 받은 경우 한 번만 재시도합니다.
+        // 서버는 동일 매치의 중복 평점을 막으므로 안전합니다.
+        await new Promise((resolve) => setTimeout(resolve, 700));
+        response = await submitRequest();
+      }
       if (!response.ok) {
         const data = await response.json().catch(() => ({}));
+        // 첫 요청은 저장되었지만 응답만 끊긴 경우 재시도에서 중복 메시지를 받을 수 있습니다.
+        // 이 경우에는 이미 평가가 반영된 것이므로 완료 처리합니다.
+        if (String(data.detail || '').includes('이미 리뷰')) {
+          await loadUserReviewData();
+          return { success: true };
+        }
         return { success: false, message: data.detail || '리뷰 제출에 실패했습니다.' };
       }
       await loadUserReviewData(); // 완료 매치 목록 서버에서 다시

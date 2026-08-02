@@ -41,7 +41,7 @@ const sortMatches = (items) => {
 
 export default function AdminMatchManagementScreen({ navigation }) {
   const { user } = useContext(AuthContext);
-  const { matches, loading, fetchMatches, cancelMatch, completeMatch } = useContext(MatchContext);
+  const { matches, loading, fetchMatches, fetchMatchById, cancelMatch, completeMatch } = useContext(MatchContext);
   const [activeFilter, setActiveFilter] = useState('all');
   const [refreshing, setRefreshing] = useState(false);
   const [cancellingId, setCancellingId] = useState(null);
@@ -113,6 +113,17 @@ export default function AdminMatchManagementScreen({ navigation }) {
       const result = await completeMatch(match.id);
       setCompletingId(null);
       if (result.success) {
+        // 운영자가 이 매치의 참여자라면, 완료 처리 직후 곧바로 평가 화면으로 이동합니다.
+        // 정규 2시간 경과 여부와 관계없이 서버의 완료 상태만 있으면 평가가 가능합니다.
+        const isParticipant = match.participants?.some((participant) => participant.nickname === user?.nickname);
+        const hasOtherParticipant = match.participants?.some((participant) => participant.nickname !== user?.nickname);
+        if (isParticipant && hasOtherParticipant) {
+          const completedMatch = await fetchMatchById?.(match.id);
+          if (completedMatch?.completed) {
+            navigation.navigate('MatchReview', { match: completedMatch });
+            return;
+          }
+        }
         notify('완료 처리', result.message || '상호 매너 평가가 시작되었습니다.');
       } else {
         notify('완료 처리 실패', result.message || '매칭 완료 처리에 실패했습니다.');
