@@ -97,6 +97,11 @@ def join_match(db: Session, match_id: str, participant_nickname: str, role: str 
     db_match = get_match_by_match_id(db, match_id)
     if not db_match:
         return None
+    if db_match.cancelled:
+        return "CANCELLED"
+    # 운영진 또는 방장이 완료 처리한 매치는 평가 단계이므로 새 참여를 받지 않는다.
+    if getattr(db_match, "completed", False):
+        return "COMPLETED"
 
     # 중복 참여 검사
     for p in db_match.participants:

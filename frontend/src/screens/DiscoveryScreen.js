@@ -137,7 +137,8 @@ export default function DiscoveryScreen({ navigation }) {
     const matchStart = new Date(`${item.date}T${item.startTime}:00`);
     const now = new Date();
     const isStarted = now > matchStart;
-    const isClosed = isFull || isStarted;
+    // 운영진 완료 처리된 매치는 평가만 가능하며, 새 참여 신청은 완전히 마감합니다.
+    const isClosed = isFull || isStarted || item.completed;
     
     return (
       <TouchableOpacity 

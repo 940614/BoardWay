@@ -292,6 +292,10 @@ def join_match(
     result = crud.join_match(db, match_id, current_user.nickname, payload.role)
     if result == "ALREADY_JOINED":
         raise HTTPException(status_code=400, detail="이미 참여가 완료된 매치입니다.")
+    elif result == "CANCELLED":
+        raise HTTPException(status_code=400, detail="취소된 매치에는 참여할 수 없습니다.")
+    elif result == "COMPLETED":
+        raise HTTPException(status_code=400, detail="완료 처리되어 신청 마감된 매치입니다.")
     elif result == "FULL":
         raise HTTPException(status_code=400, detail="매치가 이미 가득 찼습니다.")
     elif result == "HOST_TAKEN":

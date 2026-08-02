@@ -140,6 +140,7 @@ export default function MatchDetailScreen({ route, navigation }) {
   const isStarted = now > matchStart;
   const isFull = match.participants.length >= match.maxPlayers;
   const isCancelled = !!match.cancelled;
+  const isCompleted = !!match.completed;
   const isAdmin = !!user?.is_admin;
   const isHost = user && match.host === user.nickname;
 
@@ -313,9 +314,9 @@ export default function MatchDetailScreen({ route, navigation }) {
           style={[
             commonStyles.button,
             styles.footerActionBtn,
-            (isAlreadyJoined || isFull || isStarted || isCancelled) && { backgroundColor: '#A0A0A0' }
+            (isAlreadyJoined || isFull || isStarted || isCancelled || isCompleted) && { backgroundColor: '#A0A0A0' }
           ]}
-          disabled={isAlreadyJoined || isFull || isStarted || isCancelled}
+          disabled={isAlreadyJoined || isFull || isStarted || isCancelled || isCompleted}
           onPress={() => {
             if (!user) {
               confirmAction(
@@ -332,6 +333,8 @@ export default function MatchDetailScreen({ route, navigation }) {
           <Text style={commonStyles.buttonText}>
             {isCancelled
               ? "취소된 매치입니다"
+              : isCompleted
+                ? "신청 마감된 매치입니다"
               : isAlreadyJoined
                 ? "이미 참여 완료된 매치입니다"
                 : isStarted
