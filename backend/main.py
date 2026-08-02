@@ -1181,23 +1181,28 @@ def complete_match_endpoint(
 
     min_required = crud.calculate_min_players_for_match(db, match.games)
     participants_count = len(match.participants)
-    if participants_count < min_required:
+    # 운영진은 현장 상황에 따라 최소 인원 미달 매치도 강제 완료 처리할 수 있다.
+    # 일반 방장은 최소 인원이 충족된 매치만 완료 처리 가능하다.
+    if participants_count < min_required and not current_user.is_admin:
         raise HTTPException(
             status_code=400,
             detail=f"최소 인원({min_required}명)을 충족하지 못한 매치는 완료 처리할 수 없습니다. 현재 참여자 {participants_count}명",
         )
 
-    try:
-        match_end = datetime.fromisoformat(f"{match.date}T{match.startTime}:00") + timedelta(hours=2)
-    except ValueError:
-        raise HTTPException(status_code=500, detail="매치 일정 정보가 올바르지 않습니다.")
-    korea_now = datetime.now(timezone(timedelta(hours=9))).replace(tzinfo=None)
-    if korea_now < match_end:
-        raise HTTPException(status_code=400, detail="매칭 종료 시각 이후에 완료 처리할 수 있습니다.")
-
     is_host = (match.host_nickname == current_user.nickname)
     if not current_user.is_admin and not is_host:
         raise HTTPException(status_code=403, detail="방장 또는 운영진만 완료 처리할 수 있습니다.")
+
+    # 운영진은 현장 상황에 따라 최소 인원·정규시간과 무관하게 매칭을 종료·완료 처리할 수 있다.
+    # 방장은 기존 정책대로 정규 2시간이 지난 뒤에만 완료 처리가 가능하다.
+    if not current_user.is_admin:
+        try:
+            match_end = datetime.fromisoformat(f"{match.date}T{match.startTime}:00") + timedelta(hours=2)
+        except ValueError:
+            raise HTTPException(status_code=500, detail="매치 일정 정보가 올바르지 않습니다.")
+        korea_now = datetime.now(timezone(timedelta(hours=9))).replace(tzinfo=None)
+        if korea_now < match_end:
+            raise HTTPException(status_code=400, detail="매칭 종료 시각 이후에 완료 처리할 수 있습니다.")
 
     completed_by_admin = current_user.is_admin and not is_host
     result = crud.complete_match(

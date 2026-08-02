@@ -103,7 +103,7 @@ export default function AdminMatchManagementScreen({ navigation }) {
 
     const message = [
       `[${(match.games || []).join(' · ') || '자유 선택'}]`,
-      '운영진 권한으로 매칭을 완료 처리합니다.',
+      '운영진 권한으로 매칭을 강제 완료 처리합니다.',
       '참여자에게 상호 매너 평가 알림이 발송되며, 평가는 30분 동안 진행됩니다.',
       '운영진 완료 처리는 방장 리워드를 지급하지 않습니다.',
     ].join('\n');
@@ -127,9 +127,8 @@ export default function AdminMatchManagementScreen({ navigation }) {
     const status = getMatchStatus(item);
     const participantCount = item.participants?.length || 0;
     const canCancel = !item.cancelled && !item.completed;
-    const matchEnd = new Date(`${item.date}T${item.startTime}:00`).getTime() + (2 * 60 * 60 * 1000);
-    const hasMinimumPlayers = participantCount >= (item.minPlayers || 3);
-    const canComplete = canCancel && hasMinimumPlayers && Date.now() >= matchEnd;
+    // 운영진은 현장 상황에 따라 최소 인원·정규시간과 무관하게 완료 처리가 가능하다.
+    const canComplete = canCancel;
 
     return (
       <View style={styles.matchCard}>
