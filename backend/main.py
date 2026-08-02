@@ -1199,11 +1199,22 @@ def complete_match_endpoint(
     if not current_user.is_admin and not is_host:
         raise HTTPException(status_code=403, detail="방장 또는 운영진만 완료 처리할 수 있습니다.")
 
-    result = crud.complete_match(db, match_id)
+    completed_by_admin = current_user.is_admin and not is_host
+    result = crud.complete_match(
+        db,
+        match_id,
+        completed_by_host=is_host,
+        completed_by_admin=completed_by_admin,
+    )
     if isinstance(result, str):
         raise HTTPException(status_code=400, detail=result)
 
-    return {"status": "success", "message": "매칭이 성공적으로 완료 처리되었습니다. 상호 매너 평가를 진행해주세요!"}
+    message = (
+        "운영진 권한으로 매칭을 완료 처리했습니다. 상호 매너 평가를 진행해주세요!"
+        if completed_by_admin
+        else "매칭이 성공적으로 완료 처리되었습니다. 상호 매너 평가를 진행해주세요!"
+    )
+    return {"status": "success", "message": message}
 
 
 @app.post("/suggestions")

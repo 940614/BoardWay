@@ -611,7 +611,12 @@ def get_user_point_history(db: Session, user_id: int):
     )
 
 
-def complete_match(db: Session, match_business_id: str, completed_by_host: bool = True):
+def complete_match(
+    db: Session,
+    match_business_id: str,
+    completed_by_host: bool = True,
+    completed_by_admin: bool = False,
+):
     """Mark a match as successfully completed, and notify participants to evaluate.
 
     Returns:
@@ -636,6 +641,9 @@ def complete_match(db: Session, match_business_id: str, completed_by_host: bool 
     if completed_by_host:
         notification_title = "매칭 성공적으로 완료"
         notification_body = f"[{games_label}] 매칭이 완료되었습니다. 지금부터 30분 동안 참여자들과 상호 매너 평가를 진행해주세요!"
+    elif completed_by_admin:
+        notification_title = "운영진이 매칭을 완료 처리했습니다"
+        notification_body = f"[{games_label}] 운영진이 매칭을 완료 처리했습니다. 지금부터 30분 동안 참여자들과 상호 매너 평가를 진행해주세요!"
     else:
         notification_title = "매너 평가 자동 시작"
         notification_body = f"[{games_label}] 방장의 완료 확인 시간이 지나 자동으로 평가가 시작되었습니다. 지금부터 30분 동안 상호 매너 평가를 진행해주세요!"

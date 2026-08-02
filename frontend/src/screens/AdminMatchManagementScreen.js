@@ -41,10 +41,11 @@ const sortMatches = (items) => {
 
 export default function AdminMatchManagementScreen({ navigation }) {
   const { user } = useContext(AuthContext);
-  const { matches, loading, fetchMatches, cancelMatch } = useContext(MatchContext);
+  const { matches, loading, fetchMatches, cancelMatch, completeMatch } = useContext(MatchContext);
   const [activeFilter, setActiveFilter] = useState('all');
   const [refreshing, setRefreshing] = useState(false);
   const [cancellingId, setCancellingId] = useState(null);
+  const [completingId, setCompletingId] = useState(null);
 
   const stats = useMemo(() => {
     const base = { all: matches.length, recruiting: 0, closed: 0, completed: 0, cancelled: 0 };
@@ -97,10 +98,38 @@ export default function AdminMatchManagementScreen({ navigation }) {
     });
   };
 
+  const handleCompleteMatch = (match) => {
+    if (match.cancelled || match.completed || completingId) return;
+
+    const message = [
+      `[${(match.games || []).join(' · ') || '자유 선택'}]`,
+      '운영진 권한으로 매칭을 완료 처리합니다.',
+      '참여자에게 상호 매너 평가 알림이 발송되며, 평가는 30분 동안 진행됩니다.',
+      '운영진 완료 처리는 방장 리워드를 지급하지 않습니다.',
+    ].join('\n');
+
+    confirmAction('매칭을 완료 처리할까요?', message, async () => {
+      setCompletingId(match.id);
+      const result = await completeMatch(match.id);
+      setCompletingId(null);
+      if (result.success) {
+        notify('완료 처리', result.message || '상호 매너 평가가 시작되었습니다.');
+      } else {
+        notify('완료 처리 실패', result.message || '매칭 완료 처리에 실패했습니다.');
+      }
+    }, {
+      confirmText: '완료 처리',
+      cancelText: '돌아가기',
+    });
+  };
+
   const renderMatch = ({ item }) => {
     const status = getMatchStatus(item);
     const participantCount = item.participants?.length || 0;
     const canCancel = !item.cancelled && !item.completed;
+    const matchEnd = new Date(`${item.date}T${item.startTime}:00`).getTime() + (2 * 60 * 60 * 1000);
+    const hasMinimumPlayers = participantCount >= (item.minPlayers || 3);
+    const canComplete = canCancel && hasMinimumPlayers && Date.now() >= matchEnd;
 
     return (
       <View style={styles.matchCard}>
@@ -135,6 +164,19 @@ export default function AdminMatchManagementScreen({ navigation }) {
           >
             <Text style={styles.secondaryButtonText}>상세 보기</Text>
           </TouchableOpacity>
+          {canComplete && (
+            <TouchableOpacity
+              style={styles.completeButton}
+              disabled={completingId === item.id}
+              onPress={() => handleCompleteMatch(item)}
+            >
+              {completingId === item.id ? (
+                <ActivityIndicator size="small" color="#FFFFFF" />
+              ) : (
+                <Text style={styles.completeButtonText}>운영진 완료 처리</Text>
+              )}
+            </TouchableOpacity>
+          )}
           <TouchableOpacity
             style={[styles.cancelButton, !canCancel && styles.disabledButton]}
             disabled={!canCancel || cancellingId === item.id}
@@ -179,7 +221,7 @@ export default function AdminMatchManagementScreen({ navigation }) {
           <View style={{ flex: 1 }}>
             <Text style={styles.noticeTitle}>관리자 매칭 관리</Text>
             <Text style={styles.noticeText}>
-              전체 매칭 상태를 확인하고, 문제가 있는 매칭은 관리자 권한으로 취소할 수 있습니다. 관리자 취소는 방장을 포함해 전원 환불됩니다.
+              전체 매칭 상태를 확인하고, 문제 상황에서는 관리자 권한으로 취소하거나 종료된 매칭을 완료 처리할 수 있습니다. 관리자 취소는 방장을 포함해 전원 환불됩니다.
             </Text>
           </View>
         </View>
@@ -417,6 +459,19 @@ const styles = StyleSheet.create({
     backgroundColor: colors.error,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  completeButton: {
+    flex: 1,
+    height: 42,
+    borderRadius: 12,
+    backgroundColor: colors.secondary,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  completeButtonText: {
+    color: '#FFFFFF',
+    fontSize: 13,
+    fontWeight: 'bold',
   },
   disabledButton: {
     opacity: 0.35,
