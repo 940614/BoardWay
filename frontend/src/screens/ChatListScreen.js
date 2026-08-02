@@ -7,13 +7,23 @@ import { commonStyles } from '../theme/styles';
 import { MatchContext } from '../context/MatchContext';
 import { AuthContext } from '../context/AuthContext';
 import { confirmAction, notify } from '../utils/dialog';
+import { apiFetch } from '../utils/api';
 
 const hiddenChatKey = (userId) => `hiddenMatchChats:${userId || 'guest'}`;
 
+const parseChatTime = (value) => {
+  if (!value) return 0;
+  const hasTimezone = /(?:Z|[+-]\d{2}:\d{2})$/i.test(value);
+  const timestamp = new Date(hasTimezone ? value : `${value}Z`).getTime();
+  return Number.isNaN(timestamp) ? 0 : timestamp;
+};
+
 export default function ChatListScreen({ navigation }) {
   const { matches } = useContext(MatchContext);
-  const { user } = useContext(AuthContext);
+  const { user, token } = useContext(AuthContext);
   const [hiddenChatIds, setHiddenChatIds] = useState([]);
+  const [chatRooms, setChatRooms] = useState([]);
+  const [chatRoomsLoaded, setChatRoomsLoaded] = useState(false);
 
   const loadHiddenChats = useCallback(async () => {
     if (!user) {
@@ -28,11 +38,33 @@ export default function ChatListScreen({ navigation }) {
     }
   }, [user]);
 
+  const loadChatRooms = useCallback(async () => {
+    if (!token) {
+      setChatRooms([]);
+      setChatRoomsLoaded(false);
+      return;
+    }
+    try {
+      const response = await apiFetch('/my-match-chat-rooms', { token });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(data.detail || '채팅방 목록을 불러오지 못했습니다.');
+      setChatRooms(data.matches || []);
+      setChatRoomsLoaded(true);
+    } catch {
+      // 배포 전·통신 오류 상황에서는 기존 매치 목록으로 안전하게 표시한다.
+      setChatRoomsLoaded(false);
+    }
+  }, [token]);
+
+  const loadScreen = useCallback(async () => {
+    await Promise.all([loadHiddenChats(), loadChatRooms()]);
+  }, [loadHiddenChats, loadChatRooms]);
+
   useEffect(() => {
-    const unsubscribe = navigation.addListener('focus', loadHiddenChats);
-    loadHiddenChats();
+    const unsubscribe = navigation.addListener('focus', loadScreen);
+    loadScreen();
     return unsubscribe;
-  }, [navigation, loadHiddenChats]);
+  }, [navigation, loadScreen]);
 
   const hideChatRoom = (match) => {
     confirmAction(
@@ -48,12 +80,17 @@ export default function ChatListScreen({ navigation }) {
     );
   };
 
-  // 내가 참여 중인 매치만 필터링
-  const participatingMatches = matches.filter(match =>
-    user
-    && match.participants.some(p => p.nickname === user.nickname)
+  // 최신 메시지가 있는 방을 우선하고, 메시지가 없다면 방이 만들어진(첫 참가자가 등록된) 시각순으로 표시한다.
+  const fallbackMatches = matches.filter(match =>
+    user && match.participants.some(p => p.nickname === user.nickname)
   );
-  const myMatches = participatingMatches.filter(match => !hiddenChatIds.includes(match.id));
+  const participatingMatches = chatRoomsLoaded ? chatRooms : fallbackMatches;
+  const myMatches = participatingMatches
+    .filter(match => !hiddenChatIds.includes(match.id))
+    .sort((a, b) => (
+      parseChatTime(b.last_message_at || b.chat_created_at)
+      - parseChatTime(a.last_message_at || a.chat_created_at)
+    ));
   const hasHiddenChats = participatingMatches.length > 0 && myMatches.length === 0;
 
   const renderChatItem = ({ item }) => (
@@ -77,7 +114,9 @@ export default function ChatListScreen({ navigation }) {
           <Text style={styles.timeText}>{item.startTime}</Text>
         </View>
         <Text style={styles.lastMessage} numberOfLines={1}>
-          매치 참여자들과 인사를 나눠보세요! 👋
+          {item.last_message
+            ? `${item.last_message.sender_nickname}: ${item.last_message.content}`
+            : '매치 참여자들과 인사를 나눠보세요! 👋'}
         </Text>
       </View>
       <View style={styles.badge}>

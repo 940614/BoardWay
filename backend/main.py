@@ -81,7 +81,7 @@ async def global_exception_handler(request: Request, exc: Exception):
         content={"message": "Internal Server Error", "detail": str(exc), "traceback": error_details},
     )
 
-def format_match(m, db: Session = None, friend_nicknames: set = None):
+def format_match(m, db: Session = None, friend_nicknames: set = None, include_chat_summary: bool = False):
     try:
         rule_video_urls = m.ruleVideoUrls
         if db and (not rule_video_urls or all(not url for url in rule_video_urls)):
@@ -117,7 +117,7 @@ def format_match(m, db: Session = None, friend_nicknames: set = None):
         except (TypeError, ValueError):
             friend_participants = []
 
-        return {
+        result = {
             "id": m.match_id,
             "games": m.games,
             "difficulty": m.difficulty,
@@ -152,6 +152,33 @@ def format_match(m, db: Session = None, friend_nicknames: set = None):
                 for p in m.participants
             ]
         }
+
+        # 채팅 미리보기는 매치 참가자에게만 제공한다. 공개 매칭 목록에서
+        # 메시지 내용이나 대화 시각이 노출되지 않도록 전용 채팅 목록 API에서만 사용한다.
+        if include_chat_summary and db:
+            latest_message = (
+                db.query(models.Message)
+                .filter(models.Message.match_id == m.id)
+                .order_by(models.Message.created_at.desc(), models.Message.id.desc())
+                .first()
+            )
+            joined_times = [p.joined_at for p in m.participants if getattr(p, "joined_at", None)]
+            chat_created_at = min(joined_times) if joined_times else None
+            activity_at = latest_message.created_at if latest_message else chat_created_at
+            result.update({
+                "chat_created_at": chat_created_at.isoformat() if chat_created_at else None,
+                "last_message_at": activity_at.isoformat() if activity_at else None,
+                "last_message": (
+                    {
+                        "content": latest_message.content,
+                        "sender_nickname": latest_message.sender_nickname,
+                        "created_at": latest_message.created_at.isoformat() if latest_message.created_at else None,
+                    }
+                    if latest_message else None
+                ),
+            })
+
+        return result
     except Exception as e:
         print(f"Error formatting match {getattr(m, 'match_id', m.id)}: {e}")
         return None
@@ -291,6 +318,17 @@ def leave_match(match_id: str, db: Session = Depends(get_db), current_user: mode
 def get_my_matches(db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
     matches = crud.get_user_matches(db, current_user.nickname)
     return {"matches": [format_match(m, db) for m in matches]}
+
+
+@app.get("/my-match-chat-rooms")
+def get_my_match_chat_rooms(
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user),
+):
+    """현재 사용자가 참가한 매치 채팅방과 최근 대화 정보를 반환한다."""
+    matches = crud.get_user_matches(db, current_user.nickname)
+    rooms = [format_match(m, db, include_chat_summary=True) for m in matches]
+    return {"matches": [room for room in rooms if room is not None]}
 
 @app.get("/games")
 def get_games(request: Request, db: Session = Depends(get_db)):
