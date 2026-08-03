@@ -63,21 +63,8 @@ export default function GameSearchScreen({ navigation }) {
   );
 
   const ListHeader = () => {
-    const featuredGame = games[0] || {};
     return (
       <View style={styles.listHeaderContainer}>
-        {featuredGame.image && selectedGenre === '전체' && !searchQuery && (
-          <TouchableOpacity
-            style={styles.featuredCard}
-            onPress={() => navigation.navigate('GameDetail', { game: featuredGame })}
-          >
-            <Image source={{ uri: featuredGame.image }} style={styles.featuredImage} />
-            <View style={styles.featuredOverlay}>
-              <Text style={styles.featuredLabel}>이번 주의 추천 게임</Text>
-              <Text style={styles.featuredName}>{featuredGame.name}</Text>
-            </View>
-          </TouchableOpacity>
-        )}
         <Text style={styles.sectionTitle}>
           {selectedGenre === '전체' ? '전체 게임 도감' : `${selectedGenre} 게임`}
           <Text style={styles.sectionCount}> {filteredGames.length}개</Text>
@@ -256,38 +243,6 @@ const styles = StyleSheet.create({
   },
   listHeaderContainer: {
     paddingVertical: 16,
-  },
-  featuredCard: {
-    width: '100%',
-    height: 200,
-    borderRadius: 20,
-    overflow: 'hidden',
-    marginBottom: 24,
-    ...commonStyles.shadow,
-  },
-  featuredImage: {
-    width: '100%',
-    height: '100%',
-    resizeMode: 'cover',
-  },
-  featuredOverlay: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    padding: 20,
-    backgroundColor: 'rgba(0,0,0,0.4)',
-  },
-  featuredLabel: {
-    color: '#FFD700',
-    fontSize: 14,
-    fontWeight: 'bold',
-    marginBottom: 4,
-  },
-  featuredName: {
-    color: '#FFFFFF',
-    fontSize: 24,
-    fontWeight: 'bold',
   },
   sectionTitle: {
     fontSize: 22,
