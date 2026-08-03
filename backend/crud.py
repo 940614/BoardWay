@@ -1,6 +1,7 @@
 import uuid
 import re
 from datetime import datetime, timedelta, timezone
+from decimal import Decimal, ROUND_HALF_UP
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 import models, schemas
@@ -303,8 +304,11 @@ def _recompute_manner_score(db: Session, nickname: str):
     user = get_user_by_nickname(db, nickname)
     if user:
         # 학교식 반올림 (round-half-up) — Python 의 round() 는 banker's (round-half-to-even).
-        # 별점은 양수만이라 (avg + 0.5) 후 int() 변환이 안전.
-        user.mannerScore = int(avg + 0.5)
+        # PostgreSQL의 AVG()는 Decimal을 반환할 수 있습니다. Decimal과 float를
+        # 섞어 더하면 운영 서버에서 TypeError가 발생하므로 Decimal끼리 계산합니다.
+        user.mannerScore = int(
+            Decimal(str(avg)).quantize(Decimal("1"), rounding=ROUND_HALF_UP)
+        )
 
 
 HOST_REWARD_AMOUNT = 3000
@@ -343,7 +347,9 @@ def _maybe_reward_host_for_match(db: Session, match: models.Match):
     if not host_reviews:
         return None
 
-    average_rating = sum(review.rating for review in host_reviews) / len(host_reviews)
+    # DB 드라이버에 따라 rating 합계가 Decimal이 될 수 있으므로 비교/표시 전에
+    # float으로 정규화합니다. (Decimal과 float 비교 오류 방지)
+    average_rating = float(sum(review.rating for review in host_reviews)) / len(host_reviews)
     if average_rating < HOST_REWARD_THRESHOLD:
         return None
 
