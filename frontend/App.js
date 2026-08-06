@@ -4,6 +4,7 @@ import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { MatchProvider } from './src/context/MatchContext';
 import { AuthProvider } from './src/context/AuthContext';
+import './src/theme/web.css';
 
 export default function App() {
   return (

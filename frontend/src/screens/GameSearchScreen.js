@@ -8,11 +8,13 @@ import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../theme/colors';
 import { commonStyles } from '../theme/styles';
 import { apiFetch } from '../utils/api';
+import { useResponsiveLayout } from '../theme/responsive';
 
 // 장르 탭 — 키워드가 game.genre에 포함되면 해당 탭에 속함
 const GENRE_TABS = ['전체', '다인용 게임', '전략', '파티', '마피아', '추리', '카드', '타일', '고전', '단어'];
 
 export default function GameSearchScreen({ navigation }) {
+  const { isCompact } = useResponsiveLayout();
   const [searchQuery, setSearchQuery] = useState('');
   const [games, setGames] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -75,7 +77,7 @@ export default function GameSearchScreen({ navigation }) {
 
   const renderGameItem = ({ item }) => (
     <TouchableOpacity
-      style={styles.gameCard}
+      style={[styles.gameCard, isCompact && styles.gameCardCompact]}
       onPress={() => navigation.navigate('GameDetail', { game: item })}
     >
       <View style={styles.gameImageContainer}>
@@ -84,7 +86,7 @@ export default function GameSearchScreen({ navigation }) {
           <Text style={styles.difficultyBadgeText}>{item.difficulty}</Text>
         </View>
       </View>
-      <View style={styles.gameInfo}>
+      <View style={[styles.gameInfo, isCompact && styles.gameInfoCompact]}>
         <Text style={styles.gameName} numberOfLines={1}>{item.name}</Text>
         {item.genre && (
           <View style={styles.genrePill}>
@@ -264,6 +266,11 @@ const styles = StyleSheet.create({
     padding: 9,
     ...commonStyles.shadow,
   },
+  gameCardCompact: {
+    flexDirection: 'column',
+    alignItems: 'stretch',
+    padding: 10,
+  },
   gameGridRow: {
     justifyContent: 'space-between',
     marginBottom: 12,
@@ -298,6 +305,10 @@ const styles = StyleSheet.create({
     flex: 1,
     marginLeft: 10,
     minWidth: 0,
+  },
+  gameInfoCompact: {
+    marginLeft: 0,
+    marginTop: 8,
   },
   gameName: {
     fontSize: 14,

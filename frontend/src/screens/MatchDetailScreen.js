@@ -7,6 +7,7 @@ import { commonStyles } from '../theme/styles';
 import { MatchContext } from '../context/MatchContext';
 import { AuthContext } from '../context/AuthContext';
 import { notify, confirmAction } from '../utils/dialog';
+import { useResponsiveLayout } from '../theme/responsive';
 import YoutubePlayer from "react-native-youtube-iframe";
 import { WebView } from 'react-native-webview';
 
@@ -54,6 +55,7 @@ export default function MatchDetailScreen({ route, navigation }) {
   const { matchId } = route.params;
   const { matches, joinMatch, cancelMatch } = useContext(MatchContext);
   const { user, points, usePoints } = useContext(AuthContext);
+  const { isMobile, isCompact } = useResponsiveLayout();
   
   const [match, setMatch] = useState(null);
   const [activeVideoIndex, setActiveVideoIndex] = useState(0);
@@ -289,10 +291,10 @@ export default function MatchDetailScreen({ route, navigation }) {
         )}
       </ScrollView>
 
-      <View style={styles.footer}>
+      <View style={[styles.footer, !isMobile && styles.footerWide]}>
         {isAlreadyJoined && !isCancelled && (
           <TouchableOpacity
-            style={[commonStyles.button, styles.footerActionBtn, styles.chatRoomBtn]}
+            style={[commonStyles.button, styles.footerActionBtn, !isMobile && styles.footerActionBtnWide, styles.chatRoomBtn]}
             onPress={openChatRoom}
           >
             <Ionicons name="chatbubbles-outline" size={18} color="#FFFFFF" style={{ marginRight: 6 }} />
@@ -302,7 +304,7 @@ export default function MatchDetailScreen({ route, navigation }) {
 
         {(isAdmin || isHost) && !isCancelled && !match.completed && (
           <TouchableOpacity
-            style={[commonStyles.button, styles.footerActionBtn, styles.cancelMatchBtn]}
+            style={[commonStyles.button, styles.footerActionBtn, !isMobile && styles.footerActionBtnWide, styles.cancelMatchBtn]}
             onPress={handleCancelMatch}
           >
             <Text style={commonStyles.buttonText}>
@@ -314,6 +316,7 @@ export default function MatchDetailScreen({ route, navigation }) {
           style={[
             commonStyles.button,
             styles.footerActionBtn,
+            !isMobile && styles.footerActionBtnWide,
             (isAlreadyJoined || isFull || isStarted || isCancelled || isCompleted) && { backgroundColor: '#A0A0A0' }
           ]}
           disabled={isAlreadyJoined || isFull || isStarted || isCancelled || isCompleted}
@@ -353,7 +356,7 @@ export default function MatchDetailScreen({ route, navigation }) {
         onRequestClose={() => setModalVisible(false)}
       >
         <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
+          <View style={[styles.modalContent, isCompact && styles.modalContentCompact]}>
             <Text style={styles.modalTitle}>매치 참여 결제 확인</Text>
             <View style={styles.paymentInfoBox}>
               <View style={styles.paymentRow}>
@@ -381,7 +384,7 @@ export default function MatchDetailScreen({ route, navigation }) {
               </View>
             </View>
 
-            <View style={styles.modalButtons}>
+            <View style={[styles.modalButtons, isCompact && styles.modalButtonsCompact]}>
               <TouchableOpacity 
                 style={[styles.modalBtn, styles.cancelBtn]}
                 onPress={() => setModalVisible(false)}
@@ -586,15 +589,21 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   footer: {
-    paddingHorizontal: Platform.OS === 'web' ? 20 : 16,
-    paddingVertical: Platform.OS === 'web' ? 12 : 14,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
     backgroundColor: colors.surface,
     borderTopWidth: 1,
     borderTopColor: colors.border,
-    flexDirection: Platform.OS === 'web' ? 'row' : 'column',
-    justifyContent: Platform.OS === 'web' ? 'flex-end' : 'center',
-    alignItems: Platform.OS === 'web' ? 'center' : 'stretch',
-    gap: Platform.OS === 'web' ? 10 : 8,
+    flexDirection: 'column',
+    justifyContent: 'center',
+    alignItems: 'stretch',
+    gap: 8,
+  },
+  footerWide: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+    gap: 10,
   },
   footerActionBtn: {
     minHeight: 42,
@@ -602,13 +611,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     borderRadius: 10,
     marginBottom: 0,
-    ...(Platform.OS === 'web'
-      ? {
-          width: 'auto',
-          minWidth: 180,
-          maxWidth: 260,
-        }
-      : {}),
+    width: '100%',
+  },
+  footerActionBtnWide: {
+    width: 'auto',
+    minWidth: 180,
+    maxWidth: 260,
   },
   modalOverlay: {
     flex: 1,
@@ -618,10 +626,14 @@ const styles = StyleSheet.create({
   },
   modalContent: {
     width: '90%',
+    maxWidth: 520,
     backgroundColor: colors.surface,
     borderRadius: 20,
     padding: 24,
     ...commonStyles.shadow,
+  },
+  modalContentCompact: {
+    padding: 18,
   },
   modalTitle: {
     fontSize: 20,
@@ -684,6 +696,10 @@ const styles = StyleSheet.create({
   modalButtons: {
     flexDirection: 'row',
     gap: 12,
+  },
+  modalButtonsCompact: {
+    flexDirection: 'column-reverse',
+    gap: 8,
   },
   modalBtn: {
     flex: 1,

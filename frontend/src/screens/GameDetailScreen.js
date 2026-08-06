@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, SafeAreaView, Dimensions, Linking } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, SafeAreaView, Linking } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../theme/colors';
 import { commonStyles } from '../theme/styles';
-
-const { width } = Dimensions.get('window');
+import { useResponsiveLayout } from '../theme/responsive';
 
 export default function GameDetailScreen({ route, navigation }) {
   const { game } = route.params;
   const [playing, setPlaying] = useState(false);
+  const { isCompact } = useResponsiveLayout();
 
   const handlePlayVideo = () => {
     if (game.ruleUrl) {
@@ -27,7 +27,7 @@ export default function GameDetailScreen({ route, navigation }) {
       </View>
 
       <ScrollView style={styles.scrollView}>
-        <View style={styles.videoBanner}>
+        <View style={[styles.videoBanner, isCompact && styles.videoBannerCompact]}>
           <Ionicons name="logo-youtube" size={40} color={game.ruleUrl ? "#FF0000" : "#B2BEC3"} />
           <Text style={styles.videoBannerText}>게임 룰이 궁금하신가요?</Text>
           {game.ruleUrl ? (
@@ -39,9 +39,9 @@ export default function GameDetailScreen({ route, navigation }) {
           )}
         </View>
 
-        <View style={styles.infoSection}>
-          <View style={styles.titleRow}>
-            <Text style={styles.gameName}>{game.name}</Text>
+        <View style={[styles.infoSection, isCompact && styles.infoSectionCompact]}>
+          <View style={[styles.titleRow, isCompact && styles.titleRowCompact]}>
+            <Text style={styles.gameName} numberOfLines={2}>{game.name}</Text>
             <View style={styles.difficultyBadge}>
               <Text style={styles.difficultyText}>{game.difficulty}</Text>
             </View>
@@ -74,7 +74,7 @@ export default function GameDetailScreen({ route, navigation }) {
       </ScrollView>
 
       <TouchableOpacity 
-        style={styles.bottomBtn}
+        style={[styles.bottomBtn, isCompact && styles.bottomBtnCompact]}
         onPress={() => navigation.navigate('Discovery')}
       >
         <Text style={styles.bottomBtnText}>이 게임 매칭 찾기</Text>
@@ -107,6 +107,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  videoBannerCompact: {
+    paddingHorizontal: 16,
+    paddingVertical: 24,
+  },
   videoBannerText: {
     color: '#FFFFFF',
     fontSize: 16,
@@ -132,13 +136,22 @@ const styles = StyleSheet.create({
   infoSection: {
     padding: 24,
   },
+  infoSectionCompact: {
+    padding: 16,
+  },
   titleRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     marginBottom: 12,
+    gap: 10,
+  },
+  titleRowCompact: {
+    alignItems: 'flex-start',
   },
   gameName: {
+    flex: 1,
+    flexShrink: 1,
     fontSize: 28,
     fontWeight: 'bold',
     color: colors.text,
@@ -206,6 +219,10 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  bottomBtnCompact: {
+    marginHorizontal: 16,
+    marginVertical: 14,
   },
   bottomBtnText: {
     color: 'white',

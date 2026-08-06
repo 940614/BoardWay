@@ -412,6 +412,8 @@ const styles = StyleSheet.create({
     borderColor: colors.border,
   },
   profileTextContainer: {
+    flex: 1,
+    minWidth: 0,
     marginLeft: 20,
   },
   nicknameText: {
@@ -421,6 +423,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   emailText: {
+    flexShrink: 1,
     fontSize: 14,
     color: colors.textLight,
   },

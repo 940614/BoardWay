@@ -11,6 +11,7 @@ export const commonStyles = StyleSheet.create({
     alignItems: 'center',
   },
   card: {
+    minWidth: 0,
     backgroundColor: colors.surface,
     borderRadius: 12,
     padding: 16,
@@ -57,6 +58,7 @@ export const commonStyles = StyleSheet.create({
   },
   button: {
     backgroundColor: colors.primary,
+    minHeight: 48,
     paddingVertical: 14,
     paddingHorizontal: 24,
     borderRadius: 8,

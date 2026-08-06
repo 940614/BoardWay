@@ -6,10 +6,12 @@ import { commonStyles } from '../theme/styles';
 import { AuthContext } from '../context/AuthContext';
 import { notify } from '../utils/dialog';
 import { apiFetch } from '../utils/api';
+import { useResponsiveLayout } from '../theme/responsive';
 
 export default function MatchReviewScreen({ route, navigation }) {
   const { match } = route.params;
   const { user, token, submitMatchReviews } = useContext(AuthContext);
+  const { isCompact } = useResponsiveLayout();
 
   const participants = match.participants.filter(p => p.nickname !== user.nickname);
   const hostNickname = match.host;
@@ -127,7 +129,7 @@ export default function MatchReviewScreen({ route, navigation }) {
           <TouchableOpacity key={num} onPress={() => handleRating(nickname, num)}>
             <Ionicons 
               name={currentRating >= num ? "dice" : "dice-outline"} 
-              size={32} 
+              size={isCompact ? 28 : 32}
               color={currentRating >= num ? colors.primary : colors.border} 
               style={{ marginRight: 4 }}
             />
@@ -148,7 +150,7 @@ export default function MatchReviewScreen({ route, navigation }) {
         <View style={{ width: 40 }} />
       </View>
 
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+      <ScrollView style={[styles.content, isCompact && styles.contentCompact]} showsVerticalScrollIndicator={false}>
         <View style={styles.matchSummary}>
           <Text style={styles.matchDate}>{match.date} 매치</Text>
           <Text style={styles.matchTitle}>[{match.location.branch}] {match.games.join(', ')}</Text>
@@ -162,7 +164,7 @@ export default function MatchReviewScreen({ route, navigation }) {
         </View>
 
         {participants.map((p) => (
-          <View key={p.nickname} style={styles.reviewCard}>
+          <View key={p.nickname} style={[styles.reviewCard, isCompact && styles.reviewCardCompact]}>
             <View style={styles.participantHeader}>
               <Text style={styles.participantName}>{p.nickname}님</Text>
               {hostNickname === p.nickname && <Text style={styles.hostBadge}>👑 방장</Text>}
@@ -263,6 +265,9 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 20,
   },
+  contentCompact: {
+    padding: 14,
+  },
   matchSummary: {
     marginBottom: 24,
   },
@@ -294,6 +299,9 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     borderWidth: 1,
     borderColor: colors.border,
+  },
+  reviewCardCompact: {
+    padding: 14,
   },
   inlineReportSection: { backgroundColor: '#FFF7F7', borderColor: '#FECACA', borderWidth: 1, borderRadius: 16, padding: 16, marginBottom: 24 },
   inlineReportHeader: { flexDirection: 'row', gap: 10, marginBottom: 16 },

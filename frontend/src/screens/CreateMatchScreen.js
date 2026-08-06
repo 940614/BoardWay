@@ -8,6 +8,7 @@ import { notify } from '../utils/dialog';
 import { apiFetch } from '../utils/api';
 import { MatchContext } from '../context/MatchContext';
 import { AuthContext } from '../context/AuthContext';
+import { useResponsiveLayout } from '../theme/responsive';
 
 const WEEKEND_TEXT_COLORS = {
   sunday: '#E74C3C',
@@ -78,6 +79,7 @@ function tomorrowISO() {
 export default function CreateMatchScreen({ navigation }) {
   const { fetchMatches } = useContext(MatchContext);
   const { token, user, points, usePoints } = useContext(AuthContext);
+  const { isCompact } = useResponsiveLayout();
 
   const [dbGames, setDbGames] = useState([]);
   const [selectedGames, setSelectedGames] = useState([]);
@@ -451,16 +453,16 @@ export default function CreateMatchScreen({ navigation }) {
           })}
         </View>
 
-        <View style={[styles.row, { marginTop: 16 }]}>
+        <View style={[styles.row, { marginTop: 16 }, isCompact && styles.compactFieldRow]}>
           <TouchableOpacity 
-            style={[styles.selectInputButton, { flex: 1, marginRight: 6 }]}
+            style={[styles.selectInputButton, { flex: 1, marginRight: isCompact ? 0 : 6 }, isCompact && styles.compactField]}
             onPress={() => setShowCalendar(true)}
             activeOpacity={0.7}
           >
             <Text style={styles.selectInputButtonLabel}>모임 날짜 📅</Text>
             <Text style={styles.selectInputButtonValue}>{date}</Text>
           </TouchableOpacity>
-          <View style={{ flex: 1, marginLeft: 6, justifyContent: 'center' }}>
+          <View style={[{ flex: 1, marginLeft: isCompact ? 0 : 6, justifyContent: 'center' }, isCompact && styles.compactField]}>
             <Text style={styles.selectInputButtonLabel}>선택된 시간 ⏰</Text>
             <Text style={[styles.selectInputButtonValue, { color: colors.primary, fontWeight: 'bold' }]}>{startTime}</Text>
           </View>
@@ -484,9 +486,9 @@ export default function CreateMatchScreen({ navigation }) {
         </View>
 
         <Text style={styles.label}>장소 선택 📍</Text>
-        <View style={styles.row}>
+        <View style={[styles.row, isCompact && styles.compactFieldRow]}>
           <TouchableOpacity 
-            style={[styles.selectInputButton, { flex: 1, marginRight: 6 }]}
+            style={[styles.selectInputButton, { flex: 1, marginRight: isCompact ? 0 : 6 }, isCompact && styles.compactField]}
             onPress={() => setShowVenueModal(true)}
             activeOpacity={0.7}
           >
@@ -496,7 +498,8 @@ export default function CreateMatchScreen({ navigation }) {
           <TouchableOpacity 
             style={[
               styles.selectInputButton, 
-              { flex: 1, marginLeft: 6 },
+              { flex: 1, marginLeft: isCompact ? 0 : 6 },
+              isCompact && styles.compactField,
               !venue && { opacity: 0.5 }
             ]}
             onPress={() => venue && setShowBranchModal(true)}
@@ -514,7 +517,7 @@ export default function CreateMatchScreen({ navigation }) {
           </View>
         ) : null}
 
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+        <View style={[styles.recommendationRow, isCompact && styles.recommendationRowCompact]}>
           <Text style={styles.label}>모집 인원</Text>
           {recommendedPlayers.label && (
             <Text style={[
@@ -762,6 +765,23 @@ const styles = StyleSheet.create({
   },
   row: {
     flexDirection: 'row',
+  },
+  compactFieldRow: {
+    flexDirection: 'column',
+    gap: 10,
+  },
+  compactField: {
+    width: '100%',
+  },
+  recommendationRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    gap: 8,
+  },
+  recommendationRowCompact: {
+    flexDirection: 'column',
+    alignItems: 'flex-start',
   },
   difficultyRow: {
     flexDirection: 'row',
