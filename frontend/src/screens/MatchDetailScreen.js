@@ -183,14 +183,6 @@ export default function MatchDetailScreen({ route, navigation }) {
 
   return (
     <SafeAreaView style={commonStyles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
-          <Ionicons name="chevron-back" size={28} color={colors.primary} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>매치 상세정보</Text>
-        <View style={{ width: 40 }} />
-      </View>
-
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.gameSection}>
           <Text style={styles.matchDate}>{match.date} {match.startTime}</Text>
