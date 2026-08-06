@@ -115,7 +115,7 @@ export default function MatchDetailScreen({ route, navigation }) {
   const renderDice = (score) => {
     const rounded = Math.round(score);
     return (
-      <View style={{ flexDirection: 'row', gap: 3 }}>
+      <View style={styles.diceRow}>
         {[1, 2, 3, 4, 5, 6].map((num) => (
           <Ionicons 
             key={num} 
@@ -238,10 +238,12 @@ export default function MatchDetailScreen({ route, navigation }) {
                 {match.host === participant.nickname && <Text style={styles.hostBadge}>👑 방장</Text>}
                 {user && user.nickname === participant.nickname && <Text style={styles.meBadge}>(본인)</Text>}
               </View>
-              {participant.mannerScore >= 5 && (
-                <Text style={styles.bestGuide}>⭐ 굿 매너 유저</Text>
-              )}
-              {renderDice(participant.mannerScore)}
+              <View style={styles.participantMannerRow}>
+                {participant.mannerScore >= 5 && (
+                  <Text style={styles.bestGuide}>⭐ 굿 매너 유저</Text>
+                )}
+                {renderDice(participant.mannerScore)}
+              </View>
             </View>
           ))}
         </View>
@@ -508,14 +510,29 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 12,
     marginBottom: 12,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: 'column',
+    alignItems: 'flex-start',
     ...commonStyles.shadow,
   },
   participantNameRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    flexWrap: 'wrap',
+    rowGap: 6,
+  },
+  participantMannerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    columnGap: 8,
+    rowGap: 6,
+    marginTop: 10,
+    width: '100%',
+  },
+  diceRow: {
+    flexDirection: 'row',
+    gap: 3,
+    flexShrink: 0,
   },
   participantName: {
     fontSize: 16,
