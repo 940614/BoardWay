@@ -5,6 +5,7 @@ import { colors } from '../theme/colors';
 import { commonStyles } from '../theme/styles';
 import { MatchContext } from '../context/MatchContext';
 import { AuthContext } from '../context/AuthContext';
+import { useResponsiveLayout } from '../theme/responsive';
 
 const WEEKEND_TEXT_COLORS = {
   sunday: '#E74C3C',
@@ -16,6 +17,7 @@ const LOCATIONS = ['전체', '강남', '홍대', '신촌', '건대', '잠실', '
 const TIMES = ['전체', '오전 (12시 이전)', '오후 (12~18시)', '저녁 (18시 이후)'];
 
 export default function DiscoveryScreen({ navigation }) {
+  const { isMobile } = useResponsiveLayout();
   const formatDate = (date) => {
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -158,7 +160,7 @@ export default function DiscoveryScreen({ navigation }) {
 
 
         
-        <View style={styles.cardHeader}>
+        <View style={[styles.cardHeader, isMobile && styles.cardHeaderMobile]}>
           {item.is_flexible ? (
             <View style={{ flex: 1 }}>
               <View style={[styles.flexibleBadge, isClosed && { backgroundColor: colors.textLight }]}>
@@ -211,7 +213,7 @@ export default function DiscoveryScreen({ navigation }) {
           ))}
         </View>
 
-        <View style={styles.cardFooter}>
+        <View style={[styles.cardFooter, isMobile && styles.cardFooterMobile]}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
             <Ionicons name="time-outline" size={16} color={colors.textLight} />
             <Text style={[styles.timeText, isClosed && styles.textFull]}>시작: {item.startTime} · 정규 2시간</Text>
@@ -614,8 +616,15 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     gap: 8,
   },
+  cardHeaderMobile: {
+    flexDirection: 'column',
+    alignItems: 'stretch',
+    gap: 6,
+  },
   gameName: {
     flex: 1,
+    flexShrink: 1,
+    minWidth: 0,
     fontSize: 18,
     fontWeight: 'bold',
     color: colors.text,
@@ -709,6 +718,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginTop: 4,
+  },
+  cardFooterMobile: {
+    flexDirection: 'column',
+    alignItems: 'flex-start',
+    gap: 8,
   },
   timeText: {
     fontSize: 14,
