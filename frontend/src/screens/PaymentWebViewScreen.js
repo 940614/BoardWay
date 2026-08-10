@@ -17,6 +17,19 @@ function PaymentWebScreen({ amount, user, verifyAndRechargePoints, navigation, p
     script.onload = async () => {
       setStatus('paying');
       try {
+        // PortOne 결제창은 모바일 브라우저에서 iframe 형태로 열면 화면이 잘리거나
+        // 결제수단 선택이 정상 동작하지 않는 경우가 있습니다. 모바일에서는 결제사
+        // 전체 화면으로 이동한 뒤 보드웨이로 돌아오는 방식으로 처리합니다.
+        const isMobileWeb = window.matchMedia?.('(max-width: 768px)').matches;
+        const redirectUrl = `${window.location.origin}${window.location.pathname}?paymentReturn=1`;
+
+        if (isMobileWeb) {
+          window.sessionStorage.setItem('boardway:pending-payment', JSON.stringify({
+            paymentId,
+            amount,
+          }));
+        }
+
         const response = await window.PortOne.requestPayment({
           storeId: STORE_ID,
           channelKey: CHANNEL_KEY,
@@ -26,6 +39,10 @@ function PaymentWebScreen({ amount, user, verifyAndRechargePoints, navigation, p
           currency: 'CURRENCY_KRW',
           payMethod: 'CARD',
           customer: { customerId: String(user?.id) },
+          ...(isMobileWeb ? {
+            redirectUrl,
+            forceRedirect: true,
+          } : {}),
         });
 
         if (response?.code === 'PAYMENT_CANCELLED') {
