@@ -9,6 +9,7 @@ from datetime import datetime, timedelta, timezone
 from jose import JWTError, jwt
 
 import models, schemas, crud
+from ai_recommender import build_match_text, build_profile_text, semantic_similarities
 from database import get_db
 from auth_utils import verify_password, create_access_token, SECRET_KEY, ALGORITHM
 
@@ -312,17 +313,32 @@ def get_my_recommendations(
     db: Session = Depends(get_db),
     current_user: models.User = Depends(get_current_user),
 ):
-    """프로필 조건이 일치하는 모집 중 매칭을 점수순으로 반환한다.
+    """문장 임베딩 유사도와 프로필 조건 점수를 결합해 매칭을 추천한다.
 
-    초기 추천은 별도 학습 없이 동작하는 콘텐츠 기반 추천이다. 이후 클릭·신청·취소
-    이력이 쌓이면 이 점수에 행동 기반 모델 점수를 추가할 수 있다.
+    사전학습 다국어 문장 임베딩 모델이 사용자 프로필과 매칭 설명의 의미 유사도를
+    계산하고, 장르·지역 등 명시적 조건 일치 점수와 결합해 최종 순위를 만든다.
     """
+    profile_values = (
+        current_user.preferred_genres or []
+    ) + (
+        current_user.preferred_locations or []
+    ) + (
+        current_user.preferred_days or []
+    ) + (
+        current_user.preferred_time_slots or []
+    ) + (
+        current_user.preferred_player_counts or []
+    ) + (
+        current_user.preferred_difficulties or [])
+    if not profile_values:
+        return {"recommendations": [], "method": "semantic_embedding"}
+
     now_kst = datetime.now(timezone(timedelta(hours=9))).replace(tzinfo=None)
     game_genres = {
         game.name: game.genre or ""
         for game in db.query(models.Game).all()
     }
-    recommended = []
+    candidate_matches = []
 
     for match in crud.get_matches(db):
         if match.cancelled or getattr(match, "completed", False):
@@ -338,21 +354,57 @@ def get_my_recommendations(
         if match_start <= now_kst:
             continue
 
-        score, reasons = _score_match_recommendation(match, current_user, game_genres)
-        # 아직 선호 정보를 고르지 않은 사용자는 무작위 추천보다 탐색 화면을 사용하게 한다.
-        if score <= 0:
+        try:
+            weekday = WEEKDAY_LABELS[datetime.strptime(match.date, "%Y-%m-%d").date().weekday()]
+        except (TypeError, ValueError):
+            weekday = ""
+        candidate_matches.append((
+            match,
+            weekday,
+            _recommended_time_slot(match.date, match.startTime),
+            _recommended_player_group(match.maxPlayers or 0),
+        ))
+
+    try:
+        profile_text = build_profile_text(current_user)
+        match_texts = [
+            build_match_text(match, game_genres, weekday, time_slot, player_group)
+            for match, weekday, time_slot, player_group in candidate_matches
+        ]
+        similarity_scores = semantic_similarities(profile_text, match_texts)
+    except Exception as exc:
+        raise HTTPException(
+            status_code=503,
+            detail=f"AI 추천 모델을 준비하지 못했습니다: {exc}",
+        ) from exc
+
+    recommended = []
+    for (match, _weekday, _time_slot, _player_group), similarity in zip(candidate_matches, similarity_scores):
+        rule_score, reasons = _score_match_recommendation(match, current_user, game_genres)
+        semantic_score = round(similarity * 100)
+        # 의미 유사도 40% + 설명 가능한 프로필 일치 규칙 60%의 하이브리드 점수.
+        final_score = round((semantic_score * 0.4) + (rule_score * 0.6))
+        if final_score <= 0:
             continue
 
         item = format_match(match, db)
         if item is not None:
-            item["recommendation_score"] = score
-            item["recommendation_reasons"] = reasons
+            item["recommendation_score"] = final_score
+            item["semantic_similarity"] = semantic_score
+            item["recommendation_reasons"] = [
+                *reasons,
+                f"AI 의미 유사도 {semantic_score}%",
+            ]
             recommended.append(item)
 
     recommended.sort(
         key=lambda item: (-item["recommendation_score"], item["date"], item["startTime"])
     )
-    return {"recommendations": recommended[:5]}
+    return {
+        "recommendations": recommended[:5],
+        "method": "semantic_embedding",
+        "model": os.getenv("AI_RECOMMENDER_MODEL", "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"),
+    }
 
 @app.get("/matches/{match_id}")
 def get_match(match_id: str, db: Session = Depends(get_db)):

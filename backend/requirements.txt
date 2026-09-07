@@ -11,3 +11,4 @@ python-dotenv
 psycopg2-binary
 email-validator
 requests
+sentence-transformers>=5.0.0
