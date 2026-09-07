@@ -36,22 +36,39 @@ export default function DiscoveryScreen({ navigation }) {
   const { user, token, logout, notifications } = useContext(AuthContext);
   const unreadCount = (notifications || []).filter(n => !n.read).length;
   const [recommendations, setRecommendations] = useState([]);
+  const [recommendationLoadFailed, setRecommendationLoadFailed] = useState(false);
+
+  const hasRecommendationProfile = [
+    user?.preferred_genres,
+    user?.preferred_locations,
+    user?.preferred_days,
+    user?.preferred_time_slots,
+    user?.preferred_player_counts,
+    user?.preferred_difficulties,
+  ].some((values) => values?.length > 0);
 
   useEffect(() => {
     const loadRecommendations = async () => {
       if (!token) {
         setRecommendations([]);
+        setRecommendationLoadFailed(false);
         return;
       }
 
       try {
         const response = await apiFetch('/me/recommendations', { token });
-        if (!response.ok) return;
+        if (!response.ok) {
+          setRecommendations([]);
+          setRecommendationLoadFailed(true);
+          return;
+        }
         const data = await response.json();
         setRecommendations(data.recommendations || []);
+        setRecommendationLoadFailed(false);
       } catch (error) {
         // 추천을 불러오지 못해도 기존 탐색 기능은 정상적으로 제공한다.
         setRecommendations([]);
+        setRecommendationLoadFailed(true);
       }
     };
 
@@ -113,13 +130,18 @@ export default function DiscoveryScreen({ navigation }) {
     }));
 
     return [
-      ...(recommendationItems.length > 0
-        ? [{ type: 'recommendationHeader', id: '__recommendationHeader' }, ...recommendationItems]
+      ...(user
+        ? [
+          { type: 'recommendationHeader', id: '__recommendationHeader' },
+          ...(recommendationItems.length > 0
+            ? recommendationItems
+            : [{ type: 'recommendationEmpty', id: '__recommendationEmpty' }]),
+        ]
         : []),
       { type: 'filters', id: '__filters' },
       ...(matchItems.length > 0 ? matchItems : [{ type: 'empty', id: '__empty' }]),
     ];
-  }, [filteredMatches, recommendations]);
+  }, [filteredMatches, recommendations, user]);
 
   const handleFilterSelect = (item) => {
     if (activeModal === 'genre') setActiveGenre(item);
@@ -299,6 +321,35 @@ export default function DiscoveryScreen({ navigation }) {
         </View>
       );
     }
+    if (item.type === 'recommendationEmpty') {
+      const title = recommendationLoadFailed
+        ? 'AI 추천을 불러올 수 없어요'
+        : hasRecommendationProfile
+          ? '아직 조건에 맞는 추천 매칭이 없어요'
+          : 'AI 추천 조건을 먼저 설정해 주세요';
+      const subtitle = recommendationLoadFailed
+        ? '서버 배포 상태를 확인한 뒤 다시 시도해 주세요.'
+        : hasRecommendationProfile
+          ? '다른 사용자가 개설한 모집 중 매칭이 등록되면 이곳에 보여드릴게요.'
+          : '선호 장르·지역·요일 등을 설정하면 맞춤 매칭을 추천해 드려요.';
+      return (
+        <View style={styles.recommendationEmptyCard}>
+          <Ionicons name={recommendationLoadFailed ? 'cloud-offline-outline' : 'sparkles-outline'} size={28} color="#7B61C8" />
+          <View style={styles.recommendationEmptyTextWrap}>
+            <Text style={styles.recommendationEmptyTitle}>{title}</Text>
+            <Text style={styles.recommendationEmptySubtitle}>{subtitle}</Text>
+          </View>
+          {!recommendationLoadFailed && (
+            <TouchableOpacity
+              style={styles.recommendationEditButton}
+              onPress={() => navigation.navigate('ProfileEdit')}
+            >
+              <Text style={styles.recommendationEditButtonText}>조건 설정</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+      );
+    }
     if (item.type === 'recommendation') return renderMatchCard({ item: item.match });
     if (item.type === 'filters') return <FilterBar />;
     if (item.type === 'empty') {
@@ -372,7 +423,7 @@ export default function DiscoveryScreen({ navigation }) {
         renderItem={renderDiscoveryItem}
         keyExtractor={item => item.id}
         ListHeaderComponent={ListHeader}
-        stickyHeaderIndices={recommendations.length > 0 ? [recommendations.length + 2] : [1]}
+        stickyHeaderIndices={user ? [recommendations.length > 0 ? recommendations.length + 2 : 3] : [1]}
         style={styles.matchList}
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
@@ -500,6 +551,41 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginTop: -5,
     marginBottom: 13,
+  },
+  recommendationEmptyCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    backgroundColor: '#FCFAFF',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E8DFFF',
+  },
+  recommendationEmptyTextWrap: {
+    flex: 1,
+  },
+  recommendationEmptyTitle: {
+    color: colors.text,
+    fontSize: 14,
+    fontWeight: 'bold',
+  },
+  recommendationEmptySubtitle: {
+    marginTop: 4,
+    color: colors.textLight,
+    fontSize: 12,
+    lineHeight: 17,
+  },
+  recommendationEditButton: {
+    backgroundColor: '#EEE7FF',
+    borderRadius: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+  },
+  recommendationEditButtonText: {
+    color: '#5B3CC4',
+    fontSize: 12,
+    fontWeight: 'bold',
   },
   fab: {
     position: 'absolute',
