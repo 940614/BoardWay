@@ -273,7 +273,7 @@ export default function DiscoveryScreen({ navigation }) {
         </View>
 
         {item.recommendation_reasons?.length > 0 && (
-          <Text style={styles.recommendationReason} numberOfLines={1}>
+          <Text style={styles.recommendationReason}>
             추천 이유: {item.recommendation_reasons.join(' · ')}
           </Text>
         )}
@@ -549,7 +549,9 @@ const styles = StyleSheet.create({
     color: '#685985',
     fontSize: 12,
     fontWeight: '600',
-    marginTop: -5,
+    lineHeight: 18,
+    flexShrink: 1,
+    marginTop: 0,
     marginBottom: 13,
   },
   recommendationEmptyCard: {
