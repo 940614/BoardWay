@@ -227,6 +227,133 @@ def get_matches(
     formatted = [format_match(m, db, friend_nicknames=friend_nicknames) for m in matches]
     return {"matches": [f for f in formatted if f is not None]}
 
+
+WEEKDAY_LABELS = ["월", "화", "수", "목", "금", "토", "일"]
+
+
+def _recommended_player_group(max_players: int) -> str:
+    if max_players <= 3:
+        return "2~3인"
+    if max_players == 4:
+        return "4인"
+    if max_players <= 6:
+        return "5~6인"
+    return "7인 이상"
+
+
+def _recommended_time_slot(match_date: str, start_time: str) -> str | None:
+    """매칭 일시를 프로필에서 선택한 네 가지 시간대 중 하나로 변환한다."""
+    try:
+        date_value = datetime.strptime(match_date, "%Y-%m-%d").date()
+        hour = int(start_time.split(":")[0])
+    except (TypeError, ValueError, IndexError):
+        return None
+
+    day_type = "주말" if date_value.weekday() >= 5 else "평일"
+    time_type = "낮" if hour < 18 else "저녁"
+    return f"{day_type} {time_type}"
+
+
+def _score_match_recommendation(
+    match: models.Match,
+    user: models.User,
+    game_genres: dict[str, str],
+) -> tuple[int, list[str]]:
+    """프로필과 매칭 메타데이터의 일치도를 점수화하는 콘텐츠 기반 추천 규칙."""
+    score = 0
+    reasons = []
+
+    preferred_genres = set(user.preferred_genres or [])
+    match_genre_text = " ".join(
+        (match.tags or []) + [game_genres.get(game_name, "") for game_name in (match.games or [])]
+    )
+    matched_genres = [genre for genre in preferred_genres if genre and genre in match_genre_text]
+    if matched_genres:
+        score += 30
+        reasons.append(f"선호 장르 '{matched_genres[0]}'")
+
+    preferred_locations = set(user.preferred_locations or [])
+    match_location_text = " ".join(
+        [match.venue or "", match.branch or "", match.address or ""]
+    )
+    matched_locations = [location for location in preferred_locations if location and location in match_location_text]
+    if matched_locations:
+        score += 20
+        reasons.append(f"선호 지역 '{matched_locations[0]}'")
+
+    try:
+        match_date = datetime.strptime(match.date, "%Y-%m-%d").date()
+        weekday = WEEKDAY_LABELS[match_date.weekday()]
+    except (TypeError, ValueError):
+        weekday = None
+    if weekday and weekday in set(user.preferred_days or []):
+        score += 15
+        reasons.append(f"참여 가능 요일 '{weekday}'")
+
+    time_slot = _recommended_time_slot(match.date, match.startTime)
+    if time_slot and time_slot in set(user.preferred_time_slots or []):
+        score += 15
+        reasons.append(f"선호 시간대 '{time_slot}'")
+
+    player_group = _recommended_player_group(match.maxPlayers or 0)
+    if player_group in set(user.preferred_player_counts or []):
+        score += 10
+        reasons.append(f"선호 인원 '{player_group}'")
+
+    if match.difficulty and match.difficulty in set(user.preferred_difficulties or []):
+        score += 10
+        reasons.append(f"선호 난이도 '{match.difficulty}'")
+
+    return score, reasons
+
+
+@app.get("/me/recommendations")
+def get_my_recommendations(
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user),
+):
+    """프로필 조건이 일치하는 모집 중 매칭을 점수순으로 반환한다.
+
+    초기 추천은 별도 학습 없이 동작하는 콘텐츠 기반 추천이다. 이후 클릭·신청·취소
+    이력이 쌓이면 이 점수에 행동 기반 모델 점수를 추가할 수 있다.
+    """
+    now_kst = datetime.now(timezone(timedelta(hours=9))).replace(tzinfo=None)
+    game_genres = {
+        game.name: game.genre or ""
+        for game in db.query(models.Game).all()
+    }
+    recommended = []
+
+    for match in crud.get_matches(db):
+        if match.cancelled or getattr(match, "completed", False):
+            continue
+        if any(participant.nickname == current_user.nickname for participant in match.participants):
+            continue
+        if len(match.participants) >= match.maxPlayers:
+            continue
+        try:
+            match_start = datetime.fromisoformat(f"{match.date}T{match.startTime}:00")
+        except (TypeError, ValueError):
+            continue
+        if match_start <= now_kst:
+            continue
+
+        score, reasons = _score_match_recommendation(match, current_user, game_genres)
+        # 아직 선호 정보를 고르지 않은 사용자는 무작위 추천보다 탐색 화면을 사용하게 한다.
+        if score <= 0:
+            continue
+
+        item = format_match(match, db)
+        if item is not None:
+            item["recommendation_score"] = score
+            item["recommendation_reasons"] = reasons
+            recommended.append(item)
+
+    recommended.sort(
+        key=lambda item: (-item["recommendation_score"], item["date"], item["startTime"])
+    )
+    return {"recommendations": recommended[:5]}
+
 @app.get("/matches/{match_id}")
 def get_match(match_id: str, db: Session = Depends(get_db)):
     match = crud.get_match_by_match_id(db, match_id)

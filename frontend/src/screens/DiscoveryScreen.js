@@ -1,4 +1,4 @@
-import React, { useState, useContext, useMemo } from 'react';
+import React, { useState, useContext, useEffect, useMemo } from 'react';
 import { View, Text, StyleSheet, FlatList, ScrollView, TouchableOpacity, Modal, SafeAreaView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../theme/colors';
@@ -6,6 +6,7 @@ import { commonStyles } from '../theme/styles';
 import { MatchContext } from '../context/MatchContext';
 import { AuthContext } from '../context/AuthContext';
 import { useResponsiveLayout } from '../theme/responsive';
+import { apiFetch } from '../utils/api';
 
 const WEEKEND_TEXT_COLORS = {
   sunday: '#E74C3C',
@@ -32,8 +33,30 @@ export default function DiscoveryScreen({ navigation }) {
   const [activeModal, setActiveModal] = useState(null);
 
   const { matches } = useContext(MatchContext);
-  const { user, logout, notifications } = useContext(AuthContext);
+  const { user, token, logout, notifications } = useContext(AuthContext);
   const unreadCount = (notifications || []).filter(n => !n.read).length;
+  const [recommendations, setRecommendations] = useState([]);
+
+  useEffect(() => {
+    const loadRecommendations = async () => {
+      if (!token) {
+        setRecommendations([]);
+        return;
+      }
+
+      try {
+        const response = await apiFetch('/me/recommendations', { token });
+        if (!response.ok) return;
+        const data = await response.json();
+        setRecommendations(data.recommendations || []);
+      } catch (error) {
+        // 추천을 불러오지 못해도 기존 탐색 기능은 정상적으로 제공한다.
+        setRecommendations([]);
+      }
+    };
+
+    loadRecommendations();
+  }, [token, user, matches]);
 
   const dateList = useMemo(() => {
     const list = [];
@@ -83,12 +106,20 @@ export default function DiscoveryScreen({ navigation }) {
       id: match.id,
       match,
     }));
+    const recommendationItems = recommendations.map(match => ({
+      type: 'recommendation',
+      id: `recommendation-${match.id}`,
+      match,
+    }));
 
     return [
+      ...(recommendationItems.length > 0
+        ? [{ type: 'recommendationHeader', id: '__recommendationHeader' }, ...recommendationItems]
+        : []),
       { type: 'filters', id: '__filters' },
       ...(matchItems.length > 0 ? matchItems : [{ type: 'empty', id: '__empty' }]),
     ];
-  }, [filteredMatches]);
+  }, [filteredMatches, recommendations]);
 
   const handleFilterSelect = (item) => {
     if (activeModal === 'genre') setActiveGenre(item);
@@ -152,6 +183,12 @@ export default function DiscoveryScreen({ navigation }) {
         onPress={() => !isClosed && navigation.navigate('MatchDetail', { matchId: item.id })}
         activeOpacity={isClosed ? 1 : 0.8}
       >
+        {item.recommendation_score > 0 && (
+          <View style={styles.recommendationBadge}>
+            <Ionicons name="sparkles" size={14} color="#5B3CC4" />
+            <Text style={styles.recommendationBadgeText}>AI 추천 {item.recommendation_score}점</Text>
+          </View>
+        )}
         {isClosed && (
           <View style={styles.overlayFull}>
             <Text style={styles.overlayFullText}>신청 마감</Text>
@@ -213,6 +250,12 @@ export default function DiscoveryScreen({ navigation }) {
           ))}
         </View>
 
+        {item.recommendation_reasons?.length > 0 && (
+          <Text style={styles.recommendationReason} numberOfLines={1}>
+            추천 이유: {item.recommendation_reasons.join(' · ')}
+          </Text>
+        )}
+
         <View style={[styles.cardFooter, isMobile && styles.cardFooterMobile]}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
             <Ionicons name="time-outline" size={16} color={colors.textLight} />
@@ -245,6 +288,18 @@ export default function DiscoveryScreen({ navigation }) {
   );
 
   const renderDiscoveryItem = ({ item }) => {
+    if (item.type === 'recommendationHeader') {
+      return (
+        <View style={styles.recommendationHeader}>
+          <View style={styles.recommendationTitleRow}>
+            <Ionicons name="sparkles" size={20} color="#6B46C1" />
+            <Text style={styles.recommendationTitle}>나를 위한 AI 매칭 추천</Text>
+          </View>
+          <Text style={styles.recommendationSubtitle}>프로필 선호 조건과 잘 맞는 모집 중 매치예요.</Text>
+        </View>
+      );
+    }
+    if (item.type === 'recommendation') return renderMatchCard({ item: item.match });
     if (item.type === 'filters') return <FilterBar />;
     if (item.type === 'empty') {
       return (
@@ -317,7 +372,7 @@ export default function DiscoveryScreen({ navigation }) {
         renderItem={renderDiscoveryItem}
         keyExtractor={item => item.id}
         ListHeaderComponent={ListHeader}
-        stickyHeaderIndices={[1]}
+        stickyHeaderIndices={recommendations.length > 0 ? [recommendations.length + 2] : [1]}
         style={styles.matchList}
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
@@ -400,6 +455,52 @@ export default function DiscoveryScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
+  recommendationHeader: {
+    backgroundColor: '#F5F1FF',
+    paddingHorizontal: 20,
+    paddingTop: 18,
+    paddingBottom: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E8DFFF',
+  },
+  recommendationTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 7,
+  },
+  recommendationTitle: {
+    color: '#3B2A72',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  recommendationSubtitle: {
+    marginTop: 5,
+    color: '#6F648D',
+    fontSize: 13,
+  },
+  recommendationBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    gap: 4,
+    backgroundColor: '#EEE7FF',
+    borderRadius: 999,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    marginBottom: 8,
+  },
+  recommendationBadgeText: {
+    color: '#5B3CC4',
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
+  recommendationReason: {
+    color: '#685985',
+    fontSize: 12,
+    fontWeight: '600',
+    marginTop: -5,
+    marginBottom: 13,
+  },
   fab: {
     position: 'absolute',
     right: 20,
