@@ -18,12 +18,20 @@ import { commonStyles } from '../theme/styles';
 
 const GENRES = ['입문', '전략', '파티', '마피아', '추리', '카드', '협상', '두뇌', '힐링', '헤비'];
 const LOCATIONS = ['강남', '홍대', '건대', '신촌', '잠실', '노원', '부평', '수원', '안양', '기타'];
+const DAYS = ['월', '화', '수', '목', '금', '토', '일'];
+const TIME_SLOTS = ['평일 낮', '평일 저녁', '주말 낮', '주말 저녁'];
+const PLAYER_COUNTS = ['2~3인', '4인', '5~6인', '7인 이상'];
+const DIFFICULTIES = ['쉬움', '보통', '어려움', '매우 어려움'];
 
 export default function ProfileEditScreen({ navigation }) {
   const { user, token, fetchUserInfo } = useContext(AuthContext);
   const [bio, setBio] = useState(user?.bio || '');
   const [preferredGenres, setPreferredGenres] = useState(user?.preferred_genres || []);
   const [preferredLocations, setPreferredLocations] = useState(user?.preferred_locations || []);
+  const [preferredDays, setPreferredDays] = useState(user?.preferred_days || []);
+  const [preferredTimeSlots, setPreferredTimeSlots] = useState(user?.preferred_time_slots || []);
+  const [preferredPlayerCounts, setPreferredPlayerCounts] = useState(user?.preferred_player_counts || []);
+  const [preferredDifficulties, setPreferredDifficulties] = useState(user?.preferred_difficulties || []);
   const [submitting, setSubmitting] = useState(false);
 
   const toggleValue = (value, values, setter) => {
@@ -51,6 +59,10 @@ export default function ProfileEditScreen({ navigation }) {
           bio: trimmedBio,
           preferred_genres: preferredGenres,
           preferred_locations: preferredLocations,
+          preferred_days: preferredDays,
+          preferred_time_slots: preferredTimeSlots,
+          preferred_player_counts: preferredPlayerCounts,
+          preferred_difficulties: preferredDifficulties,
         },
       });
       const data = await response.json().catch(() => ({}));
@@ -87,7 +99,7 @@ export default function ProfileEditScreen({ navigation }) {
           <View style={{ flex: 1 }}>
             <Text style={styles.noticeTitle}>내 보드웨이 프로필</Text>
             <Text style={styles.noticeText}>
-              자기소개, 선호 장르와 지역을 설정해두면 나중에 친구·매칭 추천 기능에 활용할 수 있습니다.
+              선호 조건을 설정하면 나에게 더 잘 맞는 매칭을 추천하는 데 활용할 수 있습니다.
             </Text>
           </View>
         </View>
@@ -120,6 +132,38 @@ export default function ProfileEditScreen({ navigation }) {
           options={LOCATIONS}
           selected={preferredLocations}
           onToggle={(value) => toggleValue(value, preferredLocations, setPreferredLocations)}
+        />
+
+        <PreferenceSection
+          title="참여 가능 요일"
+          subtitle="주로 보드게임 모임에 참여할 수 있는 요일을 골라주세요."
+          options={DAYS}
+          selected={preferredDays}
+          onToggle={(value) => toggleValue(value, preferredDays, setPreferredDays)}
+        />
+
+        <PreferenceSection
+          title="선호 시간대"
+          subtitle="참여하기 편한 시간대를 골라주세요."
+          options={TIME_SLOTS}
+          selected={preferredTimeSlots}
+          onToggle={(value) => toggleValue(value, preferredTimeSlots, setPreferredTimeSlots)}
+        />
+
+        <PreferenceSection
+          title="선호 인원"
+          subtitle="함께 게임하기 좋은 인원 규모를 골라주세요."
+          options={PLAYER_COUNTS}
+          selected={preferredPlayerCounts}
+          onToggle={(value) => toggleValue(value, preferredPlayerCounts, setPreferredPlayerCounts)}
+        />
+
+        <PreferenceSection
+          title="선호 난이도"
+          subtitle="즐기고 싶은 게임의 난이도를 골라주세요."
+          options={DIFFICULTIES}
+          selected={preferredDifficulties}
+          onToggle={(value) => toggleValue(value, preferredDifficulties, setPreferredDifficulties)}
         />
 
         <TouchableOpacity

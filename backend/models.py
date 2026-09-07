@@ -17,6 +17,10 @@ class User(Base):
     bio = Column(String, default="", nullable=False)
     preferred_genres = Column(JSON, default=list, nullable=False)
     preferred_locations = Column(JSON, default=list, nullable=False)
+    preferred_days = Column(JSON, default=list, nullable=False)
+    preferred_time_slots = Column(JSON, default=list, nullable=False)
+    preferred_player_counts = Column(JSON, default=list, nullable=False)
+    preferred_difficulties = Column(JSON, default=list, nullable=False)
 
     point_history = relationship(
         "PointHistory",

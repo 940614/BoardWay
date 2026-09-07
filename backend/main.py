@@ -384,6 +384,10 @@ def login(request: schemas.LoginRequest, db: Session = Depends(get_db)):
             "bio": user.bio or "",
             "preferred_genres": user.preferred_genres or [],
             "preferred_locations": user.preferred_locations or [],
+            "preferred_days": user.preferred_days or [],
+            "preferred_time_slots": user.preferred_time_slots or [],
+            "preferred_player_counts": user.preferred_player_counts or [],
+            "preferred_difficulties": user.preferred_difficulties or [],
         }
     }
 
@@ -457,6 +461,10 @@ def read_public_user_profile(
         "bio": target_user.bio or "",
         "preferred_genres": target_user.preferred_genres or [],
         "preferred_locations": target_user.preferred_locations or [],
+        "preferred_days": target_user.preferred_days or [],
+        "preferred_time_slots": target_user.preferred_time_slots or [],
+        "preferred_player_counts": target_user.preferred_player_counts or [],
+        "preferred_difficulties": target_user.preferred_difficulties or [],
         "relation": relation,
     }
 
@@ -470,6 +478,10 @@ def update_my_profile(
     current_user.bio = payload.bio.strip()
     current_user.preferred_genres = payload.preferred_genres
     current_user.preferred_locations = payload.preferred_locations
+    current_user.preferred_days = payload.preferred_days
+    current_user.preferred_time_slots = payload.preferred_time_slots
+    current_user.preferred_player_counts = payload.preferred_player_counts
+    current_user.preferred_difficulties = payload.preferred_difficulties
     db.commit()
     db.refresh(current_user)
     return current_user

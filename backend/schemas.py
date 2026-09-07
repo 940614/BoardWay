@@ -138,6 +138,10 @@ class UserResponse(BaseModel):
     bio: str = ""
     preferred_genres: List[str] = Field(default_factory=list)
     preferred_locations: List[str] = Field(default_factory=list)
+    preferred_days: List[str] = Field(default_factory=list)
+    preferred_time_slots: List[str] = Field(default_factory=list)
+    preferred_player_counts: List[str] = Field(default_factory=list)
+    preferred_difficulties: List[str] = Field(default_factory=list)
 
     class Config:
         from_attributes = True
@@ -150,6 +154,10 @@ class PublicUserProfile(BaseModel):
     bio: str = ""
     preferred_genres: List[str] = Field(default_factory=list)
     preferred_locations: List[str] = Field(default_factory=list)
+    preferred_days: List[str] = Field(default_factory=list)
+    preferred_time_slots: List[str] = Field(default_factory=list)
+    preferred_player_counts: List[str] = Field(default_factory=list)
+    preferred_difficulties: List[str] = Field(default_factory=list)
     relation: str = "visible"
 
 
@@ -157,13 +165,24 @@ class UserProfileUpdate(BaseModel):
     bio: str = Field("", max_length=300)
     preferred_genres: List[str] = Field(default_factory=list)
     preferred_locations: List[str] = Field(default_factory=list)
+    preferred_days: List[str] = Field(default_factory=list)
+    preferred_time_slots: List[str] = Field(default_factory=list)
+    preferred_player_counts: List[str] = Field(default_factory=list)
+    preferred_difficulties: List[str] = Field(default_factory=list)
 
     @field_validator("bio")
     @classmethod
     def _validate_bio(cls, value: str):
         return value.strip()
 
-    @field_validator("preferred_genres", "preferred_locations")
+    @field_validator(
+        "preferred_genres",
+        "preferred_locations",
+        "preferred_days",
+        "preferred_time_slots",
+        "preferred_player_counts",
+        "preferred_difficulties",
+    )
     @classmethod
     def _clean_list(cls, value: List[str]):
         cleaned = []
