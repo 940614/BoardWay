@@ -15,3 +15,6 @@ __pycache__/
 # IDEs
 .vscode/
 .idea/
+
+# 저작권 확인 전에는 룰북 원문에서 추출한 검색 청크를 원격 저장소에 올리지 않습니다.
+rag_data/rulebook_chunks.json

@@ -1,18 +1,55 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, SafeAreaView, Linking } from 'react-native';
+import React, { useContext, useState } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, SafeAreaView, Linking, TextInput, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../theme/colors';
 import { commonStyles } from '../theme/styles';
 import { useResponsiveLayout } from '../theme/responsive';
+import { apiFetch } from '../utils/api';
+import { AuthContext } from '../context/AuthContext';
 
 export default function GameDetailScreen({ route, navigation }) {
   const { game } = route.params;
   const [playing, setPlaying] = useState(false);
+  const { token } = useContext(AuthContext);
+  const [question, setQuestion] = useState('');
+  const [rulebookResult, setRulebookResult] = useState(null);
+  const [rulebookError, setRulebookError] = useState('');
+  const [askingRulebook, setAskingRulebook] = useState(false);
   const { isCompact } = useResponsiveLayout();
 
   const handlePlayVideo = () => {
     if (game.ruleUrl) {
       Linking.openURL(game.ruleUrl).catch(err => console.error("URL 열기 실패:", err));
+    }
+  };
+
+  const handleAskRulebook = async (presetQuestion) => {
+    const nextQuestion = (presetQuestion || question).trim();
+    if (!nextQuestion || askingRulebook) return;
+    if (!token) {
+      setRulebookError('룰북 도우미를 이용하려면 로그인해 주세요.');
+      return;
+    }
+
+    setQuestion(nextQuestion);
+    setAskingRulebook(true);
+    setRulebookError('');
+    try {
+      const response = await apiFetch(`/games/${encodeURIComponent(game.id)}/rulebook/ask`, {
+        method: 'POST',
+        token,
+        json: { question: nextQuestion },
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.detail || '룰북 도우미 답변을 가져오지 못했습니다.');
+      }
+      setRulebookResult(data);
+    } catch (error) {
+      setRulebookResult(null);
+      setRulebookError(error.message || '룰북 도우미와 연결하지 못했습니다.');
+    } finally {
+      setAskingRulebook(false);
     }
   };
 
@@ -69,6 +106,83 @@ export default function GameDetailScreen({ route, navigation }) {
               이 게임은 {game.name}으로, 보드게임 매니아들 사이에서 매우 인기 있는 게임입니다. 
               상세한 규칙은 위 영상을 참고하시거나, 매칭 현장에서 가이드분께 문의해 주세요!
             </Text>
+          </View>
+
+          <View style={styles.aiHelperCard}>
+            <View style={styles.aiHelperTitleRow}>
+              <Ionicons name="sparkles" size={22} color="#6941C6" />
+              <View style={styles.aiHelperTitleText}>
+                <Text style={styles.aiHelperTitle}>AI 룰북 도우미</Text>
+                <Text style={styles.aiHelperSubtext}>등록된 룰북에서 근거를 찾아 답변합니다.</Text>
+              </View>
+            </View>
+
+            {game.rulebookAvailable ? (
+              <>
+                <View style={styles.quickQuestionRow}>
+                  {['게임 준비 방법', '내 차례에 할 수 있는 행동', '승리 조건'].map((item) => (
+                    <TouchableOpacity
+                      key={item}
+                      style={styles.quickQuestion}
+                      onPress={() => handleAskRulebook(item)}
+                      disabled={askingRulebook}
+                    >
+                      <Text style={styles.quickQuestionText}>{item}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+                <TextInput
+                  value={question}
+                  onChangeText={setQuestion}
+                  placeholder={`${game.name} 규칙을 질문해 보세요`}
+                  placeholderTextColor={colors.textLight}
+                  multiline
+                  maxLength={400}
+                  style={styles.questionInput}
+                  textAlignVertical="top"
+                />
+                <TouchableOpacity
+                  style={[styles.askButton, askingRulebook && styles.askButtonDisabled]}
+                  onPress={() => handleAskRulebook()}
+                  disabled={askingRulebook || !question.trim()}
+                >
+                  {askingRulebook ? (
+                    <ActivityIndicator size="small" color="#FFFFFF" />
+                  ) : (
+                    <>
+                      <Ionicons name="send" size={16} color="#FFFFFF" />
+                      <Text style={styles.askButtonText}>질문하기</Text>
+                    </>
+                  )}
+                </TouchableOpacity>
+              </>
+            ) : (
+              <View style={styles.rulebookPending}>
+                <Ionicons name="time-outline" size={18} color={colors.textLight} />
+                <Text style={styles.rulebookPendingText}>이 게임의 룰북 데이터는 준비 중입니다.</Text>
+              </View>
+            )}
+
+            {rulebookError ? <Text style={styles.rulebookError}>{rulebookError}</Text> : null}
+
+            {rulebookResult ? (
+              <View style={styles.answerBox}>
+                <Text style={styles.answerLabel}>
+                  {rulebookResult.generation === 'llm' ? 'AI 답변' : '룰북 검색 결과'}
+                </Text>
+                <Text style={styles.answerText}>{rulebookResult.answer}</Text>
+                {rulebookResult.sources?.length ? (
+                  <View style={styles.sourcesBox}>
+                    <Text style={styles.sourcesTitle}>참고한 룰북 근거</Text>
+                    {rulebookResult.sources.slice(0, 3).map((source, index) => (
+                      <Text key={`${source.source_file}-${source.page}-${index}`} style={styles.sourceText}>
+                        [{index + 1}] {source.source_file} · {source.page}페이지
+                      </Text>
+                    ))}
+                  </View>
+                ) : null}
+              </View>
+            ) : null}
           </View>
         </View>
       </ScrollView>
@@ -211,6 +325,138 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: colors.textLight,
     lineHeight: 22,
+  },
+  aiHelperCard: {
+    marginTop: 32,
+    padding: 18,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#E8DEF8',
+    backgroundColor: '#FCFAFF',
+  },
+  aiHelperTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginBottom: 14,
+  },
+  aiHelperTitleText: {
+    flex: 1,
+    marginLeft: 9,
+  },
+  aiHelperTitle: {
+    color: '#4A2C96',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  aiHelperSubtext: {
+    color: colors.textLight,
+    fontSize: 13,
+    marginTop: 3,
+    lineHeight: 19,
+  },
+  quickQuestionRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 7,
+    marginBottom: 12,
+  },
+  quickQuestion: {
+    paddingHorizontal: 10,
+    paddingVertical: 7,
+    borderRadius: 16,
+    backgroundColor: '#F0E9FF',
+  },
+  quickQuestionText: {
+    fontSize: 12,
+    color: '#5B38A8',
+    fontWeight: '600',
+  },
+  questionInput: {
+    minHeight: 76,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: '#DCD5EA',
+    borderRadius: 12,
+    backgroundColor: '#FFFFFF',
+    color: colors.text,
+    fontSize: 14,
+    lineHeight: 20,
+  },
+  askButton: {
+    alignSelf: 'flex-end',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    minWidth: 104,
+    minHeight: 40,
+    marginTop: 10,
+    paddingHorizontal: 14,
+    borderRadius: 10,
+    backgroundColor: '#5B38A8',
+  },
+  askButtonDisabled: {
+    opacity: 0.6,
+  },
+  askButtonText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: 'bold',
+  },
+  rulebookPending: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 12,
+    borderRadius: 10,
+    backgroundColor: '#F4F5F7',
+  },
+  rulebookPendingText: {
+    flex: 1,
+    marginLeft: 8,
+    color: colors.textLight,
+    fontSize: 13,
+  },
+  rulebookError: {
+    marginTop: 12,
+    color: '#B42318',
+    fontSize: 13,
+    lineHeight: 19,
+  },
+  answerBox: {
+    marginTop: 16,
+    padding: 14,
+    borderRadius: 12,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+  },
+  answerLabel: {
+    color: '#5B38A8',
+    fontSize: 13,
+    fontWeight: 'bold',
+    marginBottom: 8,
+  },
+  answerText: {
+    color: colors.text,
+    fontSize: 14,
+    lineHeight: 21,
+  },
+  sourcesBox: {
+    marginTop: 12,
+    paddingTop: 10,
+    borderTopWidth: 1,
+    borderTopColor: '#EEEAF5',
+  },
+  sourcesTitle: {
+    color: colors.textLight,
+    fontSize: 12,
+    fontWeight: 'bold',
+    marginBottom: 4,
+  },
+  sourceText: {
+    color: colors.textLight,
+    fontSize: 12,
+    lineHeight: 18,
   },
   bottomBtn: {
     backgroundColor: colors.primary,

@@ -26,6 +26,18 @@ class MatchBase(BaseModel):
 class MatchCreate(MatchBase):
     pass
 
+
+class RulebookQuestion(BaseModel):
+    question: str = Field(..., min_length=1, max_length=400)
+
+    @field_validator("question")
+    @classmethod
+    def _strip_question(cls, value: str):
+        value = value.strip()
+        if not value:
+            raise ValueError("질문을 입력해주세요.")
+        return value
+
 class MatchResponse(MatchBase):
     id: str # This is match_id (e.g., "m1")
     participants: List[ParticipantBase] = []

@@ -10,6 +10,7 @@ from jose import JWTError, jwt
 
 import models, schemas, crud
 from ai_recommender import build_match_text, build_profile_text, semantic_similarities
+from rag_rulebook import answer_question, has_rulebook
 from database import get_db
 from auth_utils import verify_password, create_access_token, SECRET_KEY, ALGORITHM
 
@@ -526,9 +527,35 @@ def get_games(request: Request, db: Session = Depends(get_db)):
             "genre": g.genre,
             "description": g.description,
             "ruleUrl": g.ruleUrl,
+            "rulebookAvailable": has_rulebook(g.name),
             "image": public_url(request, g.image)
         })
     return {"games": result}
+
+
+@app.post("/games/{game_id}/rulebook/ask")
+def ask_rulebook_question(
+    game_id: str,
+    payload: schemas.RulebookQuestion,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user),
+):
+    """등록 룰북을 검색하고, 해당 근거만으로 도우미 답변을 만든다."""
+    game = db.query(models.Game).filter(models.Game.game_id == game_id).first()
+    if not game:
+        raise HTTPException(status_code=404, detail="게임 정보를 찾을 수 없습니다.")
+    if not has_rulebook(game.name):
+        raise HTTPException(
+            status_code=404,
+            detail=f"{game.name} 룰북 데이터는 아직 준비 중입니다.",
+        )
+    try:
+        result = answer_question(game.name, payload.question)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except RuntimeError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+    return {"game": game.name, **result}
 
 @app.post("/signup")
 def signup(user: schemas.UserCreate, db: Session = Depends(get_db)):

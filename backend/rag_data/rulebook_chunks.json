@@ -1,0 +1,564 @@
+{
+  "version": 1,
+  "chunk_count": 62,
+  "chunks": [
+    {
+      "id": "루미큐브-p2-1",
+      "game_name": "루미큐브",
+      "language": "ko",
+      "source_file": "루미큐브.pdf",
+      "page": 2,
+      "section": "룰북 2페이지",
+      "text": "Rummikub 연속 : 색깔이 같고 숫자가 연속되는 세 개\n이상의 타일을 말합니다.\n루미큐브\n루미쿠브 내용물\n* 주의하세요\n숫자 1은 항상 가장 낮은 숫자이고 숫자 13뒤\n에 붙일 수 없습니다.\n게임하기\n1. 모든 타일을 뒤집어서 골고루 섞습니다.\n2. 게임자들은 타일을 하나씩 집고 가장 높은\n숫자를 집은 사람부터 게임을 시작하며 시\n계방향으로 진행합니다.\nㆍ1에서 13까지의 네가지 색의 숫자타일\n3. 타일을 7개씩 쌓아서 테이블에 두고 각각\n(검정, 오렌지, 파랑, 빨강 - 숫자별 2개씩)\n타일 14개씩 나눠 각자 받침대에 놓습니다.\n: 총 104개\n4. 자기 차례가 되면 세트를 내릴 수 있습\nㆍ조커 2개(검정, 빨강)\n니다. 만약 내릴 세트가 없거나 다음에 세\nㆍ타일 받침대 4개\n트를 내리기로 결정했다면 테이블 위의 타\n일을 1개 가져갑니다. 그리고 다음 차례로\n용어 정리\n넘어 갑니다.\nㆍ세트(Set)란 : 5. 처음 테이블에 세트를 내릴 경우(“initial\n루미쿠브에서 말하는 세트에는 그룹과 meld 첫 등록”)에는 반드시 그 숫자의\n연속이 있습니다. 합이 30이상 이어야 하며 다른 사람이 내\n려놓은 세트와 조합이 되어서는 안 되며\n그룹 : 색깔이 다른 같은숫자 세 개나 네 조커사용은 가능 합니다.[아래 그림 참조]\n개를 말합니다. 6. 첫 등록을 하기 이전에는 이미 테이블 위에\n있는 세트와의 숫자조합을 할 수 없으며\n테이블 위의 타일을 가져갈 경우 무작위로\n가져갈 수 있습니다.\n- 2 -"
+    },
+    {
+      "id": "루미큐브-p3-1",
+      "game_name": "루미큐브",
+      "language": "ko",
+      "source_file": "루미큐브.pdf",
+      "page": 3,
+      "section": "룰북 3페이지",
+      "text": "* 숫자조합은 루미쿠브에서 게임에서 이기기 수조합 1\n위한 최선의 방법입니다. 상단의 숫자조합 메뉴\n수 조합은 타일 합이 30 이상이 되는 첫 등록\n를 꼭 읽어 보시기 바랍니다.\n후에 가능합니다.\n게임자는 이미 테이블 위에 놓여있는 많은 타\n7. 첫 등록이 가능할 경우 첫 등록을 함과\n일을 이용해서 재 정렬하거나 더해서 세트를\n동시에 테이블의 세트와 숫자조합을 할 수\n만드는 것입니다. 세트는 여러 가지 방법으로\n있습니다. 단, 게임자 자신의 차례에 주어\n만들 수 있습니다.\n지는 시간은 1분이며 1분이 경과된 후에\n단지 남아있는 타일이 적어도 세 개 이상이며\n테이블 위의 숫자조합이 이루어 지지 않았\n짝이 없는 타일이 남지 않는다면 괜찮습니다.\n다면 모두 제자리에 돌려놓아야 합니다.\n타일의 원위치를 기억하지 못할 경우 이\n한 개나 그 이상의 타일을 더해서 새로운 세트\n타일은 테이블 위에 쌓아놓은 타일에 무작\n만들기\n위로 넣고 벌칙으로 타일 3개를 가져갑니다.\n게임자가 파란색 3과 8을 가지고 있고 파란색\n8. 첫 등록 이후라도 숫자조합이 불가능할\n4,5,6 이 테이블 위에 있다면 게임자가 파란색\n경우나 다음에 숫자조합을 생각한다면 테\n3을 4앞에 놓으면 되고 테이블 위에 노란색,\n이블의 타일 1개를 가져가야 합니다.\n빨간색, 검정색 8이 있다면 여기에 파란색 8을\n9. 자신이 가지고 있는 타일을 모두 내려놓고\n놓을 수 있습니다.\n“Rummikub” 라고 외치면 게임에서 이깁\n니다. 단, 테이블 위에 가져갈 타일이 없\n으면 테이블 위에 놓여진 타일로 한 사람이\n끝낼 때까지 게임을 계속하며 게임자들이 더\n이상 게임을 진행할 수 없을 때는 게임을\n끝냅니다.\n[첫 등록의 예]\n- 3 -"
+    },
+    {
+      "id": "루미큐브-p4-1",
+      "game_name": "루미큐브",
+      "language": "ko",
+      "source_file": "루미큐브.pdf",
+      "page": 4,
+      "section": "룰북 4페이지",
+      "text": "* 조커 사용 예 2 :\n조커사용\n테이블 위의 세트 위에 있는 조커를 가져와서\n자신이 필요로 하는 자리에 놓을 수 있으며 어\n떤 숫자든지 어떤 색이든지 대신할 수 있습니\n다. 조커는 게임자가 가지고 있어서 다른 것과\n함께 내릴 수도 있고 이미 내려져 있는 테이블\n위의 것을 사용할 수 있습니다. 조커는 게임자\n가 사용했다면 동시에 반드시 다른 것으로 채\n워져야 합니다.\n등록을 하기위해 조커를 사용할 수 있습니다.\n[제4회 WRC대회 이후 개정된 규칙]\n조커가 포함된 세트는 거기에 다른 타일을 더\n할 수도 있고 분리할 수도 있습니다.\n만약 게임이 다 끝날 때까지 조커를 가지고 있\n는 게임자는 벌점 50점을 얻게 됩니다.\n테이블에 있는 조커를 다시 받침대로 가져갈\n수는 없습니다. 조커를 잘 활용하면 할수록 승\n리는 가까이에 있습니다!\n* 조커 사용 예1 :\n- 4 -"
+    },
+    {
+      "id": "루미큐브-p5-1",
+      "game_name": "루미큐브",
+      "language": "ko",
+      "source_file": "루미큐브.pdf",
+      "page": 5,
+      "section": "룰북 5페이지",
+      "text": "점수계산\n한 사람이 모든 타일을 다 내리고\n“Rummikub”라고 외치면 나머지 사람들은 자\n신이 가진 타일의 숫자를 더합니다. 이 숫자들\n의 합이 우승자의 점수가 됩니다. 우승자를 제\n외한 나머지 사람들은 자신이 가진 타일의 수\n를 합해 마이너스 점수를 가지게 됩니다. 이\n마이너스 점수의 합이 우승자의 점수이겠죠.\n완전히 게임이 끝났을 때 모든 사람은 자신의\n플러스 점수 마이너스 점수를 더하고 이 중에\n서 가장 높은 점수를 얻는 사람이 최종 우승자\n가 됩니다. 바르게 계산됐는지 확인하기 위해\n서는 각 게임의 게임자의 마이너스 점수의 합\n계는 그 때 우승자의 플러스 점수이니까 이 걸\n로 확인하면 되겠죠.\n아주 드문 경우로 테이블 위의 타일을 모두 다\n가져갔는데도 아무도 “Rummikub”를 외친 사\n람이 없다면 각 게임자가 가진 타일의 숫자의\n합이 가장 낮은 사람이 게임에 이깁니다.\n* 점수 계산 예\n가 나 다 라\n1 Game +24 -5 -16 -3\n2 Game -6 -11 +22 -5\n3 Game -32 -13 -2 +47\nTotal -14 -29 +4 +39\n* '라' 우승 !!!\n- 5 -"
+    },
+    {
+      "id": "뱅!-p1-1",
+      "game_name": "뱅!",
+      "language": "en",
+      "source_file": "뱅 영문.pdf",
+      "page": 1,
+      "section": "룰북 1페이지",
+      "text": "®\nA game for 4-7 players, aged 8 and up\nBANG! is a shootout game, in Spaghetti Western style, between a group of\nOutlaws and the Sheriff, who is their primary target. The Deputies incognitos\nhelp the Sheriff, but there is also a Renegade pursuing his own goal!\nIn BANG! each player plays one of these roles, and represents a famous Wild\nWest inspired character.\nCONTENTS\n• 7 Roles: 1 Sheriff, 2 Deputies, 3 Outlaws, 1 Renegade;\n• 16 Characters;\n• 80 Playing cards;\n• 7 Summary cards;\n• 7 Playing boards;\n• 30 Bullets;\n• These rules.\nOBJECT OF THE GAME\nEach player has his own goal:\nSheriff: must eliminate all the Outlaws and the Renegade, to protect\nlaw and order.\nOutlaws: they would like to kill the Sheriff, but they have no scruples\nabout eliminating each other to gain rewards!"
+    },
+    {
+      "id": "뱅!-p1-2",
+      "game_name": "뱅!",
+      "language": "en",
+      "source_file": "뱅 영문.pdf",
+      "page": 1,
+      "section": "룰북 1페이지",
+      "text": "rotect\nlaw and order.\nOutlaws: they would like to kill the Sheriff, but they have no scruples\nabout eliminating each other to gain rewards!\nDeputies: they help and protect the Sheriff, and share his same goal,\nat all costs!\nRenegade: he wants to be the new Sheriff; his goal is to be the last\ncharacter in play.\n1\nBang-ENG.indd 1 04/11/2008 15.26.52"
+    },
+    {
+      "id": "뱅!-p2-1",
+      "game_name": "뱅!",
+      "language": "en",
+      "source_file": "뱅 영문.pdf",
+      "page": 2,
+      "section": "룰북 2페이지",
+      "text": "PREPARATION\n(Before the first game remove carefully the bullet tokens from their frames.)\nEach player takes a playing board (place it in front of you to hold your role,\nyour character, your weapon and your bullets).\nTake as many role cards as the number of players, divided as follows:\n4 players: 1 Sheriff, 1 Renegade, 2 Outlaws\n5 players: 1 Sheriff, 1 Renegade, 2 Outlaws, 1 Deputy\n6 players: 1 Sheriff, 1 Renegade, 3 Outlaws, 1 Deputy\n7 players: 1 Sheriff, 1 Renegade, 3 Outlaws, 2 Deputy\nShuffle the cards and give one, face down, to each player. The Sheriff\nreveals himself by turning his card face up. All other players look at their\nrole but keep it secret.\nShuffle the characters and give one face up to each player.\nEach player now announces the name of his character and\nreads his ability. Each player takes as many bullets as"
+    },
+    {
+      "id": "뱅!-p2-2",
+      "game_name": "뱅!",
+      "language": "en",
+      "source_file": "뱅 영문.pdf",
+      "page": 2,
+      "section": "룰북 2페이지",
+      "text": "one face up to each player.\nEach player now announces the name of his character and\nreads his ability. Each player takes as many bullets as\nshown on his character.\nThe Sheriff plays the game with one additional bullet: if\nhis character card shows three bullets, he is considered\nfor all effects to have four; if he has four bullets, then the\nSheriff plays with five.\nPut the remaining roles, boards and character cards back\nin the box.\nShuffle the playing cards, and give each player as many cards, face down, as\nthe bullets he has. Put the remaining playing cards face down in the middle\nof the table, as a draw pile. Leave room for the discard pile.\nNote: for your first few games, you can try a simplified\nversion of the game by removing all cards with the symbol of\na book before getting started.\nCharacters"
+    },
+    {
+      "id": "뱅!-p2-3",
+      "game_name": "뱅!",
+      "language": "en",
+      "source_file": "뱅 영문.pdf",
+      "page": 2,
+      "section": "룰북 2페이지",
+      "text": "few games, you can try a simplified\nversion of the game by removing all cards with the symbol of\na book before getting started.\nCharacters\nEach Western character has some special abilities, which make you unique.\nThe bullets you have show how many life points you begin the game with,\ni.e. how many times you can be hit before being eliminated from play.\nMoreover, the bullets indicate how many cards the player can hold in his\nhand at the end of his turn (hand size limit).\nExample. Jesse Jones has 4 life points: he can be hit four times before being\neliminated from the game. Moreover, he can hold up to four cards in his hands\nat the end of his turn.\nIf during game Jesse loses one life point and he is down at 3, he can only hold\nup to three cards in his hand at the end of his turn. But fear not! Life points\ncan be recovered!\n2"
+    },
+    {
+      "id": "뱅!-p2-4",
+      "game_name": "뱅!",
+      "language": "en",
+      "source_file": "뱅 영문.pdf",
+      "page": 2,
+      "section": "룰북 2페이지",
+      "text": "t and he is down at 3, he can only hold\nup to three cards in his hand at the end of his turn. But fear not! Life points\ncan be recovered!\n2\nBang-ENG.indd 2 04/11/2008 15.26.56"
+    },
+    {
+      "id": "뱅!-p3-1",
+      "game_name": "뱅!",
+      "language": "en",
+      "source_file": "뱅 영문.pdf",
+      "page": 3,
+      "section": "룰북 3페이지",
+      "text": "THE GAME\nThe Sheriff begins. The game is played in turns, in clockwise order. Each\nplayer’s turn is divided into three phases:\n1. Draw two cards;\n2. Play any number of cards;\n3. Discard excess cards.\n1. Draw two cards\nDraw the top two cards from the draw pile. As soon as the draw pile is empty,\nshuffle the discard pile to create a new playing deck.\n2. Play any number of cards\nNow you may play cards to help yourself or hurt the other players, trying to\neliminate them. You can only play cards during your turn (exception: Missed!\nand Beer, see below). You are not forced to play cards during this phase. You\ncan play any number of cards; there are only three limitations:\n• you can play only 1 BANG! card per turn;\n(this applies only to BANG! cards, not to cards with the symbol )\n• you can have only 1 copy of any one card in play;"
+    },
+    {
+      "id": "뱅!-p3-2",
+      "game_name": "뱅!",
+      "language": "en",
+      "source_file": "뱅 영문.pdf",
+      "page": 3,
+      "section": "룰북 3페이지",
+      "text": "BANG! card per turn;\n(this applies only to BANG! cards, not to cards with the symbol )\n• you can have only 1 copy of any one card in play;\n(one card is a copy of another if they have the same name)\n• you can have only 1 weapon in play.\n(when you play a new weapon, discard the one you have in play)\nExample. If you put a Barrel in play, you cannot play another one, since you\nwould end up having two copies of the same card in front of you.\nThere are two types of cards: brown-bordered cards (= play and discard) and\nblue-bordered cards (= weapons and other objects).\nBrown-bordered cards are played by putting\nthem directly into the discard pile and applying\nthe effect described with text or with symbols on\nthe cards (illustrated in the next paragraphs).\nBlue-bordered cards are played face up in front\nof you (exception: Jail)."
+    },
+    {
+      "id": "뱅!-p3-3",
+      "game_name": "뱅!",
+      "language": "en",
+      "source_file": "뱅 영문.pdf",
+      "page": 3,
+      "section": "룰북 3페이지",
+      "text": "or with symbols on\nthe cards (illustrated in the next paragraphs).\nBlue-bordered cards are played face up in front\nof you (exception: Jail). Blue cards in front of\nyou are hence defined to be “in play”. The effect\nof these cards lasts until they are discarded or\nremoved somehow (e.g. through the play of a Cat\nBalou), or a special event occurs (e.g. in the case of Dynamite). There is no\nlimit on the cards you can have in front of you provided that they do not\nshare the same name.\n3. Discard excess cards\nOnce the second phase is over (you do not want to or cannot play any more\ncards), then you must discard from your hand any cards exceeding your\nhand-size limit. Remember that your hand size limit, at the end of your\nturn, is equal to the number of bullets (i.e. life points) you currently have."
+    },
+    {
+      "id": "뱅!-p3-4",
+      "game_name": "뱅!",
+      "language": "en",
+      "source_file": "뱅 영문.pdf",
+      "page": 3,
+      "section": "룰북 3페이지",
+      "text": "imit. Remember that your hand size limit, at the end of your\nturn, is equal to the number of bullets (i.e. life points) you currently have.\nThen it is the next player’s turn, in clockwise order.\n3\nBang-ENG.indd 3 04/11/2008 15.27.02"
+    },
+    {
+      "id": "뱅!-p4-1",
+      "game_name": "뱅!",
+      "language": "en",
+      "source_file": "뱅 영문.pdf",
+      "page": 4,
+      "section": "룰북 4페이지",
+      "text": "Distance between players\nThe distance between two players is the\nminimum number of places between\nthem, counting clockwise or counter-\nclockwise (see figure). The distance is\nvery important, because all cards with a\nsight take it into account. Normally you\ncan reach only targets (players or cards)\nwithin a distance of 1 (note the\nof your Colt .45 on your playing board).\nWhen a character is eliminated, he is\nno longer counted when evaluating the\ndistance: some players will get “closer”\nwhen someone is eliminated.\nEliminating a character\nWhen you lose your last life point, you are eliminated and your game\nis over, unless you immediately play a Beer (see below). When you are\neliminated from the game, show your role card and discard all the cards you\nhave in hand and in play.\nPenalties and Rewards"
+    },
+    {
+      "id": "뱅!-p4-2",
+      "game_name": "뱅!",
+      "language": "en",
+      "source_file": "뱅 영문.pdf",
+      "page": 4,
+      "section": "룰북 4페이지",
+      "text": "). When you are\neliminated from the game, show your role card and discard all the cards you\nhave in hand and in play.\nPenalties and Rewards\n• If the Sheriff eliminates a Deputy, the Sheriff must discard all the cards\nhe has in hand and in play.\n• Any player eliminating an Outlaw (even if the eliminating player is\nhimself an Outlaw!) must draw a reward of 3 cards from the deck.\nEND OF THE GAME\nThe game ends when one of the following conditions is met:\na) the Sheriff is killed. If the Renegade is the only one alive, then he wins.\nOtherwise, the Outlaws win;\nb) all the Outlaws and the Renegade are killed. The Sheriff and his\nDeputies win.\nExample 1. All the Outlaws are eliminated, but the Renegade is still in play. In\nthis case, the game continues. The Renegade must now face the Sheriff and\nhis Deputies alone.\nExample 2."
+    },
+    {
+      "id": "뱅!-p4-3",
+      "game_name": "뱅!",
+      "language": "en",
+      "source_file": "뱅 영문.pdf",
+      "page": 4,
+      "section": "룰북 4페이지",
+      "text": "t the Renegade is still in play. In\nthis case, the game continues. The Renegade must now face the Sheriff and\nhis Deputies alone.\nExample 2. The Sheriff is killed, but all Outlaws are eliminated, and one\nDeputy and the Renegade are still in play. The game ends with the Outlaws\nwinning! They achieved their goal at the cost of their own lives!\nNew GAme\nIf you play more than one game in a row, players still “alive” at the\nend of the game may choose to keep their character (but not the cards\nin hand or in play!) for the following game; players which have been\neliminated must draw a new character randomly.\nIf you want to give each player the opportunity of playing the Sheriff,\nyou may decide, before starting the game, to pass this role among\nplayers from game to game, randomly assigning the other roles.\n4\nBang-ENG.indd 4 04/11/2008 15.27.06"
+    },
+    {
+      "id": "뱅!-p5-1",
+      "game_name": "뱅!",
+      "language": "en",
+      "source_file": "뱅 영문.pdf",
+      "page": 5,
+      "section": "룰북 5페이지",
+      "text": "Now that you are familiar with the rules, let’s see the cards of BANG! in detail!\nTHE CARDS\nWeapons\nYou start the game with a Colt .45 revolver. This is not\nrepresented by any card, but it is drawn on your playing board.\nUsing the Colt .45 you can only hit targets at a distance of 1,\ni.e. only players sitting to your right or your left.\nIn order to hit targets farther than distance 1, you need to\nplay a bigger weapon: place it over the Colt .45. Weapons can\nbe recognized from their blue border with no\nbullet holes, black-and-white illustration and the number\ninto the sight (see picture) that represents the maximum\nreachable distance. The weapon in play substitutes the Colt\n.45, until the card is removed somehow. Even if weapons are\nplayed on the board, they can still be stolen (e.g. through\nthe play of a Panic!) or discarded (e.g."
+    },
+    {
+      "id": "뱅!-p5-2",
+      "game_name": "뱅!",
+      "language": "en",
+      "source_file": "뱅 영문.pdf",
+      "page": 5,
+      "section": "룰북 5페이지",
+      "text": "is removed somehow. Even if weapons are\nplayed on the board, they can still be stolen (e.g. through\nthe play of a Panic!) or discarded (e.g. through Cat Balou).\nThe only weapon you can never lose is the ol’ Colt .45!\nYou can only have one weapon in play at a time: if you\nwant to play a new weapon when you already have one, you\nmust discard the one you already have.\nImportant: weapons do not change the distance between\nplayers. They represent your maximum reachable distance\nwhen shooting.\nVolcanic: with this card in play you may play any number\nof BANG! cards during your turn. These BANG! cards can\nbe aimed at the same or different targets, but are limited to\na distance of 1.\nBANG! and Missed!\nBANG! cards are the main method to reduce other players’\nlife points. If you want to play a BANG! card to hit one of the\nplayers, determine:"
+    },
+    {
+      "id": "뱅!-p5-3",
+      "game_name": "뱅!",
+      "language": "en",
+      "source_file": "뱅 영문.pdf",
+      "page": 5,
+      "section": "룰북 5페이지",
+      "text": "ANG! cards are the main method to reduce other players’\nlife points. If you want to play a BANG! card to hit one of the\nplayers, determine:\na) what the distance to that player is; and\nb) if your weapon is capable of reaching that distance.\nExample 1. With reference to the distance figure, let us\nsuppose that Ann (A) wants to shoot Carl (C), i.e. Ann wants\nto play a BANG! card against Carl. Usually Carl would be at\na distance of 2, therefore Ann would need a weapon to shoot\nat this distance: a Schofield, a Remington, a Rev. Carabine\nor a Winchester, but not a Volcanic or the ol’ Colt .45. If Ann has a Scope in\nplay, she would see Carl at a distance of 1, and therefore she could use any\nweapon to shoot at him. But if Carl has a Mustang in play, then the two cards\nwould combine and Ann would still see Carl at a distance of 2.\nExample 2."
+    },
+    {
+      "id": "뱅!-p5-4",
+      "game_name": "뱅!",
+      "language": "en",
+      "source_file": "뱅 영문.pdf",
+      "page": 5,
+      "section": "룰북 5페이지",
+      "text": "hoot at him. But if Carl has a Mustang in play, then the two cards\nwould combine and Ann would still see Carl at a distance of 2.\nExample 2. If Dan (D) has a Mustang in play, Ann would see him at a distance\nof 4: in order to shoot Dan, Ann would need a weapon capable of reaching\ndistance 4.\n5\nBang-ENG.indd 5 04/11/2008 15.27.13"
+    },
+    {
+      "id": "뱅!-p6-1",
+      "game_name": "뱅!",
+      "language": "en",
+      "source_file": "뱅 영문.pdf",
+      "page": 6,
+      "section": "룰북 6페이지",
+      "text": "If you are hit by a BANG! you may THE SyMBOlS ON THE CARDS\nimmediately play a Missed! - even though\nit is not your turn! - to Each card shows one or more symbols that show the effect(s) of the card.\ncancel the shot. If you do Count as a BANG!: remove one hand, or you can choose and discard\nnot, you lose one life point life point one card in play in front of him.\n(discard a bullet). Discarded\nbullet go into a pile in the\nmiddle of the table. If you Count as a Missed!: cancel It specifies that you can apply\nhave no more bullets left, the effect of the effect to any chosen player,\ni.e. you lose your last life regardless of the distance.\npoint, you are out of the\nRegain one life point. Only\ngame, unless you play\nthe player playing this card It specifies that the effect\nimmediately a Beer (see"
+    },
+    {
+      "id": "뱅!-p6-2",
+      "game_name": "뱅!",
+      "language": "en",
+      "source_file": "뱅 영문.pdf",
+      "page": 6,
+      "section": "룰북 6페이지",
+      "text": "of the\nRegain one life point. Only\ngame, unless you play\nthe player playing this card It specifies that the effect\nimmediately a Beer (see\nbenefits from this effect, unless applies to all the other\nnext paragraph). You can only cancel shots\notherwise stated. players – i.e. not the player\naimed at you. The BANG! card is discarded,\nwho played the card -, regardless of\neven when cancelled. the distance.\nDraw a card. If “any player”\nis specified (see that symbol),\nBeer then you can draw a random It specifies that the effect\nThis card lets you regain card from his hand, or you can applies to any one player,\none life point – take a bullet choose one in play in front of him. provided that he is within a\nfrom the pile. You cannot If no player is specified, draw the top reachable distance.\ngain more life points than card of the deck."
+    },
+    {
+      "id": "뱅!-p6-3",
+      "game_name": "뱅!",
+      "language": "en",
+      "source_file": "뱅 영문.pdf",
+      "page": 6,
+      "section": "룰북 6페이지",
+      "text": "within a\nfrom the pile. You cannot If no player is specified, draw the top reachable distance.\ngain more life points than card of the deck. In any case, cards\nyour starting amount! drawn are added to your hand.\nThe Beer cannot be used It specifies that the effect applies\nto help other players. to any one player at a distance\nThe Beer can be played in Force to discard a card. You of the number or less. Note:\ncan force a specified player to Mustang and Scope can alter this\ntwo ways:\n• as usual, during your discard a random card from his distance, but weapons in play do not.\nturn;\n• out of turn, but only if you have just\nreceived a hit that is lethal (i.e. a hit that takes away your last life point),\nand not if you are simply hit.\nBeer has no effect if there are only 2 players left in the game; in other words,"
+    },
+    {
+      "id": "뱅!-p6-4",
+      "game_name": "뱅!",
+      "language": "en",
+      "source_file": "뱅 영문.pdf",
+      "page": 6,
+      "section": "룰북 6페이지",
+      "text": "away your last life point),\nand not if you are simply hit.\nBeer has no effect if there are only 2 players left in the game; in other words,\nif you play a Beer you do not gain any life point.\nExample. You have 2 life points left, and suffer 3 damages from a Dynamite.\nIf you play 2 Beers you will stay alive with 1 life point left (2-3+2), while you\nwould be eliminated playing only one Beer that would allow you to regain just\n1 life point. You would still be at zero!\nSaloon\nCards with symbols on two lines have two simultaneous\neffects, one for each line.\nHere symbols say: “Regain one life point”, and this applies\nto “All the other players”, and on the next line: “[You] regain\none life point”.\nThe overall effect is that all players in play regain one\nlife point.\nYou cannot play a Saloon out of turn when you are losing"
+    },
+    {
+      "id": "뱅!-p6-5",
+      "game_name": "뱅!",
+      "language": "en",
+      "source_file": "뱅 영문.pdf",
+      "page": 6,
+      "section": "룰북 6페이지",
+      "text": "life point”.\nThe overall effect is that all players in play regain one\nlife point.\nYou cannot play a Saloon out of turn when you are losing\nyour last life point: the Saloon is not a Beer!\n6\nBang-ENG.indd 6 04/11/2008 15.27.33"
+    },
+    {
+      "id": "뱅!-p7-1",
+      "game_name": "뱅!",
+      "language": "en",
+      "source_file": "뱅 영문.pdf",
+      "page": 7,
+      "section": "룰북 7페이지",
+      "text": "THE SyMBOlS ON THE CARDS Stagecoach\nand Wells Fargo\nEach card shows one or more symbols that show the effect(s) of the card. Symbols state:\nCount as a BANG!: remove one hand, or you can choose and discard “Draw two\nlife point one card in play in front of him. cards” (three\nwith Wells\nFargo) from the\nCount as a Missed!: cancel It specifies that you can apply top of the deck.\nthe effect of the effect to any chosen player,\nregardless of the distance.\nRegain one life point. Only\nthe player playing this card It specifies that the effect\nbenefits from this effect, unless applies to all the other\notherwise stated. players – i.e. not the player\nwho played the card -, regardless of\nthe distance. General store\nDraw a card. If “any player” When you play this card,\nis specified (see that symbol), turn as many cards from the"
+    },
+    {
+      "id": "뱅!-p7-2",
+      "game_name": "뱅!",
+      "language": "en",
+      "source_file": "뱅 영문.pdf",
+      "page": 7,
+      "section": "룰북 7페이지",
+      "text": "e distance. General store\nDraw a card. If “any player” When you play this card,\nis specified (see that symbol), turn as many cards from the\nthen you can draw a random It specifies that the effect deck face up as the players\ncard from his hand, or you can applies to any one player, still playing. Starting\nchoose one in play in front of him. provided that he is within a with you and proceeding\nIf no player is specified, draw the top reachable distance. clockwise, each player\ncard of the deck. In any case, cards chooses one of those cards\ndrawn are added to your hand. and puts it in his hands.\nIt specifies that the effect applies\nto any one player at a distance\nForce to discard a card. You of the number or less. Note:\ncan force a specified player to Mustang and Scope can alter this"
+    },
+    {
+      "id": "뱅!-p7-3",
+      "game_name": "뱅!",
+      "language": "en",
+      "source_file": "뱅 영문.pdf",
+      "page": 7,
+      "section": "룰북 7페이지",
+      "text": "er at a distance\nForce to discard a card. You of the number or less. Note:\ncan force a specified player to Mustang and Scope can alter this\ndiscard a random card from his distance, but weapons in play do not.\nPanic!\nThe symbols state: “Draw\na card” from “a player at\ndistance 1”. Remember that this distance is not modified by\nweapons, but only by cards such as Mustang and/or Scope.\nCat Balou\nForce “any one player” to “discard a card”, regardless of\nthe distance.\nGatling\nThe Gatling shoots “a BANG!” to “all the other players”,\nregardless of the distance. Even though the Gatling shoots\na BANG! to all the other players, it is not considered a\nBANG! card. During your turn you can play any number of\nGatling, but only one BANG! card.\n7\nBang-ENG.indd 7 04/11/2008 15.27.53"
+    },
+    {
+      "id": "뱅!-p8-1",
+      "game_name": "뱅!",
+      "language": "en",
+      "source_file": "뱅 영문.pdf",
+      "page": 8,
+      "section": "룰북 8페이지",
+      "text": "Indians!\nEach player, excluding the one who played this card, may\ndiscard a BANG! card, or lose one life point. Neither Missed!\nnor Barrel have effect in this case.\nDuel\nWith this card you can challenge any other\nplayer (staring him in the eyes!), regardless\nof the distance. The challenged player may discard a BANG!\ncard (even though it is not his turn!). If he does, you may\ndiscard a BANG! card, and so on: the first player failing to\ndiscard a BANG! card loses one life point, and the duel is\nover. You cannot play Missed! or use the Barrel during a\nduel. The Duel is not a BANG! card. BANG! cards discarded\nduring a Duel are not accounted towards the “one BANG!\ncard” limitation.\nMustang\nWhen you have a Mustang horse in play the distance between\nother players and you is increased by 1. However, you still"
+    },
+    {
+      "id": "뱅!-p8-2",
+      "game_name": "뱅!",
+      "language": "en",
+      "source_file": "뱅 영문.pdf",
+      "page": 8,
+      "section": "룰북 8페이지",
+      "text": "limitation.\nMustang\nWhen you have a Mustang horse in play the distance between\nother players and you is increased by 1. However, you still\nsee the other players at the normal distance.\nExample. In the figure of the distance, if Ann (A) has a Mustang\nin play, Ben (B) and Flo (F) would see her at a distance of 2,\nCarl (C) and Emma (E) at a distance of 3, and Dan (D) at a\ndistance of 4, while Ann would continue seeing all the other\nplayers at the normal distance.\nScope\nWhen you have a Scope in play, you see all the other players\nat a distance decreased by 1. However, other players still\nsee you at the normal distance. Distances less than 1 are\nconsidered to be 1.\nExample. In the figure of the distance, if Ann (A) has a Scope\nin play, she would see Ben (B) and Flo (F) at a distance of"
+    },
+    {
+      "id": "뱅!-p8-3",
+      "game_name": "뱅!",
+      "language": "en",
+      "source_file": "뱅 영문.pdf",
+      "page": 8,
+      "section": "룰북 8페이지",
+      "text": "sidered to be 1.\nExample. In the figure of the distance, if Ann (A) has a Scope\nin play, she would see Ben (B) and Flo (F) at a distance of\n1, Carl (C) and Emma (E) at a distance of 1, Dan (D) at a\ndistance of 2, while Ann would be seen by other players at a\nnormal distance.\nDraw!\nSome cards (Barrel, Jail, Dynamite) show little poker suits and values, then\nan equal sign and then their effects. The player using such a card must\n“draw!”, i.e. he has to flip over the top card of the deck,\ndiscard it, and look at the poker symbol in the lower left\ncorner. If this flipped card shows a symbol (and value!) that\nmatches, then the “draw!” was successful, and the effect of\n8\nBang-ENG.indd 8 04/11/2008 15.27.57"
+    },
+    {
+      "id": "뱅!-p9-1",
+      "game_name": "뱅!",
+      "language": "en",
+      "source_file": "뱅 영문.pdf",
+      "page": 9,
+      "section": "룰북 9페이지",
+      "text": "the card is resolved (the “draw!” card is always discarded without effect).\nOtherwise, nothing happens: bad luck! If a specific card value or range is\nspecified on the card, then the “draw!” card must show a value within that\nrange (including the pictured symbols), and the suit shown.\nThe value sequence is: 2-3-4-5-6-7-8-9-10-J-Q-K-A.\nBarrel\nThe Barrel allows you to “draw!” when you are the target of a BANG!:\n- if you draw a Heart card, you are Missed! (just like if you\nplayed a Missed! card);\n- otherwise nothing happens.\nExample. You are the target of another player’s BANG! You\nhave a Barrel in play: this card lets you “draw!” to cancel a\nBANG! and it is successful on a Heart. So, you flip the top card\nof the deck and put it on the discard pile:\nit’s a 4 of Hearts. The use of the Barrel\nis successful and cancels the BANG!"
+    },
+    {
+      "id": "뱅!-p9-2",
+      "game_name": "뱅!",
+      "language": "en",
+      "source_file": "뱅 영문.pdf",
+      "page": 9,
+      "section": "룰북 9페이지",
+      "text": "flip the top card\nof the deck and put it on the discard pile:\nit’s a 4 of Hearts. The use of the Barrel\nis successful and cancels the BANG!\nIf the flipped card were of a different\nsuit, then the Barrel would have had no\neffect, but you could have still tried to cancel the BANG!\nwith a Missed!.\nJail\nPlay this card in front of any player regardless of the distance:\nyou put him in jail! If you are in jail, you must “draw!” before\nthe beginning of your turn:\n- if you draw a Heart card, you escape from jail: discard the\nJail, and continue your turn as normal;\n- otherwise discard the Jail and skip your turn.\nIf you are in Jail you remain a possible target for BANG!\ncards and can still play response cards (e.g. Missed! and\nBeer) out of your turn, if necessary.\nJail cannot be played on the Sheriff.\nDynamite"
+    },
+    {
+      "id": "뱅!-p9-3",
+      "game_name": "뱅!",
+      "language": "en",
+      "source_file": "뱅 영문.pdf",
+      "page": 9,
+      "section": "룰북 9페이지",
+      "text": "ds and can still play response cards (e.g. Missed! and\nBeer) out of your turn, if necessary.\nJail cannot be played on the Sheriff.\nDynamite\nPlay this card in front of you: the Dynamite will stay there for a whole turn.\nWhen you start your next turn (you have the Dynamite already in play),\nbefore the first phase you must “draw!”:\n- if you draw a card showing Spades and a number between 2 and 9, the\nDynamite explodes! Discard it and lose 3 life points;\n- otherwise, pass the Dynamite to the player on your left\n(who will “draw!” on his turn, etc.).\nPlayers keep passing the Dynamite around until it explodes,\nwith the effect explained above, or it is drawn or discarded by a\nPanic! or a Cat Balou. If you have both the Dynamite and a Jail\nin play, check the Dynamite first. If you are damaged (or even"
+    },
+    {
+      "id": "뱅!-p9-4",
+      "game_name": "뱅!",
+      "language": "en",
+      "source_file": "뱅 영문.pdf",
+      "page": 9,
+      "section": "룰북 9페이지",
+      "text": "scarded by a\nPanic! or a Cat Balou. If you have both the Dynamite and a Jail\nin play, check the Dynamite first. If you are damaged (or even\neliminated!) by a Dynamite, this damage is not considered to\nbe caused by any player.\n9\nBang-ENG.indd 9 04/11/2008 15.28.02"
+    },
+    {
+      "id": "뱅!-p10-1",
+      "game_name": "뱅!",
+      "language": "en",
+      "source_file": "뱅 영문.pdf",
+      "page": 10,
+      "section": "룰북 10페이지",
+      "text": "THE CHARACTERS\nBart Cassidy (4 life Kit Carlson (4 life points):\npoints): each time he loses during phase 1 of his\na life point, he immediately turn, he looks at the top\ndraws a card from the three cards of the deck:\ndeck. he chooses 2 to draw, and\nBlack Jack (4 life points): puts the other one back on the top of\nduring phase 1 of his turn, the deck, face down.\nhe must show the second Lucky Duke (4 life points):\ncard he draws: if it’s Heart each time he is required\nor Diamonds (just like a to “draw!”, he flips the\n“draw!”), he draws one additional top two cards from the\ncard (without revealing it). deck, and chooses the\nCalamity Janet (4 life result he prefers. Discard both cards\npoints): she can use afterwards.\nBANG! cards as Missed! Paul Regret (3 life points):\ncards and vice versa. If he is considered to have"
+    },
+    {
+      "id": "뱅!-p10-2",
+      "game_name": "뱅!",
+      "language": "en",
+      "source_file": "뱅 영문.pdf",
+      "page": 10,
+      "section": "룰북 10페이지",
+      "text": "ards\npoints): she can use afterwards.\nBANG! cards as Missed! Paul Regret (3 life points):\ncards and vice versa. If he is considered to have\nshe plays a Missed! as a Mustang in play at all\na BANG!, she cannot play another times; all other players\nBANG! card that turn (unless she must add 1 to the distance\nhas a Volcanic in play). to him. If he has another real\nEl Gringo (3 life points): Mustang in play, he can count both\neach time he loses a of them, increasing all distances to\nlife point due to a card him by a total of 2.\nplayed by another player, Pedro Ramirez (4 life\nhe draws a random card points): during phase 1 of\nfrom the hands of that player (one his turn, he may choose\ncard for each life point). If that to draw the first card from\nplayer has no more cards, too the top of the discard pile\nbad!, he does not draw."
+    },
+    {
+      "id": "뱅!-p10-3",
+      "game_name": "뱅!",
+      "language": "en",
+      "source_file": "뱅 영문.pdf",
+      "page": 10,
+      "section": "룰북 10페이지",
+      "text": "for each life point). If that to draw the first card from\nplayer has no more cards, too the top of the discard pile\nbad!, he does not draw. Note that or from the deck. Then, he draws the\nDynamite damages are not caused second card from the deck.\nby any player. Rose Doolan (4 life\nJesse Jones (4 life points): points): she is considered\nduring phase 1 of his to have a Scope in play\nturn, he may choose to at all times; she sees\ndraw the first card from the other players at a\nthe deck, or randomly distance decreased by 1. If she has\nfrom the hand of any other player. another real Scope in play, she can\nThen he draws the second card from count both of them, reducing her\nthe deck. distance to all other players by a\nJourdonnais (4 life points): total of 2.\nhe is considered to have a Sid Ketchum (4 life"
+    },
+    {
+      "id": "뱅!-p10-4",
+      "game_name": "뱅!",
+      "language": "en",
+      "source_file": "뱅 영문.pdf",
+      "page": 10,
+      "section": "룰북 10페이지",
+      "text": "ng her\nthe deck. distance to all other players by a\nJourdonnais (4 life points): total of 2.\nhe is considered to have a Sid Ketchum (4 life\nBarrel in play at all times; points): at any time, he\nhe can “draw!” when he is may discard 2 cards from\nthe target of a BANG!, and his hand to regain one life\non a Heart he is missed. If he has point. If he is willing and\nanother real Barrel card in play, he able, he can use this ability more\ncan count both of them, giving him than once at a time. But remember:\ntwo chances to cancel the BANG! you cannot have more life points\nbefore playing a Missed!. than your starting amount!\n10\nBang-ENG.indd 10 04/11/2008 15.28.07"
+    },
+    {
+      "id": "뱅!-p11-1",
+      "game_name": "뱅!",
+      "language": "en",
+      "source_file": "뱅 영문.pdf",
+      "page": 11,
+      "section": "룰북 11페이지",
+      "text": "Slab the Killer (4 life Vulture Sam (4 life points):\npoints): players trying to whenever a character is\ncancel his BANG! cards eliminated from the game,\nneed to play 2 Missed!. The Sam takes all the cards\nBarrel effect, if successfully that player had in his\nused, only counts as one Missed!. hand and in play, and adds them to\nSuzy Lafayette (4 life his hand.\npoints): as soon as she Willy the Kid (4 life\nhas no cards in her hand, points): he can play any\nshe draws a card from the number of BANG! cards\ndraw pile. during his turn.\nREMEMBER:\n• Any card with a Missed! symbol can be used to cancel the\neffect of a card with a BANG! symbol\n• you can only play one BANG! card per turn, but you can play any\nnumber of other cards which show the symbol\n• you cannot have two cards with the same name in front of you"
+    },
+    {
+      "id": "뱅!-p11-2",
+      "game_name": "뱅!",
+      "language": "en",
+      "source_file": "뱅 영문.pdf",
+      "page": 11,
+      "section": "룰북 11페이지",
+      "text": "d per turn, but you can play any\nnumber of other cards which show the symbol\n• you cannot have two cards with the same name in front of you\n• you can only have one weapon in play, but at least you always\nhave a Colt .45\n• weapons do not change the distance between players, they\nrepresent only your shooting range\n• Beer has no effect when there are only 2 players left in the game\n• when you are losing your last life point, you can only play a Beer,\nand not a Saloon.\nCuriosity\nIn order to keep track of your life points, you can use\nanother character card, from the ones left over. Turn it\nface down and cover / uncover the bullets by sliding your\ncharacter card on it, just like in the picture. This makes\neasier to bring BANG! with you and play it anywhere!\nJesse Jones with three life points\n11\nBang-ENG.indd 11 04/11/2008 15.28.12"
+    },
+    {
+      "id": "뱅!-p12-1",
+      "game_name": "뱅!",
+      "language": "en",
+      "source_file": "뱅 영문.pdf",
+      "page": 12,
+      "section": "룰북 12페이지",
+      "text": "Note: throughout these rules “he”, “his”, etc. are used to indicate both genders.\nThanks to all the play-testers, to their gaming groups and to all the players, for all the precious\nsuggestions. The author would personally thank all the members of the Chess Club “Luigi Valentini” in\nCivitavecchia, for their constant support and enthusiasm.\nGame idea: Emiliano Sciarra\nDevelopment: Roberto Corbelli, Domenico Di Giorgio\nArtworks: Alessandro Pierangelini\nArt Director: Stefano De Fazi\nRules editing: Roberto Corbelli, Andrés J. Voicu\nOrigins awards 2003:\nLucca Games 2002:\n- Best Traditional Card Game\n- Best Italian Game\n- Best Card Design\nBANG!® - Fourth edition\nCopyright © MMVIII\ndaVinci Editrice S.r.l.\nVia T. Tittoni, 3\nI-06131 - Perugia - Italy\nAll rights reserved.\nFor any questions, comments and suggestions:"
+    },
+    {
+      "id": "뱅!-p12-2",
+      "game_name": "뱅!",
+      "language": "en",
+      "source_file": "뱅 영문.pdf",
+      "page": 12,
+      "section": "룰북 12페이지",
+      "text": "MVIII\ndaVinci Editrice S.r.l.\nVia T. Tittoni, 3\nI-06131 - Perugia - Italy\nAll rights reserved.\nFor any questions, comments and suggestions:\nwww.davincigames.com info@davincigames.com\nThe BANG!® Game System™\nIn 2002, a new Sheriff rode into town…\nBANG! is the best-selling, award-winning, Wild West shoot-out card\ngame. The original mechanics of the BANG! Game System feature:\n• The distance between the players is an actual part of the game!\n• Unique character combinations make every game different!\n• Different goals and secret roles for each player create tension and surprises with\nevery play!\n• The “draw” mechanic and the many different types of cards add depth to the game!\nAfter all, half a million cowboys can’t be wrong!\nBANG!® – DODGe CITY™\nThis is the “must-have” expansion for BANG!\nOur all-new edition includes:"
+    },
+    {
+      "id": "뱅!-p12-3",
+      "game_name": "뱅!",
+      "language": "en",
+      "source_file": "뱅 영문.pdf",
+      "page": 12,
+      "section": "룰북 12페이지",
+      "text": "all, half a million cowboys can’t be wrong!\nBANG!® – DODGe CITY™\nThis is the “must-have” expansion for BANG!\nOur all-new edition includes:\n• More characters with unique abilities!\n• New green-bordered cards with their own special rules!\n• Additional mechanics for playing your cards!\n• Rules and role cards to expand your shoot-out to 8 players!\n• Complete rules for 3 player games!\n• And, as a special bonus: the complete out-of-print “High Noon” expansion,\nincluded inside!\n12\nBang-ENG.indd 12 04/11/2008 15.28.32"
+    },
+    {
+      "id": "스플랜더-p1-1",
+      "game_name": "스플랜더",
+      "language": "ko",
+      "source_file": "스플랜더.pdf",
+      "page": 1,
+      "section": "룰북 1페이지",
+      "text": "번역 : 디리에\n편집 : 프리빈\n배포사이트 : boardlife.co.kr\n오타/오역 신고 : boardlife.co.kr 쪽지 및 해당 자료실 댓글"
+    },
+    {
+      "id": "스플랜더-p2-1",
+      "game_name": "스플랜더",
+      "language": "ko",
+      "source_file": "스플랜더.pdf",
+      "page": 2,
+      "section": "룰북 2페이지",
+      "text": "스플렌더에서, 당신은 르네상스 시대의 부유한 상인의 역할을 맡게 됩니다.\n당신은 광산, 운송 수단, 원석을 아름다운 보석으로 세공해 줄 장인을 얻기 위해\n당신의 자원을 사용하게 될 것입니다.\n내용물\n40 토큰들 90 발전 카드들\n10 귀족 타일들\n7 에메랄드 7 다이아몬드\n토큰들 토큰들\n(녹색) (흰색)\n7 사파이어 7 오닉스\n토큰들 토큰들\n(녹색) (검정색)\n40 레벨 1\n7 루비 7 금 조커 카드들\n토큰들 토큰들\n30 레벨 2\n(빨간색) (노랑색)\n카드들\n20 레벨 3\n카드들\n게임 준비\n각각의 개발 카드덱 별로 섞은 후 해당 덱들을 아래에서부터 위로\n오름차순이 되도록 테이블 중앙에 열을 형성하여 배치합니다.\n(O;OO;OOO).\n그런 뒤 각 레벨에서 4장의 카드를 공개합니다.\n귀족 타일들을 섞어 플레이어수에 하나를 추가한 개수만의 귀족타일을\n공개합니다.(예: 4인 플레이 게임에서 5개의 타일이 사용됩니다.)\n남겨진 귀족타일들은 게임에서 제거합니다; 제거된 타일들은 게임 중\n사용되지 않을 것입니다. 마지막으로, 6개의 더미(색상별로 정렬)로\n분류된 토큰들을 플레이어들이 닿는 곳에 배치합니다.\n2인 또는 3인 플레이어 게임\n2인 플레이어 게임시 3인 플레이어 게임시\n각 색상의 보석마다 3개의 토큰을 제거합니다.(남아있는 각 색상의 보석마다 2개의 토큰을 제거합니다.(남아있는\n각각의 보석은 오직 4개가 있어야 합니다.) 각각의 보석은 오직 5개가 있어야 합니다.)\n금은 만지지 마십시오. 금은 만지지 마십시오.\n3개의 귀족 타일들을 공개합니다. 4개의 귀족 타일들을 공개합니다.\n다른 변경 사항은 없습니다."
+    },
+    {
+      "id": "스플랜더-p3-1",
+      "game_name": "스플랜더",
+      "language": "ko",
+      "source_file": "스플랜더.pdf",
+      "page": 3,
+      "section": "룰북 3페이지",
+      "text": "게임 개요\n게임 중에 플레이어들은 보석과 금 토큰들을 가져갑니다. 이 토큰들을 가지고, 그들은 명성 포인트 그리고/또는\n보너스를 주는 개발 카드들을 구입할 수 있습니다. 이 보너스들은 플레이어들이 이후의 개발 카드를\n구입할 때 적은 비용으로 구입이 가능하게 해줍니다. 어느 한 플레이어가 충분한 보너스가 있을 때, 즉시\n귀족의 방문을 받습니다. (귀족 역시 명성 포인트가 존재합니다.)\n어느 플레이어가 15 명성 포인트에 도달하면, 현재 라운드가 끝나고 가장 많은 명성 포인트를\n가진 플레이어가 승리자가 됩니다.\n개발 카드들 게임 규칙\n명성포인트로 승리하기 위해서는, 플레이어는 반드시 개발 카드를 가장 어린 플레이어부터 시작합니다. 그 후 시계방향으로 진행합니다.\n구입해야만 합니다. 이 카드들은 테이블 중앙에 깔려있으며, 게임을 자신의 차례가 되면, 아래의 4가지 액션들 중 반드시 하나를 선택하여\n진행하는 동안 모든 플레이어들이 구입할 수 있습니다. 수행해야 합니다.\n손에 들고있는 개발카드들은 게임 내내 보유하는 카드들 입니다. 서로 다른 색의 보석 토큰 3개 가져가기.\n손에 들고 있는 개발카드들은 그 카드를 들고 있는 플레이어들 만이 같은 색의 보석 토큰 2개 가져가기.\n구입할 수 있습니다. 이 액션은 플레이어가 보석 토큰을 가져올때 선택한 색상의 토큰이\n적어도 4개가 있어야만 가능합니다.\n이 카드를 구입한 플레이어는 4 명성 포인트를 얻습니다. 개발 카드 1장 예약하고 금 토큰 (조커) 1개 가져가기.\n이 카드를 소유한 플레이어는 파란색(사파이어) 보너스의 혜택을 테이블 중앙에 공개된 개발 카드 1장을 구입하거나 이전에\n받을 수 있습니다."
+    },
+    {
+      "id": "스플랜더-p3-2",
+      "game_name": "스플랜더",
+      "language": "ko",
+      "source_file": "스플랜더.pdf",
+      "page": 3,
+      "section": "룰북 3페이지",
+      "text": "카드를 구입한 플레이어는 4 명성 포인트를 얻습니다. 개발 카드 1장 예약하고 금 토큰 (조커) 1개 가져가기.\n이 카드를 소유한 플레이어는 파란색(사파이어) 보너스의 혜택을 테이블 중앙에 공개된 개발 카드 1장을 구입하거나 이전에\n받을 수 있습니다. 이 카드를 구입하려면 파란색 토큰 3개, 검정색 예약한 개발 카드 1장 구입하기.\n토큰 3개, 흰색 토큰 6개를 지불해야만 합니다.\n토큰 선택하기\n플레이어는 자신의 차례 끝에 10개보다 많은 토큰을 가질 수 없습니다.\n(조커 포함.) 만약 많다면, 오직 10개가 될때까지 반납해야 합니다.\n해당 플레이어는 전부 또는 일부를 반환할 수 있습니다.\n반드시 자신이 가진 토큰들은 언제나 모든 플레이어들이 볼 수\n있어야 합니다.\n알림 : 가져오려는 색의 토큰이 4개보다 적을 경우 플레이어는\n해당 색의 보석 토큰 2개를 가져올 수 없습니다.\n귀족 타일들\n귀족타일들은 테이블 중앙에서 확인할 수 있습니다. 자신의 차례 개발 카드 예약하기\n종료 후, 해당 플레이어가 요구되는 양의 보너스(정확히 일치해도)를 테이블 중앙에 공개되어있는 카드들 중 하나를 예약하거나, (자신의\n가지고 있다면 자동으로 귀족이 방문하여 그에 일치하는 귀족타일을 운이 좋다 느껴진다면)세개의 덱중(레벨 O;OO;OOO) 중 하나의\n받습니다. 맨 윗 카드를 다른 플레이어들에게 보여주지 않고 예약할 수 있습니다.\n플레이어는 귀족의 방문을 거부 할 수 없습니다. 예약된 카드들은 손에 들고 있고 버려질 수 없습니다.\n귀족을 받는 것은 행동에 포함되지 않습니다. 각 귀족 타일은 플레이어들은 손에 3장 보다 많은 카드를 예약하여 들 수 없으며,"
+    },
+    {
+      "id": "스플랜더-p3-3",
+      "game_name": "스플랜더",
+      "language": "ko",
+      "source_file": "스플랜더.pdf",
+      "page": 3,
+      "section": "룰북 3페이지",
+      "text": "예약할 수 있습니다.\n플레이어는 귀족의 방문을 거부 할 수 없습니다. 예약된 카드들은 손에 들고 있고 버려질 수 없습니다.\n귀족을 받는 것은 행동에 포함되지 않습니다. 각 귀족 타일은 플레이어들은 손에 3장 보다 많은 카드를 예약하여 들 수 없으며,\n3 명성 포인트의 가치를 가지지만, 차례마다 단 하나의 타일만을 들고있는 카드를 제거하는 유일한 방법은 카드를 구입하는 것입니다.\n가질 수 있습니다. (아래를 보세요). 카드 예약하기는 금 토큰(조커)를 얻을 수 있는\n유일한 방법입니다. 테이블 가운데에 금이 남아있지 않아도\n이 귀족 타일을 얻은 플레이어는 3 명성 포인트를 얻습니다. 카드 예약은 할 수 있지만, 금을 받을 순 없습니다.\n만약 플레이어가 3 파란색 보너스, 3 녹색 보너스, 3 흰색 보너스\n만큼의 충분한 개발 카드를 가지고 있다면, 해당 플레이어에게\n자동으로 귀족이 방문하여 타일을 받습니다. 개발 카드 구입하기\n카드를 구입하기 위해서, 플레이어는 카드에 표시된 만큼의\n토큰을 지불해야합니다. 가져온 조커 토큰은 어떤 색의 토큰으로도\n대체하여 지불할 수 있습니다. 지불한 토큰(조커 포함)은 테이블\n가운데로 돌려놓습니다.\n플레이어는 테이블 가운데에 공개되어있는 카드들 중 하나를\n구매하거나 또는 이전 차례에 손에 들고있던 예약한 카드를\n구입할 수 있습니다.\n각 플레이어는 구입한 카드들을 색깔별로 구분해서 각각의\n색깔 카드에 그려진 보너스와 명성 포인트가 보이도록\n세로로 겹쳐둡니다."
+    },
+    {
+      "id": "스플랜더-p4-1",
+      "game_name": "스플랜더",
+      "language": "ko",
+      "source_file": "스플랜더.pdf",
+      "page": 4,
+      "section": "룰북 4페이지",
+      "text": "각 카드에 의해 받게되는 보너스와 명성 귀족\n포인트는 항상 모두가 볼 수 있어야 합니다. 자신의 턴 끝에, 각 플레이어는 귀족 타일 중 하나의 방문을 받는지에\n대한 유무를 확인하기 위해 귀족 타일들을 확인합니다.\n귀족 타일에 그려진 보너스의 종류와 수량이 동일(적어도)하거나\n중요 : 테이블 중앙에 있는 개발 카드 하나가 구입되거나 예약되면, 그 이상이어야 귀족이 방문하게 됩니다.\n즉시 같은 레벨의 카드 덱에서 한 장을 채워 넣습니다. 방문은 액션이 아니기 때문에 절대로 거절할 수 없습니다.\n만약 자신의 턴 끝에 2명 이상의 귀족이 방문하게 될 경우\n게임 내내 언제든지, 각 레벨 별로 4장의 카드가 공개되어 있어야 하나의 귀족만 선택해서 받아들일 수 있습니다.\n합니다. (덱이 떨어져서 4장을 공개할 수 없는 경우는 그대로 획득한 타일은 자신의 앞에 공개해둡니다.\n둡니다).\n보너스\n이전에 구입한 개발 카드는 새로운 카드들을 구입할 때 할인 보너스를\n제공합니다. 카드에 그려진 각각의 보너스 색깔 하나당 해당 토큰 게임 종료\n하나와 동일합니다. 그러므로, 2개의 파란색 보너스를 가지고 있는 한명의 플레이어가 15 명성 포인트에 도달하면, 각 플레이어들은\n플레이어가 파란색 토큰 2개과 녹색 토큰 1개를 비용으로 하는 동등한 횟수의 차례를 가진 후 현재 라운드를 완료합니다.\n카드의 구입을 원할 경우 1개의 녹색 토큰만 지불하면 됩니다. 가장 높은 명성 포인트를 획득한 플레이어가 승리자가 됩니다.\n만약 개발 카드(보너스)를 충분히 가지고 있는 플레이어라면, (귀족 타일도 합산하는 것을 잊지 마세요).\n심지어 어떠한 토큰도 사용하지 않고 카드를 구입할 수 있습니다."
+    },
+    {
+      "id": "스플랜더-p4-2",
+      "game_name": "스플랜더",
+      "language": "ko",
+      "source_file": "스플랜더.pdf",
+      "page": 4,
+      "section": "룰북 4페이지",
+      "text": "만 지불하면 됩니다. 가장 높은 명성 포인트를 획득한 플레이어가 승리자가 됩니다.\n만약 개발 카드(보너스)를 충분히 가지고 있는 플레이어라면, (귀족 타일도 합산하는 것을 잊지 마세요).\n심지어 어떠한 토큰도 사용하지 않고 카드를 구입할 수 있습니다. 동률이라면 개발 카드를 적게 구입한 플레이어가 승리합니다."
+    },
+    {
+      "id": "카탄-p1-1",
+      "game_name": "카탄",
+      "language": "ko",
+      "source_file": "카탄.pdf",
+      "page": 1,
+      "section": "룰북 1페이지",
+      "text": "규규칙칙서서\n이 규칙서에는 게임 진행에 꼭 필요한 정보가 담겨있습니다. 게임을 진행하다 더 많은 정보가\n필요하다면, <세부 규칙서>에서 찾아 보십시오.\n초보자를 위한 배치\n이 게임을 처음 하거나 몇 번 해보지 않은 플레이어들에게는 1페이지에 나와있는 그림과 똑같이 타일을 배치할 것을 권합니\n다. 먼저 6개의 테두리 타일을 조립한 뒤, 그 안을 땅 타일들로 채우고 숫자 칩을 올려놓습니다. 항구의 위치에 주의하세요.\n숙련자를 위한 배치\n몇 번 게임을 해 보았다면, 타일을 다양하게 변형해서 배치할 수 있습니다. 이와 관련된 정보를 <세부 규칙서>의 ‘배\n치의 변형’과 ‘근거지 마련 단계’에서 찾아보십시오.\n준비 진행\n초보자를 위한 배치 나이가 가장 많은 플레이어부터 차례를 시작합니다. 차례가 되면 아래와\n같은 행동을 순서대로 할 수 있습니다.\n• 각 플레이어는 건설비용카드 1장과 한 색깔의 말(마을 5개, 도시 4개,\n도로 15개)을 전부 가져옵니다. 그 후, 각 플레이어는 2개의 도로와 1. 자원을 얻기 위해 주사위를 던집니다(주사위를 던진 결과는 모두에게\n2개의 마을을 각각 1페이지의 그림에 나와있는 대로 배치합니다. 나머지 효력을 미칩니다).\n말들은 각 플레이어의 앞에 잘 놓아둡니다. 이를 개인창고라 부릅니다.\n2. 거래를 할 수 있습니다: 자원을 공동창고에 있는 다른 자원과 교환할 수\n3인이 게임을 할 경우 빨간색 말을 모두 게임에서 제거하여 상자에 넣습\n있으며, 다른 사람과 교환할 수도 있습니다.\n니다.\n3. 건설을 할 수 있습니다: 도로, 마을, 도시를 건설할 수 있고 발전카드를\n• 주사위 2개와 특별 승점카드 최장 교역로와 최강 기사단을 보드 옆에\n구입할 수도 있습니다.\n둡니다."
+    },
+    {
+      "id": "카탄-p1-2",
+      "game_name": "카탄",
+      "language": "ko",
+      "source_file": "카탄.pdf",
+      "page": 1,
+      "section": "룰북 1페이지",
+      "text": "여 상자에 넣습\n있으며, 다른 사람과 교환할 수도 있습니다.\n니다.\n3. 건설을 할 수 있습니다: 도로, 마을, 도시를 건설할 수 있고 발전카드를\n• 주사위 2개와 특별 승점카드 최장 교역로와 최강 기사단을 보드 옆에\n구입할 수도 있습니다.\n둡니다.\n추가로, 자신의 차례 중 아무 때나(심지어 주사위를 던지기 전에도)\n발전카드 1장을 사용할 수 있습니다.\n한 사람이 차례를 마치면 그 왼쪽 사람의 차례가 됩니다. 차례에 거래나\n건설을 하지 않을 수 있지만 주사위를 꼭 던져야 합니다.\n각각의 행동에 대하여\n• 자 원카드를 종류별로 분류해 앞면이 보이게 공동창고에 있는 카드\n보관함의 각 칸에 넣습니다. 카드 보관함은 게임 보드 옆에 둡니다. 1. 자원 얻기\n차례가 되면 먼저 주사위 두 개를 던집니다. 나온 숫자의 합에 따라 자원을\n얻을 수 있는 땅이 결정됩니다.\n• 주사위를 던진 결과와 같은 숫자가 있는 땅에 닿게 마을을 건설한\n플레이어는 그 땅에서 생산되는 자원카드를 1장 얻습니다. 그 땅과\n인접하게 마을을 여러 개 건설한 플레이어는 마을마다 자원카드를 1장\n• 발 전카드를 모두 섞어서 뒷면이 보이게 카드 보관함의 남은 한 칸에\n얻습니다. 그 땅과 인접하게 도시를 건설한 플레이어는 도시마다\n넣습니다. 자원카드와 발전카드가 있는 카드 보관함을 공동창고라\n자원카드를 2장 얻습니다.\n부릅니다.\n진보 진보 진보 기사 승점 승점 승점 승점 승점 예시: 주사위를 던져 8이\n나오면, 8이 있는 땅과 인접한\n자모원 선전 든 택 하 부 플한 나 빼 독 레 를 자앗 이 점 원 선 습 어카 택 니 에드 합 다 게를 니 . 서다 . 비용을즉 내도 시지 로 건 않설 고건 합 니도설 다로."
+    },
+    {
+      "id": "카탄-p1-3",
+      "game_name": "카탄",
+      "language": "ko",
+      "source_file": "카탄.pdf",
+      "page": 1,
+      "section": "룰북 1페이지",
+      "text": "승점 승점 승점 예시: 주사위를 던져 8이\n나오면, 8이 있는 땅과 인접한\n자모원 선전 든 택 하 부 플한 나 빼 독 레 를 자앗 이 점 원 선 습 어카 택 니 에드 합 다 게를 니 . 서다 . 비용을즉 내도 시지 로 건 않설 고건 합 니도설 다로. 2개를 공동창2고장 자에을서원 가 원 져 발하옵는견 니 다자.원카드 플그레1 이장 후어을 , 도 도 중무 둑둑 작한이을 위 명있옮 로을는깁 빼 니 골땅 앗 다 라에 습 . 자니 인원다 접카. 한드 도1서관 1시장 1시청 대1성당 1대학 2 빨 개 간 의 색 마 플 을 레이 을 어 가 는 지 철 고 을 있 2 는 장\n얻고, 하얀색 플레이어는 철\n을 1장 얻습니다. 주사위를\n• 도 둑 말을 사막에 놓습니다.\n던져 10이 나오면 하얀색 플\n• 마지막으로 각 플레이어는 그림에 알파벳이 쓰여있는(A~D) 마을 레이어는 양을 1장 얻습니다.\n만약 하얀색 플레이어가 건설\n주변에서 생산되는 자원을 받습니다. 예를 들어, 파란색 플레이어는\n한 것이 마을이 아니라 도시\n(B)에 위치한 마을로부터 나무, 철, 흙을 1장씩 받습니다. 주황색 라면, 10이 나올 때 양을 2장\n플레이어는 (C)에 위치한 마을로부터 철 1장과 밀 2장을 얻습니다. 얻을 것입니다.\n• 얻 은 자원카드는 다른 사람이 앞면을 보지 못하도록 손에 듭니다. • 자원을 얻은 플레이어는 그 자원을 자신의 손에 듭니다.\n2"
+    },
+    {
+      "id": "카탄-p2-1",
+      "game_name": "카탄",
+      "language": "ko",
+      "source_file": "카탄.pdf",
+      "page": 2,
+      "section": "룰북 2페이지",
+      "text": "2. 거래\n자원 얻기가 끝나면, 자신에게 부족한 자원카드를 보충하기 위해 거래를 • 주황색 플레이어는 파란색으로 표시된 길에만 도로를 건설할 수\n할 수 있습니다. 거래에는 두 가지 방식이 있습니다. 있습니다. 빨간색으로 표시된 길에는 건설할 수 없습니다.\na) 내륙 거래(다른 사람과의 거래)\n자신의 차례에는 누구와도 자원카드를 거래할 수 있습니다. 자신에게\n필요한 자원이 무엇이며 그 대가로 줄 수 있는 자원이 무엇인지를 알리면서\n상대방과 흥정합니다. 여러 사람과 조건을 바꿔가며 흥정할 수도 있습니다.\n중요: 거래는 현재 차례인 플레이어와만 할 수 있습니다. 차례가 아닌\n플레이어들끼리는 거래할 수 없습니다.\nb) 해상 거래(공동창고와의 거래)\n플레이어는 다른 플레이어가 없이도 거래할 수 있습니다.\n• 기본 거래조건은 4:1입니다. 같은 자원카드 4장을 공동창고에 내고\n원하는 자원카드 1장을 가져옵니다.\n• 다른 사람의 마을이나 도시로 끊기지 않은 채\n• 항구 부지에 마을이나 도시가 있다면 더 유리하게 거래할 수 있습니다. 도로를 한 줄로 5개 이상 가장 먼저 연결하면,\n3:1 항구에서는 같은 자원카드 3장을 내고 원하는 자원카드 1장을 특별 승점카드인 최장 교역로를 받습니다. 다른\n가져올 수 있고, 특수 항구에서는 항구에 표시된 자원카드 2장을 내고 사람이 더 길게 도로를 연결하면 곧바로 그\n원하는 자원카드 1장을 가져올 수 있습니다. 사람이 이 카드를 가져갑니다. 최장 교역로 카드\n최장 교역로\n는 승점 2점입니다.\n항구가 없을 때의 4:1 해상 거래"
+    },
+    {
+      "id": "카탄-p2-2",
+      "game_name": "카탄",
+      "language": "ko",
+      "source_file": "카탄.pdf",
+      "page": 2,
+      "section": "룰북 2페이지",
+      "text": "구에서는 항구에 표시된 자원카드 2장을 내고 사람이 더 길게 도로를 연결하면 곧바로 그\n원하는 자원카드 1장을 가져올 수 있습니다. 사람이 이 카드를 가져갑니다. 최장 교역로 카드\n최장 교역로\n는 승점 2점입니다.\n항구가 없을 때의 4:1 해상 거래\n3:1 항구가 있을 때의 3:1 해상 거래 특수 항구(나무)가 있을 때의 빨간색 플레이어는 6개의 연결된 도로를 가지고 있어(다른 방향의 도로는 세지 않\n2:1 해상 거래\n습니다.) 최장 교역로 카드를 받습니다. 주황색 플레이어는 6개의 한 방향 도로를\n가지고 있으나, 빨간색 플레이어의 마을에 끊겨 4개의 도로와 2개의 도로로 나뉘\n3. 건설 어 있습니다.\n마지막으로, 건설을 통해 자원 얻기의 효율을 높이거나 승점을 올릴 수 b) 마을: 마을을 건설하기 위해서는 나무 + 흙 + 밀 + 양이 필요\n있습니다. 합니다.\n• 건설을 하려면, 자원카드를 건설비용카드에 나와있는 대로 조합하여\n내야 합니다. 그런 다음에, 개인창고에서 해당 구성물을 가져와 판에\n놓습니다. 낸 자원카드는 공동창고에 돌려놓습니다.\na) 도로: 도로를 건설하기 위해서는 나무 + 흙이 필요합니다.\n• 마을은 자기 도로와 닿아 있는 교차점에 건설해야 합니다. 마을을\n건설할 때는 간격 규칙에 주의해야 합니다.\n+ =\n• 간격 규칙: 마을은 인접한 교차점 어디에도 마을이나 도시(플레이어\n자신의 것 포함)가 없는 교차점에만 건설이 가능합니다.\n• 도로는 길 위에 건설합니다. 길마다 도로는 하나만 건설할 수 있습니다.\n• 도로는 자신의 도로와 연결되어야 하며 다른 사람의 마을이나 도시를\n통과해서 건설할 수 없습니다.\n주황색 플레이어는 파란색으로 표시된 교차점에만 마을을 건설할 수 있습니다."
+    },
+    {
+      "id": "카탄-p2-3",
+      "game_name": "카탄",
+      "language": "ko",
+      "source_file": "카탄.pdf",
+      "page": 2,
+      "section": "룰북 2페이지",
+      "text": "• 도로는 길 위에 건설합니다. 길마다 도로는 하나만 건설할 수 있습니다.\n• 도로는 자신의 도로와 연결되어야 하며 다른 사람의 마을이나 도시를\n통과해서 건설할 수 없습니다.\n주황색 플레이어는 파란색으로 표시된 교차점에만 마을을 건설할 수 있습니다.\n빨간색으로 표시된 교차점에는 건설할 수 없습니다.\n3"
+    },
+    {
+      "id": "카탄-p3-1",
+      "game_name": "카탄",
+      "language": "ko",
+      "source_file": "카탄.pdf",
+      "page": 3,
+      "section": "룰북 3페이지",
+      "text": "• 마 을을 많이 건설할수록 인접한 땅에서 자원카드를 얻을 기회가 b) 발전카드 사용하기\n많아집니다. 주사위를 던져 어떤 땅에 쓰여진 숫자가 나올 때마다, 그\n플레이어의 차례에는 아무 때나 발전카드 1장을 사용할 수 있습니다.\n땅에 인접한 마을을 가진 플레이어들은 인접한 자신의 마을 개수만큼\n주사위를 던지기 전에 사용해도 됩니다. 하지만 이번 차례에 구입한\n해당 자원카드를 얻습니다.\n카드는 사용할 수 없습니다.\n• 마 을은 개당 승점 1점입니다.\n기사카드\nc) 도시: 도시를 건설하기 위해서는 2 밀 + 3 철이 필요합니다.\n• 기사카드를 사용한 플레이어는 즉시 도둑을 옮깁니다.\n기사\n그리고 도둑이 도착한 땅과 인접한 마을 또는 도시를\n가진 플레이어 중 1명을 골라 자원카드 1장을 무작위로\n플그레1 이장 후어을 , 도 도 중무 둑둑 작한이을 위 명있옮 로을는깁 빼 니 골땅 앗 다 라에 습 . 자니 인원다 접카. 한드 빼앗습니다.\n• 사용한 기사카드는 플레이어 앞에 펼쳐둡니다.\n도시는 이미 건설된 마을을 확장하는 방식으로만 건설할 수 있습니다.\n• 가장 먼저 기사카드 3장을 사용하여 펼친 사람은\n• 마을을 확장하여 도시로 바꾸고 싶다면, 이미 건설된 마을 하나를\n즉시 특별 승점카드 최강 기사단을 받습니다. 최강\n개인창고에 가져다 놓고 그 자리에 도시를 놓습니다.\n기사단 카드는 승점 2점입니다.\n• 도시를 건설하면 더 많은 자원을 얻을 수 있습니다. 주사위를 던져 어떤\n• 다른 플레이어가 더 많은 기사카드를 사용해 펼치게\n땅에 쓰여진 숫자가 나올 때마다, 그 땅에 인접한 도시를 가진 플레이어\n되면, 그 플레이어가 최강 기사단 카드를 가져\n들은 인접한 자신의 도시 개수만큼 해당 자원을 2장씩 얻습니다."
+    },
+    {
+      "id": "카탄-p3-2",
+      "game_name": "카탄",
+      "language": "ko",
+      "source_file": "카탄.pdf",
+      "page": 3,
+      "section": "룰북 3페이지",
+      "text": "를 던져 어떤\n• 다른 플레이어가 더 많은 기사카드를 사용해 펼치게\n땅에 쓰여진 숫자가 나올 때마다, 그 땅에 인접한 도시를 가진 플레이어\n되면, 그 플레이어가 최강 기사단 카드를 가져\n들은 인접한 자신의 도시 개수만큼 해당 자원을 2장씩 얻습니다.\n갑니다. 최강 기사단\n• 도시는 개당 승점 2점입니다.\nd) 발전카드: 발전카드를 구입하기 위해서는 밀 + 양 + 철이 필요 진보카드\n합니다. • 이 카드를 사용한 사람은 카드에 적혀있는\n진보 진보 진보\n내용을 실행합니다. 사용한 카드는 게임에서\n제거하여 상자에 넣습니다.\n독점 도로 건설 자원 발견\n자모원 선전 든 택 하 부 플한 나 빼 레 를 자앗 이 원 선 습 어카 택 니 에드 합 다 게를 니 . 서다 비.용을즉 내시지 건 않설고합 니도다로. 2개공를동창2고장에을서 가 원져하옵는니 다자.원카드\n• 발전카드를 구입하면 발전카드 더미 맨 위에서 발전카드 1장을 가져\n승점카드\n옵니다.\n승점 승점 승점 승점 승점 • 승점카드를 얻었다면 해당 카드의\n• 발전카드에는 3종류의 카드가 있으며 각각 기능이 다릅니다. 내용을 다른 플레이어가 알지\n못하게 가지고 있습니다. 어떤\n기사 진보 진보 진보 승점 승점 승점 승점 승점\n도1서관 1시장 1시청 대1성당 1대학 플레이어의 차례에 이 카드를\n포함하여 그 플레이어의 승점이\n플그레1 이장 후어을 , 도 도 중무 둑둑 작한이을 위 명있옮 로을는깁 빼 니 골땅 앗 다 라에 습 . 자니 인원다 접카. 한드 자모원 선전 든 택 하 부 플한 나 빼 독 레 를 자앗 이 점 원 선 습 어카 택 니 에드 합 다 게를 니 . 서비다 용.을즉 내도 시지 로 건 않설 고건 합 니도설 다로공."
+    },
+    {
+      "id": "카탄-p3-3",
+      "game_name": "카탄",
+      "language": "ko",
+      "source_file": "카탄.pdf",
+      "page": 3,
+      "section": "룰북 3페이지",
+      "text": "위 명있옮 로을는깁 빼 니 골땅 앗 다 라에 습 . 자니 인원다 접카. 한드 자모원 선전 든 택 하 부 플한 나 빼 독 레 를 자앗 이 점 원 선 습 어카 택 니 에드 합 다 게를 니 . 서비다 용.을즉 내도 시지 로 건 않설 고건 합 니도설 다로공. 2동개창를2고장 자에을서원 가 원 져 발하옵는견 니 다자.원카드 도1서관 1시장 1시청 대1성당 1대학 10점에 도달했다면, 즉시 카드를\n공개하고 승리할 수 있습니다.\n• 발전카드는 사용할 때까지 다른 사람에게 보여주지 않습니다.\n4. 특별한 경우\n게임의 종료\na) 주사위를 던져서 7이 나왔을 때: 도둑이 움직입니다.\n• 어떤 플레이어가 10점 이상의 승점을 얻었다면 그 플레이어의 차례에\n• 어떤 플레이어가 주사위를 던져 7이 나오면, 아무도 자원카드를 얻지 게임이 즉시 종료됩니다. 플레이어의 차례 중 아무 때나 승점을\n못합니다. 공개하고 승리를 선언할 수 있습니다.\n• 8장 이상의 자원카드를 가지고 있는 플레이어들은 모두 자신의 자원카드\n중 반을 골라 공동창고에 냅니다. 카드가 홀수라면, 한 장을 빼고 나머지\n카드의 반을 버립니다(예를 들어 9장을 가지고 있다면, 4장을 버립니다).\n• 그리고 나서 주사위를 굴린 플레이어는 도둑 말을 옮깁니다.\n1. 주사위를 굴린 플레이어는 반드시 도둑 말을 다른 땅으로 옮겨야\n합니다.\n2. 그리고 도둑이 도착한 땅과 인접한 마을 또는 도시를 가진 플레이어 중\n1명을 골라 자원카드 1장을 무작위로 빼앗습니다(빼앗기게 된 © 1995, 2015 Franckh-Kosmos Verlags-GmbH & Co. KG\n플레이어는 자신의 카드를 상대방이 뒷면을 보게끔 손에 듭니다)."
+    },
+    {
+      "id": "카탄-p3-4",
+      "game_name": "카탄",
+      "language": "ko",
+      "source_file": "카탄.pdf",
+      "page": 3,
+      "section": "룰북 3페이지",
+      "text": "마을 또는 도시를 가진 플레이어 중\n1명을 골라 자원카드 1장을 무작위로 빼앗습니다(빼앗기게 된 © 1995, 2015 Franckh-Kosmos Verlags-GmbH & Co. KG\n플레이어는 자신의 카드를 상대방이 뒷면을 보게끔 손에 듭니다). 작가: Klaus Teuber 3D 그래픽: Andreas Resch\n저작권: Catan GmbH © 2002, catan.de 한국어판 번역 및 편집: 코리아보드게임즈 개발본부\n3. 그리고 주사위를 굴린 플레이어는 거래 행동을 시작합니다.\n일러스트레이션: Michael Menzel\n중요: 게임 중 주사위를 던진 결과와 같은 숫자가 있는 땅에 도둑이 있다면, 그 땅에 그래픽: Michaela Kienle\n편집: Andreas Klober\n인접한 마을 또는 도시를 가진 플레이어는 해당 자원을 얻지 못합니다.\n주의: 도둑을 움직여 카드를 뺏거나 카드를 버릴 때, 발전카드는 대상이 되지\n않습니다. 오직 자원카드만 뺏거나 버릴 수 있습니다.\n4\n서서칙칙규규\n기사 진보 승점\n※ 본 게임과 관련해 궁금한 점이 있으시면 다이브다이스(www.divedice.com)에\n들어오셔서 질문을 남겨주세요.\nB1035"
+    }
+  ]
+}
