@@ -9,6 +9,7 @@ import { colors } from '../theme/colors';
 import { commonStyles } from '../theme/styles';
 import { apiFetch } from '../utils/api';
 import { useResponsiveLayout } from '../theme/responsive';
+import { FALLBACK_GAMES, getFallbackBeginnerRecommendations } from '../data/catalogFallback';
 
 // 장르 탭 — 키워드가 game.genre에 포함되면 해당 탭에 속함
 const GENRE_TABS = ['전체', '다인용 게임', '전략', '파티', '마피아', '추리', '카드', '타일', '고전', '단어'];
@@ -33,9 +34,11 @@ export default function GameSearchScreen({ navigation }) {
     try {
       const response = await apiFetch('/games');
       const data = await response.json();
-      setGames(data.games);
+      // Railway 주소가 끊기거나 서버가 빈 목록을 반환해도 도감 자체는 항상 보여 준다.
+      setGames(response.ok && Array.isArray(data.games) && data.games.length > 0 ? data.games : FALLBACK_GAMES);
     } catch (error) {
       console.error('게임 데이터를 불러오는 중 오류:', error);
+      setGames(FALLBACK_GAMES);
     } finally {
       setLoading(false);
     }
@@ -49,10 +52,14 @@ export default function GameSearchScreen({ navigation }) {
       );
       const data = await response.json();
       if (!response.ok) throw new Error(data.detail || '추천을 불러오지 못했습니다.');
-      setBeginnerRecommendations(data.recommendations || []);
+      setBeginnerRecommendations(
+        Array.isArray(data.recommendations) && data.recommendations.length > 0
+          ? data.recommendations
+          : getFallbackBeginnerRecommendations(players, minutes)
+      );
     } catch (error) {
       console.error('초보자 추천을 불러오는 중 오류:', error);
-      setBeginnerRecommendations([]);
+      setBeginnerRecommendations(getFallbackBeginnerRecommendations(players, minutes));
     } finally {
       setRecommendationLoading(false);
     }
@@ -150,7 +157,13 @@ export default function GameSearchScreen({ navigation }) {
                   onPress={() => navigation.navigate('GameDetail', { game })}
                   activeOpacity={0.8}
                 >
-                  <Image source={{ uri: game.image }} style={styles.recommendationImage} />
+                  {game.image ? (
+                    <Image source={{ uri: game.image }} style={styles.recommendationImage} />
+                  ) : (
+                    <View style={styles.recommendationImagePlaceholder}>
+                      <Ionicons name="game-controller" size={28} color="#6941C6" />
+                    </View>
+                  )}
                   <View style={styles.recommendationInfo}>
                     <Text style={styles.recommendationScore}>입문 추천 {game.recommendationScore}점</Text>
                     <Text style={styles.recommendationName} numberOfLines={1}>{game.name}</Text>
@@ -179,7 +192,13 @@ export default function GameSearchScreen({ navigation }) {
       onPress={() => navigation.navigate('GameDetail', { game: item })}
     >
       <View style={styles.gameImageContainer}>
-        <Image source={{ uri: item.image }} style={styles.gameImage} />
+        {item.image ? (
+          <Image source={{ uri: item.image }} style={styles.gameImage} />
+        ) : (
+          <View style={styles.gameImagePlaceholder}>
+            <Ionicons name="game-controller" size={30} color="#697586" />
+          </View>
+        )}
         <View style={styles.gameDifficultyBadge}>
           <Text style={styles.difficultyBadgeText}>{item.difficulty}</Text>
         </View>
@@ -405,6 +424,7 @@ const styles = StyleSheet.create({
     padding: 10,
   },
   recommendationImage: { width: 58, height: 58, borderRadius: 9, backgroundColor: '#F1F2F6', marginRight: 9 },
+  recommendationImagePlaceholder: { width: 58, height: 58, borderRadius: 9, backgroundColor: '#F0E9FF', marginRight: 9, justifyContent: 'center', alignItems: 'center' },
   recommendationInfo: { flex: 1, minWidth: 0 },
   recommendationScore: { color: '#6941C6', fontSize: 10, fontWeight: '800', marginBottom: 2 },
   recommendationName: { color: '#2D3436', fontSize: 15, fontWeight: '800', marginBottom: 2 },
@@ -451,6 +471,14 @@ const styles = StyleSheet.create({
     height: 62,
     borderRadius: 10,
     backgroundColor: '#F1F2F6',
+  },
+  gameImagePlaceholder: {
+    width: 62,
+    height: 62,
+    borderRadius: 10,
+    backgroundColor: '#EEF2F6',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   gameDifficultyBadge: {
     position: 'absolute',
