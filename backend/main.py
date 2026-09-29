@@ -570,11 +570,13 @@ def get_beginner_game_recommendations(
     request: Request,
     players: int = Query(4, ge=1, le=12),
     available_minutes: int = Query(60, ge=15, le=240),
+    difficulty_preference: str = Query("쉬움", pattern="^(쉬움|보통|도전|전체)$"),
+    genre_preference: str = Query("전체", max_length=30),
     db: Session = Depends(get_db),
 ):
     """초보자용 규칙 기반 도감 추천.
 
-    난이도를 가장 크게 반영하고, 선택한 인원·시간에 맞는 게임에 가점을 준다.
+    난이도·장르·인원·시간에 맞는 게임에 가점을 준다.
     점수와 근거를 내려 보내 UI가 추천의 이유를 투명하게 보여줄 수 있게 한다.
     """
     difficulty_scores = {"쉬움": 55, "보통": 30, "어려움": 10, "매우 어려움": 0}
@@ -589,6 +591,32 @@ def get_beginner_game_recommendations(
             reasons.append("쉬운 난이도")
         elif game.difficulty == "보통":
             reasons.append("한 단계 도전하기 좋은 난이도")
+
+        if difficulty_preference == "쉬움":
+            if game.difficulty == "쉬움":
+                score += 25
+                reasons.append("선호 난이도 일치")
+            else:
+                score -= 20
+        elif difficulty_preference == "보통":
+            if game.difficulty == "보통":
+                score += 25
+                reasons.append("선호 난이도 일치")
+            else:
+                score -= 12
+        elif difficulty_preference == "도전":
+            if game.difficulty in {"어려움", "매우 어려움"}:
+                score += 25
+                reasons.append("도전 난이도 선호")
+            else:
+                score -= 10
+
+        if genre_preference != "전체":
+            if game.genre and genre_preference in game.genre:
+                score += 25
+                reasons.append(f"{genre_preference} 장르 선호")
+            else:
+                score -= 18
 
         if minimum <= players <= maximum:
             score += 30

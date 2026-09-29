@@ -22,12 +22,14 @@ export default function GameSearchScreen({ navigation }) {
   const [selectedGenre, setSelectedGenre] = useState('전체');
   const [beginnerPlayers, setBeginnerPlayers] = useState(4);
   const [beginnerMinutes, setBeginnerMinutes] = useState(60);
+  const [beginnerDifficulty, setBeginnerDifficulty] = useState('쉬움');
+  const [beginnerGenre, setBeginnerGenre] = useState('전체');
   const [beginnerRecommendations, setBeginnerRecommendations] = useState([]);
   const [recommendationLoading, setRecommendationLoading] = useState(false);
 
   useEffect(() => {
     fetchGames();
-    fetchBeginnerRecommendations(4, 60);
+    fetchBeginnerRecommendations(4, 60, '쉬움', '전체');
   }, []);
 
   const fetchGames = async () => {
@@ -44,22 +46,23 @@ export default function GameSearchScreen({ navigation }) {
     }
   };
 
-  const fetchBeginnerRecommendations = async (players, minutes) => {
+  const fetchBeginnerRecommendations = async (players, minutes, difficulty = beginnerDifficulty, genre = beginnerGenre) => {
     setRecommendationLoading(true);
     try {
       const response = await apiFetch(
-        `/games/beginner-recommendations?players=${players}&available_minutes=${minutes}`
+        `/games/beginner-recommendations?players=${players}&available_minutes=${minutes}` +
+        `&difficulty_preference=${encodeURIComponent(difficulty)}&genre_preference=${encodeURIComponent(genre)}`
       );
       const data = await response.json();
       if (!response.ok) throw new Error(data.detail || '추천을 불러오지 못했습니다.');
       setBeginnerRecommendations(
         Array.isArray(data.recommendations) && data.recommendations.length > 0
           ? data.recommendations
-          : getFallbackBeginnerRecommendations(players, minutes)
+          : getFallbackBeginnerRecommendations(players, minutes, difficulty, genre)
       );
     } catch (error) {
       console.error('초보자 추천을 불러오는 중 오류:', error);
-      setBeginnerRecommendations(getFallbackBeginnerRecommendations(players, minutes));
+      setBeginnerRecommendations(getFallbackBeginnerRecommendations(players, minutes, difficulty, genre));
     } finally {
       setRecommendationLoading(false);
     }
@@ -68,9 +71,13 @@ export default function GameSearchScreen({ navigation }) {
   const selectBeginnerOption = (type, value) => {
     const nextPlayers = type === 'players' ? value : beginnerPlayers;
     const nextMinutes = type === 'minutes' ? value : beginnerMinutes;
+    const nextDifficulty = type === 'difficulty' ? value : beginnerDifficulty;
+    const nextGenre = type === 'genre' ? value : beginnerGenre;
     if (type === 'players') setBeginnerPlayers(value);
-    else setBeginnerMinutes(value);
-    fetchBeginnerRecommendations(nextPlayers, nextMinutes);
+    else if (type === 'minutes') setBeginnerMinutes(value);
+    else if (type === 'difficulty') setBeginnerDifficulty(value);
+    else setBeginnerGenre(value);
+    fetchBeginnerRecommendations(nextPlayers, nextMinutes, nextDifficulty, nextGenre);
   };
 
   const filteredGames = games.filter(game => {
@@ -111,7 +118,7 @@ export default function GameSearchScreen({ navigation }) {
             </View>
             <View style={styles.beginnerTitleContent}>
               <Text style={styles.beginnerTitle}>초보자 맞춤 게임 추천</Text>
-              <Text style={styles.beginnerSubtitle}>인원과 가능한 시간을 고르면 입문용 게임을 골라드려요.</Text>
+              <Text style={styles.beginnerSubtitle}>인원·시간·난이도·장르를 반영해 입문용 게임을 골라드려요.</Text>
             </View>
           </View>
 
@@ -144,6 +151,35 @@ export default function GameSearchScreen({ navigation }) {
                 ))}
               </View>
             </View>
+            <View style={styles.optionGroup}>
+              <Text style={styles.optionLabel}>선호 난이도</Text>
+              <View style={styles.optionButtons}>
+                {['쉬움', '보통', '도전'].map((difficulty) => (
+                  <TouchableOpacity
+                    key={difficulty}
+                    style={[styles.optionButton, beginnerDifficulty === difficulty && styles.optionButtonActive]}
+                    onPress={() => selectBeginnerOption('difficulty', difficulty)}
+                  >
+                    <Text style={[styles.optionButtonText, beginnerDifficulty === difficulty && styles.optionButtonTextActive]}>{difficulty}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+          </View>
+
+          <View style={styles.genreOptionGroup}>
+            <Text style={styles.optionLabel}>선호 장르</Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.optionButtons}>
+              {['전체', '전략', '파티', '마피아', '추리', '카드', '타일', '단어'].map((genre) => (
+                <TouchableOpacity
+                  key={genre}
+                  style={[styles.optionButton, beginnerGenre === genre && styles.optionButtonActive]}
+                  onPress={() => selectBeginnerOption('genre', genre)}
+                >
+                  <Text style={[styles.optionButtonText, beginnerGenre === genre && styles.optionButtonTextActive]}>{genre}</Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
           </View>
 
           {recommendationLoading ? (
@@ -165,7 +201,7 @@ export default function GameSearchScreen({ navigation }) {
                     </View>
                   )}
                   <View style={styles.recommendationInfo}>
-                    <Text style={styles.recommendationScore}>입문 추천 {game.recommendationScore}점</Text>
+                    <Text style={styles.recommendationScore}>맞춤 추천 {game.recommendationScore}점</Text>
                     <Text style={styles.recommendationName} numberOfLines={1}>{game.name}</Text>
                     <Text style={styles.recommendationMeta}>{game.players} · {game.duration}</Text>
                     <Text style={styles.recommendationReason} numberOfLines={2}>{game.recommendationReasons.join(' · ')}</Text>
@@ -399,6 +435,7 @@ const styles = StyleSheet.create({
     marginTop: 15,
   },
   optionGroup: { flexGrow: 1 },
+  genreOptionGroup: { marginTop: 14 },
   optionLabel: { color: '#656176', fontSize: 12, fontWeight: '700', marginBottom: 7 },
   optionButtons: { flexDirection: 'row', gap: 5 },
   optionButton: {

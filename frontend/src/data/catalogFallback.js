@@ -50,7 +50,7 @@ const playerRangeIncludes = (players, target) => {
   return target >= numbers[0] && target <= numbers[1];
 };
 
-export function getFallbackBeginnerRecommendations(players, availableMinutes) {
+export function getFallbackBeginnerRecommendations(players, availableMinutes, difficultyPreference = '쉬움', genrePreference = '전체') {
   return FALLBACK_GAMES
     .map((game) => {
       let score = 100;
@@ -62,6 +62,28 @@ export function getFallbackBeginnerRecommendations(players, availableMinutes) {
         reasons.push('입문 가능한 난이도');
       } else {
         score -= 35;
+      }
+      if (difficultyPreference === '쉬움') {
+        if (game.difficulty === '쉬움') {
+          score += 25;
+          reasons.push('선호 난이도 일치');
+        } else score -= 20;
+      } else if (difficultyPreference === '보통') {
+        if (game.difficulty === '보통') {
+          score += 25;
+          reasons.push('선호 난이도 일치');
+        } else score -= 12;
+      } else if (difficultyPreference === '도전') {
+        if (game.difficulty === '어려움' || game.difficulty === '매우 어려움') {
+          score += 25;
+          reasons.push('도전 난이도 선호');
+        } else score -= 10;
+      }
+      if (genrePreference !== '전체') {
+        if (game.genre.includes(genrePreference)) {
+          score += 25;
+          reasons.push(`${genrePreference} 장르 선호`);
+        } else score -= 18;
       }
       if (playerRangeIncludes(game.players, players)) reasons.push(`${players}명 플레이 가능`);
       else score -= 45;
