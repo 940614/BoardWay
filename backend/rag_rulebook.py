@@ -25,6 +25,22 @@ def _normalise(value: str) -> str:
     return "".join(char for char in (value or "").lower() if char.isalnum())
 
 
+def _is_searchable_text(value: str) -> bool:
+    """PDF 글꼴 인코딩이 깨진 텍스트를 임베딩 검색에서 제외한다.
+
+    한글·영문·숫자·일반 문장부호 비율이 지나치게 낮으면 사람이 읽을 수 없는
+    추출 결과로 본다. 이런 청크는 출처만 있고 답변 근거로는 쓸 수 없다.
+    """
+    visible = [char for char in (value or "") if not char.isspace()]
+    if len(visible) < 20:
+        return False
+    readable = sum(
+        char.isascii() or "가" <= char <= "힣" or "ㄱ" <= char <= "ㅣ"
+        for char in visible
+    )
+    return readable / len(visible) >= 0.75
+
+
 @lru_cache(maxsize=1)
 def load_chunks() -> tuple[dict[str, Any], ...]:
     """배포된 검색 청크를 한 번만 읽는다."""
@@ -63,6 +79,7 @@ def retrieve(game_name: str, question: str, top_k: int = TOP_K) -> list[dict[str
     candidate_indexes = [
         index for index, chunk in enumerate(chunks)
         if _normalise(chunk.get("game_name", "")) == target
+        and _is_searchable_text(chunk.get("text", ""))
     ]
     if not candidate_indexes:
         return []
