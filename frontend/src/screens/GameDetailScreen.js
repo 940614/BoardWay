@@ -95,8 +95,8 @@ export default function GameDetailScreen({ route, navigation }) {
             <View style={styles.divider} />
             <View style={styles.statBox}>
               <Ionicons name="time" size={24} color={colors.primary} />
-              <Text style={styles.statLabel}>난이도</Text>
-              <Text style={styles.statValue}>{game.difficulty}</Text>
+              <Text style={styles.statLabel}>예상 소요 시간</Text>
+              <Text style={styles.statValue}>{game.duration || '약 45분'}</Text>
             </View>
           </View>
 

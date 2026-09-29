@@ -1,5 +1,5 @@
 import os
-from fastapi import FastAPI, HTTPException, Depends, status, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, HTTPException, Depends, status, WebSocket, WebSocketDisconnect, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.security import OAuth2PasswordBearer
@@ -11,6 +11,7 @@ from jose import JWTError, jwt
 import models, schemas, crud
 from ai_recommender import build_match_text, build_profile_text, semantic_similarities
 from rag_rulebook import answer_question, has_rulebook
+from game_catalog_metadata import estimated_duration_minutes, format_duration
 from database import get_db
 from auth_utils import verify_password, create_access_token, SECRET_KEY, ALGORITHM
 
@@ -524,6 +525,8 @@ def get_games(request: Request, db: Session = Depends(get_db)):
             "name": g.name,
             "players": g.players,
             "difficulty": g.difficulty,
+            "durationMinutes": estimated_duration_minutes(g.name),
+            "duration": format_duration(estimated_duration_minutes(g.name)),
             "genre": g.genre,
             "description": g.description,
             "ruleUrl": g.ruleUrl,
@@ -531,6 +534,63 @@ def get_games(request: Request, db: Session = Depends(get_db)):
             "image": public_url(request, g.image)
         })
     return {"games": result}
+
+
+@app.get("/games/beginner-recommendations")
+def get_beginner_game_recommendations(
+    request: Request,
+    players: int = Query(4, ge=1, le=12),
+    available_minutes: int = Query(60, ge=15, le=240),
+    db: Session = Depends(get_db),
+):
+    """초보자용 규칙 기반 도감 추천.
+
+    난이도를 가장 크게 반영하고, 선택한 인원·시간에 맞는 게임에 가점을 준다.
+    점수와 근거를 내려 보내 UI가 추천의 이유를 투명하게 보여줄 수 있게 한다.
+    """
+    difficulty_scores = {"쉬움": 55, "보통": 30, "어려움": 10, "매우 어려움": 0}
+    recommendations = []
+    for game in crud.get_games(db):
+        minimum, maximum = crud.parse_player_count(game.players)
+        duration_minutes = estimated_duration_minutes(game.name)
+        score = difficulty_scores.get(game.difficulty, 20)
+        reasons = []
+
+        if game.difficulty == "쉬움":
+            reasons.append("쉬운 난이도")
+        elif game.difficulty == "보통":
+            reasons.append("한 단계 도전하기 좋은 난이도")
+
+        if minimum <= players <= maximum:
+            score += 30
+            reasons.append(f"{players}명이 함께하기 좋은 인원")
+        else:
+            score -= 35
+
+        if duration_minutes <= available_minutes:
+            score += 15
+            reasons.append(f"가능 시간 {available_minutes}분 안에 플레이 가능")
+        else:
+            score -= min(25, (duration_minutes - available_minutes) // 5)
+
+        recommendations.append({
+            "id": game.game_id,
+            "name": game.name,
+            "players": game.players,
+            "difficulty": game.difficulty,
+            "durationMinutes": duration_minutes,
+            "duration": format_duration(duration_minutes),
+            "genre": game.genre,
+            "description": game.description,
+            "ruleUrl": game.ruleUrl,
+            "rulebookAvailable": has_rulebook(game.name),
+            "image": public_url(request, game.image),
+            "recommendationScore": max(0, min(100, score)),
+            "recommendationReasons": reasons,
+        })
+
+    recommendations.sort(key=lambda item: (-item["recommendationScore"], item["durationMinutes"], item["name"]))
+    return {"recommendations": recommendations[:3]}
 
 
 @app.post("/games/{game_id}/rulebook/ask")
