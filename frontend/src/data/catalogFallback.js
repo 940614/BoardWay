@@ -53,41 +53,46 @@ const playerRangeIncludes = (players, target) => {
 export function getFallbackBeginnerRecommendations(players, availableMinutes, difficultyPreference = '쉬움', genrePreference = '전체') {
   return FALLBACK_GAMES
     .map((game) => {
-      let score = 100;
+      // 서버와 같은 기준의 점수. 장르·난이도 불일치를 실제 순위 차이로 만든다.
+      let score = { 쉬움: 45, 보통: 32, 어려움: 18, '매우 어려움': 10 }[game.difficulty] ?? 20;
       const reasons = [];
       if (game.difficulty === '쉬움') {
-        score += 8;
         reasons.push('쉬운 난이도');
       } else if (game.difficulty === '보통') {
         reasons.push('입문 가능한 난이도');
       } else {
-        score -= 35;
+        score -= 10;
       }
       if (difficultyPreference === '쉬움') {
         if (game.difficulty === '쉬움') {
-          score += 25;
-          reasons.push('선호 난이도 일치');
-        } else score -= 20;
-      } else if (difficultyPreference === '보통') {
-        if (game.difficulty === '보통') {
-          score += 25;
+          score += 24;
           reasons.push('선호 난이도 일치');
         } else score -= 12;
+      } else if (difficultyPreference === '보통') {
+        if (game.difficulty === '보통') {
+          score += 24;
+          reasons.push('선호 난이도 일치');
+        } else score -= 8;
       } else if (difficultyPreference === '도전') {
         if (game.difficulty === '어려움' || game.difficulty === '매우 어려움') {
-          score += 25;
+          score += 30;
           reasons.push('도전 난이도 선호');
-        } else score -= 10;
+        } else score -= 12;
       }
       if (genrePreference !== '전체') {
         if (game.genre.includes(genrePreference)) {
-          score += 25;
+          score += 26;
           reasons.push(`${genrePreference} 장르 선호`);
-        } else score -= 18;
+        } else score -= 26;
       }
-      if (playerRangeIncludes(game.players, players)) reasons.push(`${players}명 플레이 가능`);
-      else score -= 45;
-      if (game.durationMinutes <= availableMinutes) reasons.push(`약 ${game.durationMinutes}분 소요`);
+      if (playerRangeIncludes(game.players, players)) {
+        score += 18;
+        reasons.push(`${players}명 플레이 가능`);
+      } else score -= 35;
+      if (game.durationMinutes <= availableMinutes) {
+        score += 13;
+        reasons.push(`약 ${game.durationMinutes}분 소요`);
+      }
       else score -= Math.min(25, Math.ceil((game.durationMinutes - availableMinutes) / 5));
       return { ...game, recommendationScore: Math.max(0, Math.min(100, score)), recommendationReasons: reasons };
     })

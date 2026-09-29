@@ -579,7 +579,9 @@ def get_beginner_game_recommendations(
     난이도·장르·인원·시간에 맞는 게임에 가점을 준다.
     점수와 근거를 내려 보내 UI가 추천의 이유를 투명하게 보여줄 수 있게 한다.
     """
-    difficulty_scores = {"쉬움": 55, "보통": 30, "어려움": 10, "매우 어려움": 0}
+    # 조건 하나가 달라도 모두 100점에 묶이지 않도록 기본 점수와 가점을 분리한다.
+    # 사용자 선택 조건(난이도·장르)은 같은 값일 때만 큰 가점을 받아 상위 결과가 달라진다.
+    difficulty_scores = {"쉬움": 45, "보통": 32, "어려움": 18, "매우 어려움": 10}
     recommendations = []
     for game in ensure_game_catalog(db):
         minimum, maximum = crud.parse_player_count(game.players)
@@ -594,38 +596,38 @@ def get_beginner_game_recommendations(
 
         if difficulty_preference == "쉬움":
             if game.difficulty == "쉬움":
-                score += 25
-                reasons.append("선호 난이도 일치")
-            else:
-                score -= 20
-        elif difficulty_preference == "보통":
-            if game.difficulty == "보통":
-                score += 25
+                score += 24
                 reasons.append("선호 난이도 일치")
             else:
                 score -= 12
+        elif difficulty_preference == "보통":
+            if game.difficulty == "보통":
+                score += 24
+                reasons.append("선호 난이도 일치")
+            else:
+                score -= 8
         elif difficulty_preference == "도전":
             if game.difficulty in {"어려움", "매우 어려움"}:
-                score += 25
+                score += 30
                 reasons.append("도전 난이도 선호")
             else:
-                score -= 10
+                score -= 12
 
         if genre_preference != "전체":
             if game.genre and genre_preference in game.genre:
-                score += 25
+                score += 26
                 reasons.append(f"{genre_preference} 장르 선호")
             else:
-                score -= 18
+                score -= 26
 
         if minimum <= players <= maximum:
-            score += 30
+            score += 18
             reasons.append(f"{players}명이 함께하기 좋은 인원")
         else:
             score -= 35
 
         if duration_minutes <= available_minutes:
-            score += 15
+            score += 13
             reasons.append(f"가능 시간 {available_minutes}분 안에 플레이 가능")
         else:
             score -= min(25, (duration_minutes - available_minutes) // 5)
