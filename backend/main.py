@@ -51,6 +51,35 @@ app.mount("/images", StaticFiles(directory=IMAGES_DIR), name="images")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 optional_oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login", auto_error=False)
 
+
+def ensure_game_catalog(db: Session):
+    """게임 테이블이 비어 있는 배포 환경에서도 도감을 비어 보이지 않게 복구한다.
+
+    Railway의 새 PostgreSQL 인스턴스처럼 게임 시드가 아직 없는 경우에만 기본 도감
+    데이터를 넣는다. 이미 저장된 게임, 사용자, 매치 데이터는 변경하지 않는다.
+    """
+    existing_games = crud.get_games(db)
+    if existing_games:
+        return existing_games
+
+    # seed.py는 실행할 때만 사용자·매치까지 시드한다. 여기서는 GAMES_DATA만 가져와
+    # 게임 도감 행만 생성한다.
+    from seed import GAMES_DATA
+
+    for game in GAMES_DATA:
+        db.add(models.Game(
+            game_id=game["id"],
+            name=game["name"],
+            players=game["players"],
+            difficulty=game["difficulty"],
+            genre=game.get("genre"),
+            description=game["description"],
+            ruleUrl=game["ruleUrl"],
+            image=game["image"],
+        ))
+    db.commit()
+    return crud.get_games(db)
+
 # 현재 로그인한 사용자 가져오기 dependency
 async def get_current_user(db: Session = Depends(get_db), token: str = Depends(oauth2_scheme)):
     credentials_exception = HTTPException(
@@ -517,7 +546,7 @@ def get_my_match_chat_rooms(
 
 @app.get("/games")
 def get_games(request: Request, db: Session = Depends(get_db)):
-    games = crud.get_games(db)
+    games = ensure_game_catalog(db)
     result = []
     for g in games:
         result.append({
@@ -550,7 +579,7 @@ def get_beginner_game_recommendations(
     """
     difficulty_scores = {"쉬움": 55, "보통": 30, "어려움": 10, "매우 어려움": 0}
     recommendations = []
-    for game in crud.get_games(db):
+    for game in ensure_game_catalog(db):
         minimum, maximum = crud.parse_player_count(game.players)
         duration_minutes = estimated_duration_minutes(game.name)
         score = difficulty_scores.get(game.difficulty, 20)
